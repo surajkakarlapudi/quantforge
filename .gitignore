@@ -1,0 +1,133 @@
+# ---------------------------------------------------------------------------
+# Python
+# ---------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# ---------------------------------------------------------------------------
+# Virtual environments / uv
+# ---------------------------------------------------------------------------
+.venv/
+venv/
+env/
+ENV/
+.python-version
+# uv caches (uv.lock IS committed; the cache is not)
+.uv/
+.uv-cache/
+
+# ---------------------------------------------------------------------------
+# Testing / coverage / type checking / linting caches
+# ---------------------------------------------------------------------------
+.pytest_cache/
+.cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+*.cover
+.tox/
+.nox/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyright/
+.ruff_cache/
+
+# ---------------------------------------------------------------------------
+# Secrets / environment files
+# ---------------------------------------------------------------------------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+*.secret
+credentials.json
+service-account*.json
+
+# ---------------------------------------------------------------------------
+# IDE / editor
+# ---------------------------------------------------------------------------
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+*.sublime-project
+*.sublime-workspace
+.spyderproject
+.spyproject
+
+# ---------------------------------------------------------------------------
+# OS
+# ---------------------------------------------------------------------------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ---------------------------------------------------------------------------
+# Documentation build artifacts
+# ---------------------------------------------------------------------------
+docs/_build/
+site/
+
+# ---------------------------------------------------------------------------
+# Local financial datasets — NEVER commit data
+# ---------------------------------------------------------------------------
+data/
+datasets/
+raw/
+*.csv
+*.tsv
+*.parquet
+*.feather
+*.arrow
+*.json.gz
+*.zip
+*.gz
+
+# ---------------------------------------------------------------------------
+# DuckDB (database files + temporary/lock/WAL files)
+# ---------------------------------------------------------------------------
+*.duckdb
+*.duckdb.wal
+*.duckdb.tmp/
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+
+# ---------------------------------------------------------------------------
+# Misc build / logs
+# ---------------------------------------------------------------------------
+*.log
+.jupyter/
+.ipynb_checkpoints/
