@@ -109,6 +109,25 @@ class CanonicalFactStore:
     def has_instance(self, raw_document_id: str) -> bool:
         return self._instance_path(raw_document_id).exists()
 
+    def read_company(self, company_id: str) -> list[Fact]:
+        """Read every stored canonical fact belonging to ``company_id``.
+
+        Scans the stored instances (one file per canonicalized instance) and
+        returns the facts whose ``company_id`` matches, sorted by ``fact_id``
+        for a deterministic, order-independent result. Returns an empty list if
+        no facts are stored for the filer. This is a read-only query over the
+        derived store — it never mutates any fact and reuses the exact identity
+        the registry/canonical layers assign (``company_id``), so a company view
+        never diverges from the system of record.
+        """
+        facts: list[Fact] = []
+        for doc_id in self.list_document_ids():
+            instance = self.read_instance(doc_id)
+            if instance is None:
+                continue
+            facts.extend(f for f in instance if f.company_id == company_id)
+        return sorted(facts, key=lambda f: f.fact_id)
+
     def list_document_ids(self) -> list[str]:
         """Return the ``raw_document_id`` of every stored instance, sorted."""
         if not self._facts.exists():

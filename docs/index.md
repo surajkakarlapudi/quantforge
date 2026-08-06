@@ -19,6 +19,9 @@ will expand as functionality is implemented.
 - [Public Availability & Point-in-Time](point-in-time.md) — Phase 5: deriving when
   each filing became public under a versioned policy, and serving point-in-time
   (PIT) and revised knowledge-state queries that are impossible to confuse.
+- [Company Identity & Public API](company-api.md) — the `from openfinance import
+  Company` front door: resolving tickers/CIKs/names to the canonical filer
+  identity via the official SEC mapping, then delegating to the existing layers.
 - [Engineering Principles](../ARCHITECTURE.md#engineering-principles) — the
   non-negotiable principles guiding the project.
 - [Contributing](../CONTRIBUTING.md) — how to set up a development environment

@@ -36,6 +36,7 @@ from openfinance.sec.config import SecConfig
 from openfinance.sec.endpoints import (
     canonical_cik,
     company_facts_url,
+    company_tickers_url,
     filing_document_url,
     filing_index_url,
     submissions_page_url,
@@ -222,6 +223,15 @@ class SecClient:
             ArtifactType.COMPANY_FACTS,
             cik=canonical_cik(cik),
         )
+
+    def acquire_company_tickers(self) -> StoreResult:
+        """Acquire the official SEC ticker → CIK mapping (``company_tickers.json``).
+
+        A single filer-agnostic document; not keyed by CIK. Stored as an
+        immutable content-addressed artifact so repeated resolution is served
+        offline from the cache (conditional requests reuse the stored bytes).
+        """
+        return self.acquire(company_tickers_url(), ArtifactType.COMPANY_TICKERS)
 
     def acquire_filing_index(self, cik: str | int, accession: str) -> StoreResult:
         return self.acquire(

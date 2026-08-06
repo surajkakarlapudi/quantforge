@@ -197,13 +197,7 @@ class AvailabilityIngestor:
     def _facts_for_company(self, company_id: str) -> list[Fact]:
         """Read all canonical facts belonging to ``company_id`` from the store."""
         assert self._canonical is not None
-        facts: list[Fact] = []
-        for doc_id in self._canonical.list_document_ids():
-            instance = self._canonical.read_instance(doc_id)
-            if instance is None:
-                continue
-            facts.extend(f for f in instance if f.company_id == company_id)
-        return facts
+        return self._canonical.read_company(company_id)
 
     def dataset_version_for_company(
         self, cik: str | int, *, transformation_version_id: str

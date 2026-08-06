@@ -12,6 +12,7 @@ from openfinance.sec.client import SecClient
 from openfinance.sec.config import SecConfig
 from openfinance.sec.endpoints import (
     company_facts_url,
+    company_tickers_url,
     submissions_page_url,
     submissions_url,
 )
@@ -44,6 +45,18 @@ def _make_client(
     # Deterministic clock: identity must not depend on it.
     client = SecClient(cfg, http, store, clock=lambda: "2026-08-05T00:00:00+00:00")
     return client, transport
+
+
+def test_acquire_company_tickers_stores_content_addressed(tmp_path: Path) -> None:
+    body = b'{"0":{"cik_str":320193,"ticker":"AAPL","title":"Apple Inc."}}'
+    client, transport = _make_client(
+        {company_tickers_url(): ok(body, {"ETag": '"t1"'})}, tmp_path
+    )
+    result = client.acquire_company_tickers()
+    assert result.sha256 == sha256_hex(body)
+    assert result.blob_path.read_bytes() == body
+    # Served from www.sec.gov, which requires the email-format User-Agent.
+    assert transport.requests[0].headers["User-Agent"] == UA
 
 
 def test_acquire_submissions_stores_content_addressed(tmp_path: Path) -> None:

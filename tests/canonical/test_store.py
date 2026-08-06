@@ -97,3 +97,23 @@ def test_list_document_ids(tmp_path: Path) -> None:
     store = CanonicalFactStore(tmp_path)
     store.write_instance(result, CanonicalFactVersion().transformation_version_id)
     assert store.list_document_ids() == [result.raw_document_id]
+
+
+def test_read_company_returns_matching_facts_sorted(tmp_path: Path) -> None:
+    result = _sample_result()
+    store = CanonicalFactStore(tmp_path)
+    store.write_instance(result, CanonicalFactVersion().transformation_version_id)
+    company = result.facts[0].company_id
+
+    facts = store.read_company(company)
+    assert facts, "expected facts for the sample company"
+    assert all(f.company_id == company for f in facts)
+    # Deterministic order, independent of instance iteration.
+    assert [f.fact_id for f in facts] == sorted(f.fact_id for f in facts)
+    # Matches the full instance's fact set for this single-company sample.
+    assert {f.fact_id for f in facts} == {f.fact_id for f in result.facts}
+
+
+def test_read_company_absent_is_empty(tmp_path: Path) -> None:
+    store = CanonicalFactStore(tmp_path)
+    assert store.read_company("cik:0000000001") == []

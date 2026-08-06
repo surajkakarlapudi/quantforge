@@ -40,6 +40,7 @@ class ArtifactType(StrEnum):
 
     SUBMISSIONS = "submissions"
     COMPANY_FACTS = "company_facts"
+    COMPANY_TICKERS = "company_tickers"
     FILING_INDEX = "filing_index"
     FILING_DOCUMENT = "filing_document"
     XBRL_INSTANCE = "xbrl_instance"

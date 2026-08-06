@@ -17,6 +17,7 @@ __all__ = [
     "canonical_cik",
     "cik10",
     "company_facts_url",
+    "company_tickers_url",
     "filing_directory_url",
     "filing_document_url",
     "filing_index_url",
@@ -73,6 +74,19 @@ def submissions_page_url(page_filename: str) -> str:
 def company_facts_url(cik: str | int) -> str:
     """CompanyFacts (consolidated XBRL) endpoint."""
     return f"{_DATA_HOST}/api/xbrl/companyfacts/CIK{cik10(cik)}.json"
+
+
+def company_tickers_url() -> str:
+    """The official SEC ticker → CIK mapping (``company_tickers.json``).
+
+    A single JSON document listing every EDGAR filer with an assigned ticker,
+    mapping ticker and company title to CIK. It is the authoritative source for
+    ticker/name → CIK resolution (recon confirmed no per-issuer lookup exists);
+    we retrieve it once and cache it via the content-addressed store rather than
+    hardcode any ticker or CIK. Served from ``www.sec.gov`` (not the JSON API
+    host), so it requires the email-format User-Agent.
+    """
+    return f"{_WWW_HOST}/files/company_tickers.json"
 
 
 def _accession_nodashes(accession: str) -> str:

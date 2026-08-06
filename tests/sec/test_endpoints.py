@@ -8,6 +8,7 @@ from openfinance.sec.endpoints import (
     canonical_cik,
     cik10,
     company_facts_url,
+    company_tickers_url,
     filing_document_url,
     filing_index_url,
     submissions_page_url,
@@ -55,6 +56,11 @@ def test_company_facts_url() -> None:
     assert company_facts_url(320193) == (
         "https://data.sec.gov/api/xbrl/companyfacts/CIK0000320193.json"
     )
+
+
+def test_company_tickers_url() -> None:
+    # Served from www.sec.gov (Archives host), not the data JSON API host.
+    assert company_tickers_url() == "https://www.sec.gov/files/company_tickers.json"
 
 
 def test_filing_index_url_strips_accession_dashes() -> None:

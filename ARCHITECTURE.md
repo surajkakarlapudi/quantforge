@@ -31,8 +31,14 @@ and the **current status** of each component.
 > point-in-time** ([docs/point-in-time.md](docs/point-in-time.md)), a versioned,
 > fail-closed derivation of when each filing became public plus point-in-time
 > (PIT) and revised knowledge-state queries served as distinct, impossible-to-
-> confuse result types over the immutable canonical facts. Factors and
-> backtesting remain planned.
+> confuse result types over the immutable canonical facts. A thin **company
+> identity & public API** layer
+> ([docs/company-api.md](docs/company-api.md)) sits above these: it resolves a
+> ticker, CIK, or company name to the canonical filer identity via SEC's
+> official mapping (cached as a Phase 1 artifact) and exposes
+> `from openfinance import Company` as the front door, delegating `filings()`
+> and `facts()` to the registry and canonical layers without duplicating them.
+> Factors and backtesting remain planned.
 
 ## High-level data flow
 
@@ -74,6 +80,7 @@ and the **current status** of each component.
 | **Parsing / Normalization** | 🔜 Planned | Deterministic transformation of raw data into normalized structures, derived only from immutable raw data. |
 | **Provenance** | 🔜 Planned | Every normalized/derived value is traceable to the raw record and process that produced it. |
 | **Point-in-Time Data Layer** | ✅ Exists (Phase 5) | Serves data *as it was known* at a given date, preventing look-ahead bias. Derives each filing's public-availability timestamp under a versioned, fail-closed policy and answers PIT / revised queries as distinct result types. See [docs/point-in-time.md](docs/point-in-time.md). |
+| **Company identity & public API** | ✅ Exists | The `from openfinance import Company` front door: resolves ticker/CIK/name to the canonical filer identity via SEC's official mapping (cached as a Phase 1 artifact), then delegates `filings()`/`facts()` to the registry and canonical layers. Adds no data model or storage of its own. See [docs/company-api.md](docs/company-api.md). |
 | **Factors** | 🔜 Planned | Computed signals/features built strictly on point-in-time data. |
 | **Backtesting** | 🔜 Planned | Evaluates strategies over point-in-time data with reproducible results. |
 | **Reproducible Research** | 🔜 Planned | The end goal: analyses that can be re-run to produce identical results. |
