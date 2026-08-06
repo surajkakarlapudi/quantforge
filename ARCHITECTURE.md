@@ -3,10 +3,36 @@
 This document describes the **intended** high-level architecture of OpenFinance
 and the **current status** of each component.
 
-> **Important:** Almost everything below is *planned*. The only thing that
-> currently exists is the repository, packaging, and development-tooling
-> foundation. No ingestion, storage, parsing, provenance, point-in-time layer,
-> factors, or backtesting code exists yet.
+> **Important:** The acquisition, storage, parsing, provenance, and
+> point-in-time layers now exist (Phases 1–5; see "Implemented layers" below).
+> Factors and backtesting remain *planned*.
+
+> **Data model.** The canonical financial-fact and provenance model that
+> underpins the immutable-raw-data, normalization, provenance, and
+> point-in-time components is specified in
+> [docs/data-model.md](docs/data-model.md). Point-in-time eligibility is gated
+> by a *derived, policy-versioned* public-availability timestamp with an
+> explicit `verified`/`derived`/`unknown` status — acceptance alone never
+> proves availability, and un-datable facts fail closed (are excluded), never
+> guessed. It is design-only; no storage or query code exists yet.
+
+> **Implemented layers.** Five deterministic, provenance-first layers now
+> exist, each documented in its own spec: **Phase 1 — SEC acquisition**
+> ([docs/sec-acquisition.md](docs/sec-acquisition.md)), the immutable
+> content-addressed raw-artifact store; **Phase 2 — filing registry**
+> ([docs/filing-registry.md](docs/filing-registry.md)), derived filing identity
+> and provenance; **Phase 3 — raw XBRL ingestion**
+> ([docs/xbrl-ingestion.md](docs/xbrl-ingestion.md)), immutable loss-preserving
+> `RawFact`/`RawContext`/`RawUnit` records parsed from the acquired XBRL
+> instances; **Phase 4 — canonicalization**
+> ([docs/canonicalization.md](docs/canonicalization.md)), deterministic,
+> structured canonical `Fact` observations derived from the raw facts with
+> complete lineage back to the source; and **Phase 5 — public availability &
+> point-in-time** ([docs/point-in-time.md](docs/point-in-time.md)), a versioned,
+> fail-closed derivation of when each filing became public plus point-in-time
+> (PIT) and revised knowledge-state queries served as distinct, impossible-to-
+> confuse result types over the immutable canonical facts. Factors and
+> backtesting remain planned.
 
 ## High-level data flow
 
@@ -47,7 +73,7 @@ and the **current status** of each component.
 | **Immutable Raw Data** | 🔜 Planned | Append-only store of raw source data, never modified after capture. The system of record. |
 | **Parsing / Normalization** | 🔜 Planned | Deterministic transformation of raw data into normalized structures, derived only from immutable raw data. |
 | **Provenance** | 🔜 Planned | Every normalized/derived value is traceable to the raw record and process that produced it. |
-| **Point-in-Time Data Layer** | 🔜 Planned | Serves data *as it was known* at a given date, preventing look-ahead bias. |
+| **Point-in-Time Data Layer** | ✅ Exists (Phase 5) | Serves data *as it was known* at a given date, preventing look-ahead bias. Derives each filing's public-availability timestamp under a versioned, fail-closed policy and answers PIT / revised queries as distinct result types. See [docs/point-in-time.md](docs/point-in-time.md). |
 | **Factors** | 🔜 Planned | Computed signals/features built strictly on point-in-time data. |
 | **Backtesting** | 🔜 Planned | Evaluates strategies over point-in-time data with reproducible results. |
 | **Reproducible Research** | 🔜 Planned | The end goal: analyses that can be re-run to produce identical results. |

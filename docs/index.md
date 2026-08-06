@@ -7,6 +7,18 @@ will expand as functionality is implemented.
 
 - [Architecture](../ARCHITECTURE.md) — intended high-level design and the
   current status of each component.
+- [SEC Acquisition Layer](sec-acquisition.md) — Phase 1: retrieving and
+  preserving raw SEC EDGAR source material.
+- [Filing Registry](filing-registry.md) — Phase 2: the deterministic,
+  provenance-tracked registry of SEC filings derived from acquisition artifacts.
+- [Raw XBRL Ingestion](xbrl-ingestion.md) — Phase 3: parsing SEC XBRL instance
+  artifacts into immutable, fully-provenanced, loss-preserving raw facts.
+- [Canonicalization](canonicalization.md) — Phase 4: transforming raw facts into
+  deterministic, structured canonical financial observations with complete
+  lineage back to the raw source.
+- [Public Availability & Point-in-Time](point-in-time.md) — Phase 5: deriving when
+  each filing became public under a versioned policy, and serving point-in-time
+  (PIT) and revised knowledge-state queries that are impossible to confuse.
 - [Engineering Principles](../ARCHITECTURE.md#engineering-principles) — the
   non-negotiable principles guiding the project.
 - [Contributing](../CONTRIBUTING.md) — how to set up a development environment
