@@ -14,11 +14,19 @@ Directory layout under the data root (matches the phase-validation layout)::
     <root>/sec/          # Phase 1 content-addressed artifacts (authoritative)
     <root>/registry/     # Phase 2 derived filing registry
     <root>/canonical/    # Phase 4 derived canonical facts
+    <root>/availability/ # Phase 5 derived availability (wired here, not new code)
 
 Wall-clock, network, and secrets never enter identity here — the workspace is a
 plain wiring object. A network client is attached only when a User-Agent is
 configured, and it is used solely to fetch the official ticker mapping once (and
 only if it is not already cached).
+
+Phase 7 extends the workspace **additively**: it wires the already-existing Phase 5
+:class:`~openfinance.availability.store.AvailabilityStore` /
+:class:`~openfinance.availability.ingest.AvailabilityIngestor` under
+``<root>/availability/`` and lazily builds a
+:class:`~openfinance.metrics.engine.MetricEngine`. No prior store is edited and no
+fact is rewritten — the derived-metrics path composes on top of the existing chain.
 """
 
 from __future__ import annotations
@@ -26,6 +34,8 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
+from openfinance.availability.ingest import AvailabilityIngestor
+from openfinance.availability.store import AvailabilityStore
 from openfinance.canonical.store import CanonicalFactStore
 from openfinance.identity.resolve import CompanyResolver
 from openfinance.registry.registry import FilingRegistry
@@ -52,11 +62,18 @@ class Workspace:
         registry: FilingRegistry,
         canonical_store: CanonicalFactStore,
         resolver: CompanyResolver,
+        availability_store: AvailabilityStore,
     ) -> None:
         self._artifacts = artifact_store
         self._registry = registry
         self._canonical = canonical_store
         self._resolver = resolver
+        self._availability_store = availability_store
+        # The Phase 5 façade and the Phase 7 engine are built lazily and cached, so
+        # a workspace that never touches metrics pays nothing for them (and there is
+        # no import cycle at module load — MetricEngine is imported on first use).
+        self._availability_ingestor: AvailabilityIngestor | None = None
+        self._metric_engine: object | None = None
 
     @property
     def artifact_store(self) -> ArtifactStore:
@@ -73,6 +90,40 @@ class Workspace:
     @property
     def resolver(self) -> CompanyResolver:
         return self._resolver
+
+    @property
+    def availability_store(self) -> AvailabilityStore:
+        return self._availability_store
+
+    @property
+    def availability_ingestor(self) -> AvailabilityIngestor:
+        """The Phase 5 availability façade over this workspace's wired stores.
+
+        Built once and cached. It derives availability offline and constructs the
+        point-in-time resolver the metric engine needs — reusing the existing Phase
+        5 component, never a new store.
+        """
+        if self._availability_ingestor is None:
+            self._availability_ingestor = AvailabilityIngestor(
+                self._registry,
+                self._availability_store,
+                artifact_store=self._artifacts,
+                canonical_store=self._canonical,
+            )
+        return self._availability_ingestor
+
+    @property
+    def metric_engine(self) -> object:
+        """The Phase 7 :class:`~openfinance.metrics.engine.MetricEngine` (lazy).
+
+        Imported on first use to avoid a module-load import cycle (the engine
+        imports :class:`Workspace`). Cached for reuse.
+        """
+        if self._metric_engine is None:
+            from openfinance.metrics.engine import MetricEngine
+
+            self._metric_engine = MetricEngine(self)
+        return self._metric_engine
 
     # -- construction --------------------------------------------------------
 
@@ -97,12 +148,14 @@ class Workspace:
         sec_root = data_root / "sec"
         registry_root = data_root / "registry"
         canonical_root = data_root / "canonical"
+        availability_root = data_root / "availability"
 
         artifacts = ArtifactStore(sec_root)
         registry = FilingRegistry(
             RegistryStore(registry_root), artifact_store=artifacts
         )
         canonical = CanonicalFactStore(canonical_root)
+        availability = AvailabilityStore(availability_root)
         sec_client = client if client is not None else cls._maybe_client(config)
         resolver = CompanyResolver(artifacts, client=sec_client)
         return cls(
@@ -110,6 +163,7 @@ class Workspace:
             registry=registry,
             canonical_store=canonical,
             resolver=resolver,
+            availability_store=availability,
         )
 
     @staticmethod

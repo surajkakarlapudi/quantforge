@@ -11,6 +11,7 @@ from pathlib import Path
 
 import pytest
 
+from openfinance.availability.store import AvailabilityStore
 from openfinance.canonical.store import CanonicalFactStore
 from openfinance.canonical.version import CanonicalFactVersion
 from openfinance.company import Company
@@ -90,6 +91,7 @@ def _populate(root: Path) -> Workspace:
         registry=registry,
         canonical_store=canonical,
         resolver=resolver,
+        availability_store=AvailabilityStore(root / "availability"),
     )
 
 

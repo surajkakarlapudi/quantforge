@@ -16,19 +16,35 @@ to the existing layers —
 
 * :meth:`filings` → Phase 2 :class:`~openfinance.registry.registry.FilingRegistry`
 * :meth:`facts`   → Phase 4 :class:`~openfinance.canonical.store.CanonicalFactStore`
+* :meth:`metric_as_of` / :meth:`revised_metric`
+  → Phase 7 :class:`~openfinance.metrics.engine.MetricEngine`
 
 so it can never diverge from the system of record. All identity flows through the
 canonical ``company_id`` (data-model §11); the ticker/name are descriptive labels
 only and never touch identity, storage, or provenance.
+
+The metric API preserves the PIT/REVISED discipline at the front door (§11, §12):
+there is **no** default-mode ``metric()`` accessor — the caller must name PIT
+(:meth:`metric_as_of`, a timezone-aware ``as_of``) or REVISED
+(:meth:`revised_metric`, a pinned ``DatasetVersion``), and the two return the two
+distinct result types (invariants 27, 28).
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import datetime
 
+from openfinance.availability.version import DatasetVersion
 from openfinance.canonical.model import Fact
 from openfinance.canonical.store import CanonicalFactStore
 from openfinance.identity.model import CompanyIdentity
+from openfinance.metrics.engine import MetricEngine
+from openfinance.metrics.model import (
+    MetricPeriod,
+    PitMetricValue,
+    RevisedMetricValue,
+)
 from openfinance.registry.model import FilingRecord
 from openfinance.registry.registry import FilingRegistry
 from openfinance.workspace import Workspace
@@ -49,6 +65,7 @@ class Company:
     identity: CompanyIdentity
     _registry: FilingRegistry
     _canonical: CanonicalFactStore
+    _metric_engine: MetricEngine
 
     # -- construction --------------------------------------------------------
 
@@ -80,10 +97,13 @@ class Company:
         cls, identity: CompanyIdentity, *, workspace: Workspace
     ) -> Company:
         """Build a company from an already-resolved identity + a workspace."""
+        engine = workspace.metric_engine
+        assert isinstance(engine, MetricEngine)  # the workspace builds exactly this
         return cls(
             identity=identity,
             _registry=workspace.registry,
             _canonical=workspace.canonical_store,
+            _metric_engine=engine,
         )
 
     # -- identity accessors --------------------------------------------------
@@ -133,6 +153,37 @@ class Company:
         is a read-only view over the existing derived store.
         """
         return self._canonical.read_company(self.company_id)
+
+    # -- derived metrics (Phase 7) ------------------------------------------
+
+    def metric_as_of(
+        self, metric_key: str, period: MetricPeriod, as_of: datetime
+    ) -> PitMetricValue:
+        """The point-in-time metric for this filer at ``as_of`` (§11, §12).
+
+        Delegates to :meth:`MetricEngine.metric_as_of`. ``as_of`` must be
+        timezone-aware (a naive instant is rejected by the Phase 5 choke point,
+        invariant 15). Returns a :class:`PitMetricValue`; an input not yet public at
+        ``as_of`` yields a first-class ``UNDEFINED`` result, never an error.
+        """
+        return self._metric_engine.metric_as_of(metric_key, self.cik, period, as_of)
+
+    def revised_metric(
+        self, metric_key: str, period: MetricPeriod, dataset_version: DatasetVersion
+    ) -> RevisedMetricValue:
+        """The revised metric over a pinned ``dataset_version`` (§11, §12).
+
+        Delegates to :meth:`MetricEngine.revised_metric`. Returns a
+        :class:`RevisedMetricValue`, which is *not* interchangeable with a PIT metric
+        (invariant 28). Pass :meth:`dataset_version` to obtain the snapshot.
+        """
+        return self._metric_engine.revised_metric(
+            metric_key, self.cik, period, dataset_version
+        )
+
+    def dataset_version(self) -> DatasetVersion:
+        """The reproducible snapshot pin for this filer's REVISED metrics (§8)."""
+        return self._metric_engine.dataset_version_for(self.cik)
 
     def __repr__(self) -> str:
         label = self.ticker or self.name or self.cik

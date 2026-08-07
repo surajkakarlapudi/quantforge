@@ -3,9 +3,9 @@
 This document describes the **intended** high-level architecture of OpenFinance
 and the **current status** of each component.
 
-> **Important:** The acquisition, storage, parsing, provenance, and
-> point-in-time layers now exist (Phases 1–5; see "Implemented layers" below).
-> Factors and backtesting remain *planned*.
+> **Important:** The acquisition, storage, parsing, provenance, point-in-time,
+> and derived-metrics layers now exist (Phases 1–5 and 7; see "Implemented
+> layers" below). Backtesting remains *planned*.
 
 > **Data model.** The canonical financial-fact and provenance model that
 > underpins the immutable-raw-data, normalization, provenance, and
@@ -38,7 +38,12 @@ and the **current status** of each component.
 > official mapping (cached as a Phase 1 artifact) and exposes
 > `from openfinance import Company` as the front door, delegating `filings()`
 > and `facts()` to the registry and canonical layers without duplicating them.
-> Factors and backtesting remain planned.
+> Above them, a **financial metrics & research layer**
+> ([docs/metrics.md](docs/metrics.md)) computes deterministic, fail-closed,
+> versioned, fully-provenanced derived metrics (ratios and arithmetic
+> combinations) on demand over the point-in-time knowledge state — served, like
+> Phase 5, as distinct PIT and revised result types so a metric can never
+> silently consume revised history. Backtesting remains planned.
 
 ## High-level data flow
 
@@ -81,7 +86,7 @@ and the **current status** of each component.
 | **Provenance** | 🔜 Planned | Every normalized/derived value is traceable to the raw record and process that produced it. |
 | **Point-in-Time Data Layer** | ✅ Exists (Phase 5) | Serves data *as it was known* at a given date, preventing look-ahead bias. Derives each filing's public-availability timestamp under a versioned, fail-closed policy and answers PIT / revised queries as distinct result types. See [docs/point-in-time.md](docs/point-in-time.md). |
 | **Company identity & public API** | ✅ Exists | The `from openfinance import Company` front door: resolves ticker/CIK/name to the canonical filer identity via SEC's official mapping (cached as a Phase 1 artifact), then delegates `filings()`/`facts()` to the registry and canonical layers. Adds no data model or storage of its own. See [docs/company-api.md](docs/company-api.md). |
-| **Factors** | 🔜 Planned | Computed signals/features built strictly on point-in-time data. |
+| **Factors** | ✅ Exists (Phase 7) | Computed signals/features built strictly on point-in-time data. The metrics layer computes deterministic, fail-closed, versioned, fully-provenanced financial metrics (ratios and arithmetic combinations) on demand over the Phase 5 knowledge state, served as distinct PIT / revised result types. See [docs/metrics.md](docs/metrics.md). |
 | **Backtesting** | 🔜 Planned | Evaluates strategies over point-in-time data with reproducible results. |
 | **Reproducible Research** | 🔜 Planned | The end goal: analyses that can be re-run to produce identical results. |
 | **Repository & tooling foundation** | ✅ Exists | Packaging (src layout, `pyproject.toml`, `uv.lock`), tests, lint/format, type checking, pre-commit, and docs. |

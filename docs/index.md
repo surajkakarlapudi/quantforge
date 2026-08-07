@@ -22,6 +22,10 @@ will expand as functionality is implemented.
 - [Company Identity & Public API](company-api.md) — the `from openfinance import
   Company` front door: resolving tickers/CIKs/names to the canonical filer
   identity via the official SEC mapping, then delegating to the existing layers.
+- [Financial Metrics & Research Layer](metrics.md) — Phase 7: deterministic,
+  fail-closed derived metrics (ratios and arithmetic combinations) computed on
+  demand over the point-in-time knowledge state, versioned and fully provenanced,
+  served as distinct PIT and revised result types.
 - [Engineering Principles](../ARCHITECTURE.md#engineering-principles) — the
   non-negotiable principles guiding the project.
 - [Contributing](../CONTRIBUTING.md) — how to set up a development environment
