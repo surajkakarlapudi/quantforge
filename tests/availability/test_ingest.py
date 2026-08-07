@@ -10,12 +10,12 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from openfinance.availability.ingest import AvailabilityIngestor
-from openfinance.availability.model import AvailabilityStatus
-from openfinance.availability.store import AvailabilityStore
-from openfinance.registry.identity import company_id as _company_id
-from openfinance.registry.registry import FilingRegistry
-from openfinance.registry.store import RegistryStore
+from quantforge.availability.ingest import AvailabilityIngestor
+from quantforge.availability.model import AvailabilityStatus
+from quantforge.availability.store import AvailabilityStore
+from quantforge.registry.identity import company_id as _company_id
+from quantforge.registry.registry import FilingRegistry
+from quantforge.registry.store import RegistryStore
 from tests.registry.builders import FilingRow, SubmissionsBuilder
 
 CIK = 320193

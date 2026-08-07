@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import pytest
 
-from openfinance.identity.errors import AmbiguousSymbolError, UnknownSymbolError
-from openfinance.identity.tickers import TickerMap
+from quantforge.identity.errors import AmbiguousSymbolError, UnknownSymbolError
+from quantforge.identity.tickers import TickerMap
 
 SAMPLE = (
     b'{"0":{"cik_str":320193,"ticker":"AAPL","title":"Apple Inc."},'

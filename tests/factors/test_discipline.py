@@ -17,11 +17,11 @@ from pathlib import Path
 
 import pytest
 
-from openfinance.availability.timestamps import parse_utc
-from openfinance.factors.engine import FactorEngine
-from openfinance.factors.model import PitFactor, RevisedFactor
-from openfinance.factors.universe import Universe
-from openfinance.metrics.model import MetricStatus
+from quantforge.availability.timestamps import parse_utc
+from quantforge.factors.engine import FactorEngine
+from quantforge.factors.model import PitFactor, RevisedFactor
+from quantforge.factors.universe import Universe
+from quantforge.metrics.model import MetricStatus
 from tests.factors.test_engine_integration import (
     APPLE,
     FY_END,

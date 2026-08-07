@@ -12,21 +12,21 @@ from datetime import datetime
 
 import pytest
 
-from openfinance.availability.errors import ModeError
-from openfinance.availability.model import AvailabilityStatus
-from openfinance.availability.resolve import (
+from quantforge.availability.errors import ModeError
+from quantforge.availability.model import AvailabilityStatus
+from quantforge.availability.resolve import (
     PitValue,
     PointInTimeResolver,
     RevisedValue,
 )
-from openfinance.availability.version import DatasetVersion
+from quantforge.availability.version import DatasetVersion
 from tests.availability.builders import availability, revenue_fact
 
 POLICY_ID = "sha256:policy"
 
 
 def _utc(iso: str) -> datetime:
-    from openfinance.availability.timestamps import parse_utc
+    from quantforge.availability.timestamps import parse_utc
 
     return parse_utc(iso)
 

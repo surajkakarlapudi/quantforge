@@ -13,8 +13,8 @@ from email.message import Message
 
 import pytest
 
-from openfinance.sec.errors import TransportError
-from openfinance.sec.transport import HttpRequest, UrllibTransport
+from quantforge.sec.errors import TransportError
+from quantforge.sec.transport import HttpRequest, UrllibTransport
 
 
 class _FakeResponse:

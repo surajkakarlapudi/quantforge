@@ -7,14 +7,14 @@ not mistaken for an amendment.
 
 from __future__ import annotations
 
-from openfinance.registry.amendments import infer_amendments
-from openfinance.registry.model import (
+from quantforge.registry.amendments import infer_amendments
+from quantforge.registry.model import (
     AmendmentLinkConfidence,
     FilingProvenance,
     FilingRecord,
     make_filing_record,
 )
-from openfinance.sec.artifacts import ArtifactType
+from quantforge.sec.artifacts import ArtifactType
 
 CIK = 320193
 _PROV = FilingProvenance(

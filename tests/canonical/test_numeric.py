@@ -6,13 +6,13 @@ from decimal import Decimal
 
 import pytest
 
-from openfinance.canonical.errors import CanonicalError
-from openfinance.canonical.numeric import (
+from quantforge.canonical.errors import CanonicalError
+from quantforge.canonical.numeric import (
     canonical_decimal_str,
     canonicalize_numeric,
 )
-from openfinance.sec.artifacts import ArtifactType
-from openfinance.xbrl.model import RawFact, RawFactProvenance
+from quantforge.sec.artifacts import ArtifactType
+from quantforge.xbrl.model import RawFact, RawFactProvenance
 
 _PROV = RawFactProvenance(
     filing_id="accession:0000320193-23-000106",

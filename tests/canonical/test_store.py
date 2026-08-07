@@ -5,12 +5,12 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from openfinance.canonical.canonicalize import Canonicalizer, CanonicalizeResult
-from openfinance.canonical.store import (
+from quantforge.canonical.canonicalize import Canonicalizer, CanonicalizeResult
+from quantforge.canonical.store import (
     CANONICAL_FACTS_FORMAT_VERSION,
     CanonicalFactStore,
 )
-from openfinance.canonical.version import CanonicalFactVersion
+from quantforge.canonical.version import CanonicalFactVersion
 from tests.xbrl.builders import Ctx, ExplicitDim, Fact, InstanceBuilder, Unit
 
 from .builders import parse

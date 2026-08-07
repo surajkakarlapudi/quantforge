@@ -9,17 +9,17 @@ pipeline. Everything is a pure function of its inputs (no wall-clock, no network
 
 from __future__ import annotations
 
-from openfinance.availability.model import (
+from quantforge.availability.model import (
     AvailabilityStatus,
     FilingAvailability,
     FilingEvidence,
 )
-from openfinance.canonical.concept import Concept
-from openfinance.canonical.model import Fact, FactProvenance, fact_id, obs_key
-from openfinance.canonical.taxonomy import Taxonomy
-from openfinance.registry.identity import company_id as _company_id
-from openfinance.registry.identity import filing_id as _filing_id
-from openfinance.xbrl.contexts import PeriodType
+from quantforge.canonical.concept import Concept
+from quantforge.canonical.model import Fact, FactProvenance, fact_id, obs_key
+from quantforge.canonical.taxonomy import Taxonomy
+from quantforge.registry.identity import company_id as _company_id
+from quantforge.registry.identity import filing_id as _filing_id
+from quantforge.xbrl.contexts import PeriodType
 
 TV = "sha256:testtransform"
 

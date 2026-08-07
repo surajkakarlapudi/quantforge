@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from openfinance.xbrl.parser import ParsedInstance, SourceIdentity, parse_instance
+from quantforge.xbrl.parser import ParsedInstance, SourceIdentity, parse_instance
 
 from .builders import Ctx, Fact, InstanceBuilder, Unit, source_identity
 
@@ -48,7 +48,7 @@ def test_fact_links_to_its_raw_document() -> None:
 
 
 def test_provenance_roundtrips_through_to_dict() -> None:
-    from openfinance.xbrl.model import RawFact
+    from quantforge.xbrl.model import RawFact
 
     parsed, _ = _parse()
     fact = parsed.facts[0]

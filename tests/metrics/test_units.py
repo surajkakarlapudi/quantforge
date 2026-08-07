@@ -7,7 +7,7 @@ a same-family division yields ``pure``. There is no FX, ever.
 
 from __future__ import annotations
 
-from openfinance.metrics.units import (
+from quantforge.metrics.units import (
     ResolvedUnit,
     UnitExpectation,
     add_sub_result_unit,

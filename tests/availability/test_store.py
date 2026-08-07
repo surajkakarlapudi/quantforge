@@ -9,12 +9,12 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from openfinance.availability.model import AvailabilityStatus, FilingAvailability
-from openfinance.availability.store import (
+from quantforge.availability.model import AvailabilityStatus, FilingAvailability
+from quantforge.availability.store import (
     AVAILABILITY_FORMAT_VERSION,
     AvailabilityStore,
 )
-from openfinance.registry.identity import company_id as _company_id
+from quantforge.registry.identity import company_id as _company_id
 from tests.availability.builders import availability
 
 

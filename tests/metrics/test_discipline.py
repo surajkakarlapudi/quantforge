@@ -12,19 +12,19 @@ from datetime import datetime
 
 import pytest
 
-from openfinance.availability.errors import ModeError
-from openfinance.availability.resolve import PointInTimeResolver
-from openfinance.availability.version import DatasetVersion
-from openfinance.canonical.model import Fact
-from openfinance.metrics.evaluate import MetricEvaluator
-from openfinance.metrics.model import (
+from quantforge.availability.errors import ModeError
+from quantforge.availability.resolve import PointInTimeResolver
+from quantforge.availability.version import DatasetVersion
+from quantforge.canonical.model import Fact
+from quantforge.metrics.evaluate import MetricEvaluator
+from quantforge.metrics.model import (
     MetricPeriod,
     MetricStatus,
     PitMetricValue,
     RevisedMetricValue,
 )
-from openfinance.metrics.registry import FormulaRegistry
-from openfinance.metrics.resolve_input import MetricBoundary
+from quantforge.metrics.registry import FormulaRegistry
+from quantforge.metrics.resolve_input import MetricBoundary
 from tests.metrics.builders import CIK, avail, instant, resolver, utc
 
 ACC_OLD = "0000320193-20-000001"
@@ -94,7 +94,7 @@ class TestDistinctTypes:
 
 class TestBoundaryGuards:
     def test_evaluate_pit_rejects_revised_boundary(self) -> None:
-        from openfinance.metrics.errors import FormulaConfigurationError
+        from quantforge.metrics.errors import FormulaConfigurationError
 
         facts: list[Fact] = []
         with pytest.raises(FormulaConfigurationError):
@@ -108,7 +108,7 @@ class TestBoundaryGuards:
             )
 
     def test_evaluate_revised_rejects_pit_boundary(self) -> None:
-        from openfinance.metrics.errors import FormulaConfigurationError
+        from quantforge.metrics.errors import FormulaConfigurationError
 
         facts: list[Fact] = []
         with pytest.raises(FormulaConfigurationError):

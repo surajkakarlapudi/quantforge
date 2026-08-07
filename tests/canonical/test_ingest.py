@@ -6,10 +6,10 @@ from pathlib import Path
 
 import pytest
 
-from openfinance.canonical.ingest import CanonicalizationIngestor
-from openfinance.canonical.store import CanonicalFactStore
-from openfinance.xbrl.store import RawXbrlStore
-from openfinance.xbrl.version import XbrlParserVersion
+from quantforge.canonical.ingest import CanonicalizationIngestor
+from quantforge.canonical.store import CanonicalFactStore
+from quantforge.xbrl.store import RawXbrlStore
+from quantforge.xbrl.version import XbrlParserVersion
 from tests.xbrl.builders import Ctx, Fact, InstanceBuilder, Unit
 
 from .builders import parse

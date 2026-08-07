@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import pytest
 
-from openfinance.xbrl.errors import MalformedXbrlError, UnsupportedXbrlError
-from openfinance.xbrl.parser import ParsedInstance, parse_instance
+from quantforge.xbrl.errors import MalformedXbrlError, UnsupportedXbrlError
+from quantforge.xbrl.parser import ParsedInstance, parse_instance
 
 from .builders import Ctx, Fact, InstanceBuilder, Unit, source_identity
 

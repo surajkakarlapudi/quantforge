@@ -6,14 +6,14 @@ from pathlib import Path
 
 import pytest
 
-from openfinance.sec.artifacts import ArtifactType
-from openfinance.sec.storage import ArtifactStore
-from openfinance.xbrl.errors import XbrlError
-from openfinance.xbrl.ingest import (
+from quantforge.sec.artifacts import ArtifactType
+from quantforge.sec.storage import ArtifactStore
+from quantforge.xbrl.errors import XbrlError
+from quantforge.xbrl.ingest import (
     XbrlIngestor,
     source_identity_from_metadata,
 )
-from openfinance.xbrl.store import RawXbrlStore
+from quantforge.xbrl.store import RawXbrlStore
 
 from .builders import (
     Ctx,
@@ -62,7 +62,7 @@ def test_ingest_reads_exact_bytes_from_store(tmp_path: Path) -> None:
     ingestor = XbrlIngestor(artifacts, raw)
     result = ingestor.ingest_artifact(artifact.metadata)
     # raw_document_id is the content hash of the exact stored bytes.
-    from openfinance.xbrl.model import raw_document_id_for_bytes
+    from quantforge.xbrl.model import raw_document_id_for_bytes
 
     assert result.raw_document_id == raw_document_id_for_bytes(data)
 

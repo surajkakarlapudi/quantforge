@@ -9,7 +9,7 @@ The load-bearing detail these builders get right (unlike the Phase 5
 ``dimensions_hash``: a metric input is resolved only against the undimensioned
 observation, so a consolidated fact must carry ``dimensions_hash(())`` — the
 sha256 of the empty sentinel — exactly what real canonicalization writes and what
-:mod:`openfinance.metrics.resolve_input` matches against. A dimensional fact is
+:mod:`quantforge.metrics.resolve_input` matches against. A dimensional fact is
 built with a real ``(axis, member)`` hash instead, so it is correctly *ignored*.
 
 Everything is a pure function of its inputs — no wall-clock, no network.
@@ -19,20 +19,20 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from openfinance.availability.model import (
+from quantforge.availability.model import (
     AvailabilityStatus,
     FilingAvailability,
     FilingEvidence,
 )
-from openfinance.availability.resolve import PointInTimeResolver
-from openfinance.availability.timestamps import parse_utc
-from openfinance.canonical.concept import Concept
-from openfinance.canonical.model import Fact, FactProvenance, fact_id, obs_key
-from openfinance.canonical.taxonomy import Taxonomy
-from openfinance.registry.identity import company_id as _company_id
-from openfinance.registry.identity import filing_id as _filing_id
-from openfinance.xbrl.contexts import PeriodType
-from openfinance.xbrl.dimensions import RawDimension, dimensions_hash
+from quantforge.availability.resolve import PointInTimeResolver
+from quantforge.availability.timestamps import parse_utc
+from quantforge.canonical.concept import Concept
+from quantforge.canonical.model import Fact, FactProvenance, fact_id, obs_key
+from quantforge.canonical.taxonomy import Taxonomy
+from quantforge.registry.identity import company_id as _company_id
+from quantforge.registry.identity import filing_id as _filing_id
+from quantforge.xbrl.contexts import PeriodType
+from quantforge.xbrl.dimensions import RawDimension, dimensions_hash
 
 TV = "sha256:testtransform"
 CIK = 320193

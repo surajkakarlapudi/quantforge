@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-from openfinance.canonical.units import (
+from quantforge.canonical.units import (
     CANONICAL_UNIT_UNKNOWN,
     canonicalize_unit,
 )
-from openfinance.xbrl.units import RawUnit
+from quantforge.xbrl.units import RawUnit
 
 ISO = "http://www.xbrl.org/2003/iso4217"
 XBRLI = "http://www.xbrl.org/2003/instance"

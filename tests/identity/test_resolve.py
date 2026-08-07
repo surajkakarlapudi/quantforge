@@ -6,19 +6,19 @@ from pathlib import Path
 
 import pytest
 
-from openfinance.identity.errors import (
+from quantforge.identity.errors import (
     TickerMapUnavailableError,
     UnknownSymbolError,
 )
-from openfinance.identity.model import ResolutionSource
-from openfinance.identity.resolve import CompanyResolver, looks_like_cik
-from openfinance.sec.artifacts import (
+from quantforge.identity.model import ResolutionSource
+from quantforge.identity.resolve import CompanyResolver, looks_like_cik
+from quantforge.sec.artifacts import (
     AcquisitionMetadata,
     Artifact,
     ArtifactType,
     sha256_hex,
 )
-from openfinance.sec.storage import ArtifactStore, StoreResult
+from quantforge.sec.storage import ArtifactStore, StoreResult
 
 TICKERS = (
     b'{"0":{"cik_str":320193,"ticker":"AAPL","title":"Apple Inc."},'

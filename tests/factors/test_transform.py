@@ -13,9 +13,9 @@ from decimal import Decimal
 
 import pytest
 
-from openfinance.factors.errors import FactorConfigurationError
-from openfinance.factors.transform import Transform, TransformKind
-from openfinance.metrics.version import MetricEngineVersion
+from quantforge.factors.errors import FactorConfigurationError
+from quantforge.factors.transform import Transform, TransformKind
+from quantforge.metrics.version import MetricEngineVersion
 
 CTX = MetricEngineVersion().decimal_context()
 

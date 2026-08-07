@@ -9,7 +9,7 @@ amendment and how defensibly that is known — but it **never interprets the
 financial content** inside a filing. Fact extraction, XBRL parsing, units,
 dimensions, and point-in-time resolution are all later phases.
 
-Package: `src/openfinance/registry/`.
+Package: `src/quantforge/registry/`.
 
 The registry follows [docs/data-model.md](data-model.md) exactly. It does not
 introduce a competing schema. Section references below (§4, §7.1, §11, …) point
@@ -352,7 +352,7 @@ data for a small, deliberately-chosen set of issuers. All downloaded artifacts
 and the derived registry were stored **outside** the repository (git never sees
 raw data). The validation script lives outside the repo, uses Phase 1's
 `build_client()` for acquisition and `FilingRegistry` for derivation, and
-requires an email-format `OPENFINANCE_SEC_USER_AGENT`.
+requires an email-format `QUANTFORGE_SEC_USER_AGENT`.
 
 Issuers and observed results:
 

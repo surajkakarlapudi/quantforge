@@ -7,14 +7,14 @@ round-trip and its §9 field aliasing; the distinct :class:`PitFactor` /
 
 from __future__ import annotations
 
-from openfinance.factors.model import (
+from quantforge.factors.model import (
     FactorCell,
     FactorStatus,
     PitFactor,
     ResearchResult,
     RevisedFactor,
 )
-from openfinance.metrics.model import (
+from quantforge.metrics.model import (
     MetricPeriod,
     MetricProvenance,
     MetricStatus,
@@ -41,7 +41,7 @@ def _provenance(kind: str, value: str) -> MetricProvenance:
 def _pit_metric(
     company: str, value: str | None, status: MetricStatus
 ) -> PitMetricValue:
-    from openfinance.availability.timestamps import parse_utc
+    from quantforge.availability.timestamps import parse_utc
 
     return PitMetricValue(
         metric_id="sha256:m",
@@ -107,7 +107,7 @@ class TestResearchResultRoundTrip:
 
 class TestPitFactorRoundTrip:
     def test_to_from_dict_identical(self) -> None:
-        from openfinance.availability.timestamps import parse_utc
+        from quantforge.availability.timestamps import parse_utc
 
         cells = (
             FactorCell(

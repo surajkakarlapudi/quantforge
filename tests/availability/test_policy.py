@@ -13,11 +13,11 @@ import dataclasses
 
 import pytest
 
-from openfinance.availability.errors import PolicyConfigurationError
-from openfinance.availability.model import AvailabilityStatus
-from openfinance.availability.policy import derive, select_policy
-from openfinance.availability.timestamps import parse_utc
-from openfinance.availability.version import (
+from quantforge.availability.errors import PolicyConfigurationError
+from quantforge.availability.model import AvailabilityStatus
+from quantforge.availability.policy import derive, select_policy
+from quantforge.availability.timestamps import parse_utc
+from quantforge.availability.version import (
     AvailabilityPolicy,
     AvailabilityRule,
     PolicyConfidence,

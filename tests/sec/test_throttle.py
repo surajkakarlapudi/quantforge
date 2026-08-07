@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from openfinance.sec.throttle import RateLimiter
+from quantforge.sec.throttle import RateLimiter
 
 
 class FakeClock:

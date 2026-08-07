@@ -11,21 +11,21 @@ from pathlib import Path
 
 import pytest
 
-from openfinance.availability.store import AvailabilityStore
-from openfinance.canonical.store import CanonicalFactStore
-from openfinance.canonical.version import CanonicalFactVersion
-from openfinance.company import Company
-from openfinance.identity.resolve import CompanyResolver
-from openfinance.registry.registry import FilingRegistry
-from openfinance.registry.store import RegistryStore
-from openfinance.sec.artifacts import (
+from quantforge.availability.store import AvailabilityStore
+from quantforge.canonical.store import CanonicalFactStore
+from quantforge.canonical.version import CanonicalFactVersion
+from quantforge.company import Company
+from quantforge.identity.resolve import CompanyResolver
+from quantforge.registry.registry import FilingRegistry
+from quantforge.registry.store import RegistryStore
+from quantforge.sec.artifacts import (
     AcquisitionMetadata,
     Artifact,
     ArtifactType,
     sha256_hex,
 )
-from openfinance.sec.storage import ArtifactStore
-from openfinance.workspace import Workspace
+from quantforge.sec.storage import ArtifactStore
+from quantforge.workspace import Workspace
 from tests.canonical.builders import canonicalize
 from tests.registry.builders import FilingRow, SubmissionsBuilder
 from tests.xbrl.builders import Ctx, InstanceBuilder, Unit

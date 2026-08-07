@@ -1,12 +1,12 @@
-# Contributing to OpenFinance
+# Contributing to QuantForge
 
-Thanks for your interest. OpenFinance is early-stage; the foundation is being
+Thanks for your interest. QuantForge is early-stage; the foundation is being
 built deliberately, so contributions that respect the project's principles are
 especially valuable.
 
 ## Development environment
 
-OpenFinance standardizes on **Python 3.11+** and **[uv](https://docs.astral.sh/uv/)**.
+QuantForge standardizes on **Python 3.11+** and **[uv](https://docs.astral.sh/uv/)**.
 
 ```bash
 # Install dependencies (creates .venv, installs package + dev group)

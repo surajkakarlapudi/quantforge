@@ -3,14 +3,14 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "openfinance"
+name = "quantforge"
 version = "0.0.0"
 description = "Reproducible, point-in-time financial research infrastructure (early-stage foundation)."
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"
 license-files = ["LICENSE"]
-authors = [{ name = "OpenFinance contributors" }]
+authors = [{ name = "QuantForge contributors" }]
 keywords = ["finance", "point-in-time", "backtesting", "research", "reproducibility"]
 classifiers = [
     "Development Status :: 2 - Pre-Alpha",
@@ -30,10 +30,10 @@ classifiers = [
 dependencies = []
 
 [project.urls]
-Homepage = "https://github.com/openfinance/openfinance"
-Repository = "https://github.com/openfinance/openfinance"
-Documentation = "https://github.com/openfinance/openfinance/tree/main/docs"
-Issues = "https://github.com/openfinance/openfinance/issues"
+Homepage = "https://github.com/surajkakarlapudi/quantforge"
+Repository = "https://github.com/surajkakarlapudi/quantforge"
+Documentation = "https://github.com/surajkakarlapudi/quantforge/tree/main/docs"
+Issues = "https://github.com/surajkakarlapudi/quantforge/issues"
 
 [dependency-groups]
 # Development tooling. Installed with `uv sync` (uv reads dependency-groups by
@@ -46,7 +46,7 @@ dev = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/openfinance"]
+packages = ["src/quantforge"]
 
 # ---------------------------------------------------------------------------
 # pytest

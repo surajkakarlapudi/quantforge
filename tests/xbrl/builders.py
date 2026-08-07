@@ -20,19 +20,19 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from openfinance.sec.artifacts import (
+from quantforge.sec.artifacts import (
     AcquisitionMetadata,
     Artifact,
     ArtifactType,
     sha256_hex,
 )
-from openfinance.sec.endpoints import filing_document_url
-from openfinance.xbrl.parser import SourceIdentity
+from quantforge.sec.endpoints import filing_document_url
+from quantforge.xbrl.parser import SourceIdentity
 
 # Fixed provenance: none of it influences any derived identity, so the exact
 # values are irrelevant to the parsed records — they only prove provenance flows.
 FIXED_RETRIEVED_AT = "2026-08-05T00:00:00+00:00"
-UA = "OpenFinance test@example.com"
+UA = "QuantForge test@example.com"
 
 XBRLI = "http://www.xbrl.org/2003/instance"
 XBRLDI = "http://xbrl.org/2006/xbrldi"
@@ -268,7 +268,7 @@ def source_identity(
     data: bytes | None = None,
 ) -> SourceIdentity:
     """Build a :class:`SourceIdentity` mirroring what the ingest façade derives."""
-    from openfinance.registry.identity import company_id, filing_id
+    from quantforge.registry.identity import company_id, filing_id
 
     url = filing_document_url(cik, accession, filename)
     payload = data if data is not None else b""

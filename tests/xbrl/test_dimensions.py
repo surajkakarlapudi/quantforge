@@ -2,14 +2,14 @@
 
 from __future__ import annotations
 
-from openfinance.xbrl.dimensions import (
+from quantforge.xbrl.dimensions import (
     EMPTY_DIMENSIONS_SENTINEL,
     RawDimension,
     canonical_dimensions_key,
     dimensions_hash,
     normalize_typed_text,
 )
-from openfinance.xbrl.qnames import QName
+from quantforge.xbrl.qnames import QName
 
 
 def _axis(local: str) -> QName:

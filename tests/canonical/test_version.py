@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from openfinance.canonical.version import (
+from quantforge.canonical.version import (
     CANONICAL_FACT_VERSION,
     CanonicalFactVersion,
 )

@@ -6,14 +6,14 @@ import json
 
 import pytest
 
-from openfinance.registry.errors import SourceValidationError
-from openfinance.registry.model import AmendmentLinkConfidence, FilingRecord
-from openfinance.registry.submissions import (
+from quantforge.registry.errors import SourceValidationError
+from quantforge.registry.model import AmendmentLinkConfidence, FilingRecord
+from quantforge.registry.submissions import (
     SubmissionsArtifact,
     parse_submissions_artifact,
 )
-from openfinance.registry.version import TransformationVersion
-from openfinance.sec.artifacts import (
+from quantforge.registry.version import TransformationVersion
+from quantforge.sec.artifacts import (
     AcquisitionMetadata,
     ArtifactType,
     sha256_hex,

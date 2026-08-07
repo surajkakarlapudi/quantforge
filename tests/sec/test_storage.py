@@ -7,14 +7,14 @@ from pathlib import Path
 
 import pytest
 
-from openfinance.sec.artifacts import (
+from quantforge.sec.artifacts import (
     AcquisitionMetadata,
     Artifact,
     ArtifactType,
     sha256_hex,
 )
-from openfinance.sec.errors import ArtifactConflictError, StorageError
-from openfinance.sec.storage import ArtifactStore
+from quantforge.sec.errors import ArtifactConflictError, StorageError
+from quantforge.sec.storage import ArtifactStore
 
 
 def _artifact(data: bytes, url: str = "https://data.sec.gov/x") -> Artifact:
@@ -26,7 +26,7 @@ def _artifact(data: bytes, url: str = "https://data.sec.gov/x") -> Artifact:
             sha256=sha256_hex(data),
             retrieved_at="2026-08-05T00:00:00+00:00",
             http_status=200,
-            user_agent="OpenFinance test@example.com",
+            user_agent="QuantForge test@example.com",
         ),
     )
 

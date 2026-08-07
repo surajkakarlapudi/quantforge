@@ -7,7 +7,7 @@ component — so a PIT and a REVISED metric of the same formula/period never col
 
 from __future__ import annotations
 
-from openfinance.metrics.identity import metric_id
+from quantforge.metrics.identity import metric_id
 
 _KW = {
     "formula_id": "sha256:formula",

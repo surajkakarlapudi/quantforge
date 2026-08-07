@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import dataclasses
 
-from openfinance.availability.version import (
+from quantforge.availability.version import (
     AvailabilityRule,
     DatasetVersion,
     PolicyConfidence,

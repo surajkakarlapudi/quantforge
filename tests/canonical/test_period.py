@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import pytest
 
-from openfinance.canonical.errors import CanonicalError
-from openfinance.canonical.period import canonicalize_period
-from openfinance.xbrl.contexts import PeriodType, RawContext
+from quantforge.canonical.errors import CanonicalError
+from quantforge.canonical.period import canonicalize_period
+from quantforge.xbrl.contexts import PeriodType, RawContext
 
 
 def _ctx(**kwargs: object) -> RawContext:

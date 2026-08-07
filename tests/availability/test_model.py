@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from openfinance.availability.model import (
+from quantforge.availability.model import (
     AvailabilityStatus,
     FilingAvailability,
     FilingEvidence,

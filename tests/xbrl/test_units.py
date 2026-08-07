@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from openfinance.xbrl.parser import ParsedInstance, parse_instance
+from quantforge.xbrl.parser import ParsedInstance, parse_instance
 
 from .builders import Ctx, Fact, InstanceBuilder, Unit, source_identity
 

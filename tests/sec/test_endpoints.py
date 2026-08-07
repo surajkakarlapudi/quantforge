@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from openfinance.sec.endpoints import (
+from quantforge.sec.endpoints import (
     canonical_cik,
     cik10,
     company_facts_url,

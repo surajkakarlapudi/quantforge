@@ -10,9 +10,9 @@ wall-clock, stable element order).
 
 from __future__ import annotations
 
-from openfinance.canonical.canonicalize import Canonicalizer, CanonicalizeResult
-from openfinance.canonical.model import Fact
-from openfinance.xbrl.parser import ParsedInstance, parse_instance
+from quantforge.canonical.canonicalize import Canonicalizer, CanonicalizeResult
+from quantforge.canonical.model import Fact
+from quantforge.xbrl.parser import ParsedInstance, parse_instance
 from tests.xbrl.builders import InstanceBuilder, source_identity
 
 

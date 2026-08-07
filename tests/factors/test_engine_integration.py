@@ -16,27 +16,27 @@ from pathlib import Path
 
 import pytest
 
-from openfinance.availability.store import AvailabilityStore
-from openfinance.availability.timestamps import parse_utc
-from openfinance.canonical.store import CanonicalFactStore
-from openfinance.canonical.version import CanonicalFactVersion
-from openfinance.factors.engine import FactorEngine
-from openfinance.factors.model import PitFactor, RevisedFactor
-from openfinance.factors.transform import Transform
-from openfinance.factors.universe import Universe
-from openfinance.identity.resolve import CompanyResolver
-from openfinance.metrics.model import MetricPeriod, MetricStatus, RevisedMetricValue
-from openfinance.registry.identity import company_id as _company_id
-from openfinance.registry.registry import FilingRegistry
-from openfinance.registry.store import RegistryStore
-from openfinance.sec.artifacts import (
+from quantforge.availability.store import AvailabilityStore
+from quantforge.availability.timestamps import parse_utc
+from quantforge.canonical.store import CanonicalFactStore
+from quantforge.canonical.version import CanonicalFactVersion
+from quantforge.factors.engine import FactorEngine
+from quantforge.factors.model import PitFactor, RevisedFactor
+from quantforge.factors.transform import Transform
+from quantforge.factors.universe import Universe
+from quantforge.identity.resolve import CompanyResolver
+from quantforge.metrics.model import MetricPeriod, MetricStatus, RevisedMetricValue
+from quantforge.registry.identity import company_id as _company_id
+from quantforge.registry.registry import FilingRegistry
+from quantforge.registry.store import RegistryStore
+from quantforge.sec.artifacts import (
     AcquisitionMetadata,
     Artifact,
     ArtifactType,
     sha256_hex,
 )
-from openfinance.sec.storage import ArtifactStore
-from openfinance.workspace import Workspace
+from quantforge.sec.storage import ArtifactStore
+from quantforge.workspace import Workspace
 from tests.canonical.builders import canonicalize
 from tests.registry.builders import FilingRow, SubmissionsBuilder
 from tests.xbrl.builders import Ctx, InstanceBuilder, Unit
@@ -187,7 +187,7 @@ class TestPitFactor:
     def test_known_cells_match_standalone_phase7(
         self, engine: FactorEngine, universe: Universe, workspace: Workspace
     ) -> None:
-        from openfinance.registry.identity import cik_from_company_id
+        from quantforge.registry.identity import cik_from_company_id
 
         f = engine.factor_as_of("current_ratio", universe, PERIOD, _as_of())
         metric_engine = workspace.metric_engine
@@ -227,7 +227,7 @@ class TestPitFactor:
     def test_naive_as_of_rejected(
         self, engine: FactorEngine, universe: Universe
     ) -> None:
-        from openfinance.availability.errors import ModeError
+        from quantforge.availability.errors import ModeError
 
         with pytest.raises(ModeError):
             engine.factor_as_of(

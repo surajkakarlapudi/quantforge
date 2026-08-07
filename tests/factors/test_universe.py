@@ -9,8 +9,8 @@ from __future__ import annotations
 
 import pytest
 
-from openfinance.factors.errors import FactorConfigurationError
-from openfinance.factors.universe import Universe
+from quantforge.factors.errors import FactorConfigurationError
+from quantforge.factors.universe import Universe
 
 
 def test_of_canonicalizes_bare_and_prefixed_to_one_member() -> None:

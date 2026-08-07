@@ -4,10 +4,10 @@ from __future__ import annotations
 
 import pytest
 
-from openfinance.sec.errors import HttpStatusError, TransportError
-from openfinance.sec.retry import RetryingHttpClient
-from openfinance.sec.throttle import RateLimiter
-from openfinance.sec.transport import HttpRequest
+from quantforge.sec.errors import HttpStatusError, TransportError
+from quantforge.sec.retry import RetryingHttpClient
+from quantforge.sec.throttle import RateLimiter
+from quantforge.sec.transport import HttpRequest
 
 from .fakes import NoopSleep, ProgrammedTransport, ok, status
 

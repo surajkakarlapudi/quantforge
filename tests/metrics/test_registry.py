@@ -10,9 +10,9 @@ from __future__ import annotations
 
 import pytest
 
-from openfinance.metrics.errors import FormulaConfigurationError
-from openfinance.metrics.formula import FormulaDefinition
-from openfinance.metrics.registry import FormulaRegistry, builtin_formulas
+from quantforge.metrics.errors import FormulaConfigurationError
+from quantforge.metrics.formula import FormulaDefinition
+from quantforge.metrics.registry import FormulaRegistry, builtin_formulas
 
 _EXPECTED_KEYS = (
     "asset_turnover",

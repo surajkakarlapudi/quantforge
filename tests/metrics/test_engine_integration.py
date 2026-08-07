@@ -13,27 +13,27 @@ from pathlib import Path
 
 import pytest
 
-from openfinance.availability.store import AvailabilityStore
-from openfinance.canonical.store import CanonicalFactStore
-from openfinance.canonical.version import CanonicalFactVersion
-from openfinance.company import Company
-from openfinance.identity.resolve import CompanyResolver
-from openfinance.metrics.model import (
+from quantforge.availability.store import AvailabilityStore
+from quantforge.canonical.store import CanonicalFactStore
+from quantforge.canonical.version import CanonicalFactVersion
+from quantforge.company import Company
+from quantforge.identity.resolve import CompanyResolver
+from quantforge.metrics.model import (
     MetricPeriod,
     MetricStatus,
     PitMetricValue,
     RevisedMetricValue,
 )
-from openfinance.registry.registry import FilingRegistry
-from openfinance.registry.store import RegistryStore
-from openfinance.sec.artifacts import (
+from quantforge.registry.registry import FilingRegistry
+from quantforge.registry.store import RegistryStore
+from quantforge.sec.artifacts import (
     AcquisitionMetadata,
     Artifact,
     ArtifactType,
     sha256_hex,
 )
-from openfinance.sec.storage import ArtifactStore
-from openfinance.workspace import Workspace
+from quantforge.sec.storage import ArtifactStore
+from quantforge.workspace import Workspace
 from tests.canonical.builders import canonicalize
 from tests.registry.builders import FilingRow, SubmissionsBuilder
 from tests.xbrl.builders import Ctx, InstanceBuilder, Unit
@@ -119,7 +119,7 @@ def apple(tmp_path: Path) -> Company:
 
 
 def _as_of() -> datetime:
-    from openfinance.availability.timestamps import parse_utc
+    from quantforge.availability.timestamps import parse_utc
 
     return parse_utc("2024-06-01T00:00:00Z")
 
@@ -140,7 +140,7 @@ class TestPitMetric:
         assert m.value_numeric_str == "0.4"
 
     def test_before_availability_is_undefined(self, apple: Company) -> None:
-        from openfinance.availability.timestamps import parse_utc
+        from quantforge.availability.timestamps import parse_utc
 
         m = apple.metric_as_of(
             "current_ratio",
@@ -186,7 +186,7 @@ class TestAdditiveWiring:
         assert len(apple.facts()) == 4
 
     def test_unknown_metric_key_fails_closed(self, apple: Company) -> None:
-        from openfinance.metrics.errors import FormulaConfigurationError
+        from quantforge.metrics.errors import FormulaConfigurationError
 
         with pytest.raises(FormulaConfigurationError):
             apple.metric_as_of("ebitda", MetricPeriod.instant(FY_END), _as_of())

@@ -9,12 +9,12 @@ obs_key — and resolves through the real Phase 5 resolver at a PIT boundary.
 
 from __future__ import annotations
 
-from openfinance.canonical.taxonomy import Taxonomy
-from openfinance.metrics.formula import ConceptCandidate, InputBinding
-from openfinance.metrics.model import MetricPeriod, MetricStatus, UndefinedReason
-from openfinance.metrics.resolve_input import MetricBoundary, resolve_input
-from openfinance.metrics.units import UnitExpectation
-from openfinance.xbrl.contexts import PeriodType
+from quantforge.canonical.taxonomy import Taxonomy
+from quantforge.metrics.formula import ConceptCandidate, InputBinding
+from quantforge.metrics.model import MetricPeriod, MetricStatus, UndefinedReason
+from quantforge.metrics.resolve_input import MetricBoundary, resolve_input
+from quantforge.metrics.units import UnitExpectation
+from quantforge.xbrl.contexts import PeriodType
 from tests.metrics.builders import avail, instant, resolver, simple_world, utc
 
 ACC = "0000320193-23-000106"

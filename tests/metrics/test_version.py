@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from decimal import ROUND_HALF_UP, Context
 
-from openfinance.metrics.version import (
+from quantforge.metrics.version import (
     METRIC_ENGINE_VERSION,
     MetricEngineVersion,
     default_decimal_context,

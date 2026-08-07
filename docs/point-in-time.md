@@ -7,7 +7,7 @@ serves the two **knowledge-state** queries that state exists for: **point-in-tim
 ("what is the latest known value now, over a pinned snapshot?"). It is a *sidecar*
 over the immutable Phase 4 canonical `Fact` records — it never rewrites them.
 
-Package: `src/openfinance/availability/`.
+Package: `src/quantforge/availability/`.
 
 This layer follows [docs/data-model.md](data-model.md) exactly — the availability
 state and policy (§PA), the knowledge-state semantics (§KS), the point-in-time

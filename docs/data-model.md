@@ -58,7 +58,7 @@ several pieces of evidence (§2.1, and the dedicated §PA below).
 | 3 | **Filing date** | The date SEC stamps the submission ("filed as of" / "deemed filed"). **Date only, no time.** A legal/regulatory attribute, *not* evidence of public retrievability. | 2023-11-03 | EDGAR `filingDate` |
 | 4 | **Acceptance timestamp** | The precise instant EDGAR *accepted* the submission for processing. **Millisecond precision, UTC** (EDGAR emits `…Z`; verified across 6 issuers / ~55k filings — §15/recon). "Accepted by SEC" ≠ "available to the public." | 2023-11-03T21:31:05.000Z (= 16:31 ET) | EDGAR `acceptanceDateTime` |
 | 5 | **Dissemination / index evidence** | Observed evidence, *when available*, that a filing actually became retrievable through EDGAR: appearance in the full-text/daily index, a dissemination timestamp, or our own retrieval observation. Often absent for historical filings. | Filing appears in the 2023-11-03 daily index. | EDGAR indexes / observation |
-| 6 | **Retrieval timestamp** | When *OpenFinance itself* fetched the bytes. Proves the data was public *by then* — an **upper-bound** witness, never the original availability time. | 2026-08-05 10:00 ET | Ingestion |
+| 6 | **Retrieval timestamp** | When *QuantForge itself* fetched the bytes. Proves the data was public *by then* — an **upper-bound** witness, never the original availability time. | 2026-08-05 10:00 ET | Ingestion |
 | 7 | **Derived public-availability timestamp** | The **PIT-critical field**: a conservative estimate of when the information became available to a hypothetical researcher, produced by a versioned `AvailabilityPolicy` (§4) from evidence #3–#6, and carrying an `availability_status` of `verified` / `derived` / `unknown`. | 2023-11-06 06:00 ET (`derived`), or `unknown`. | Policy-derived |
 | 8 | **Availability rule version** | The `AvailabilityPolicy` `(policy_id, policy_version)` that produced #7. Every derived availability references one. | `edgar-std/v3` | Policy record |
 | 9 | **Research / as-of timestamp** | The instant a query claims to "stand at." Only observations with a **known** availability `<= as_of` are eligible (§6). | Query param. | Query |
@@ -179,7 +179,7 @@ versioned.
 | `derived` | Computed from acceptance + a validated policy rule (cutoff/calendar), without direct dissemination evidence. Conservative. | ✅ |
 | `unknown` | The policy cannot defend *any* sufficiently reliable timestamp (missing acceptance, pre-XBRL filing with no index evidence, out-of-scope form, unvalidated era). | ❌ **Never** |
 
-**Fail-closed is the core rule:** if OpenFinance cannot establish a
+**Fail-closed is the core rule:** if QuantForge cannot establish a
 sufficiently reliable availability, the fact is `unknown` and is **excluded from
 all normal PIT research** — it does not silently fall back to acceptance,
 filing date, or retrieval time. A too-early availability is a correctness bug
@@ -506,7 +506,7 @@ Amendment/restatement is expressed purely through the PIT selection rule
 - **10-K/A, 10-Q/A** produce a *new* set of facts asserted by the amendment,
   each with the amendment's own **derived** availability and status.
   `Filing.amends_accession` links the `/A` to its base — but this link is
-  **derived by OpenFinance, not asserted by SEC** (see §7.1), so it carries an
+  **derived by QuantForge, not asserted by SEC** (see §7.1), so it carries an
   explicit confidence. Overlapping `obs_key`s
   now have two eligible observations once the amendment's availability is
   *known and cleared* (§6.1); §6.3 then picks the amendment. If the amendment's

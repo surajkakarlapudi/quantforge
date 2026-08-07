@@ -12,7 +12,7 @@ from datetime import UTC, date, datetime
 
 import pytest
 
-from openfinance.availability.calendar import (
+from quantforge.availability.calendar import (
     eastern_utc_offset_hours,
     is_us_business_day,
     next_us_business_day,

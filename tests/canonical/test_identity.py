@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from openfinance.canonical.model import fact_id, obs_key
+from quantforge.canonical.model import fact_id, obs_key
 
 
 def _key(**overrides: object) -> str:

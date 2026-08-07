@@ -4,10 +4,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from openfinance.registry.registry import FilingRegistry
-from openfinance.registry.store import RegistryStore
-from openfinance.sec.artifacts import Artifact, ArtifactType
-from openfinance.sec.storage import ArtifactStore
+from quantforge.registry.registry import FilingRegistry
+from quantforge.registry.store import RegistryStore
+from quantforge.sec.artifacts import Artifact, ArtifactType
+from quantforge.sec.storage import ArtifactStore
 
 from .builders import FilingRow, SubmissionsBuilder, document_metadata
 

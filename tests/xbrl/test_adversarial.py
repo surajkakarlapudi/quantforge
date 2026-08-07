@@ -11,8 +11,8 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
-from openfinance.xbrl.model import RawFact
-from openfinance.xbrl.parser import parse_instance
+from quantforge.xbrl.model import RawFact
+from quantforge.xbrl.parser import parse_instance
 
 from .builders import (
     Ctx,

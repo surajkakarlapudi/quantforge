@@ -6,12 +6,12 @@ from pathlib import Path
 
 import pytest
 
-from openfinance.registry.documents import associate_documents
-from openfinance.registry.errors import DocumentAssociationError
-from openfinance.registry.model import FilingRecord
-from openfinance.registry.registry import FilingRegistry
-from openfinance.registry.store import RegistryStore
-from openfinance.sec.artifacts import ArtifactType
+from quantforge.registry.documents import associate_documents
+from quantforge.registry.errors import DocumentAssociationError
+from quantforge.registry.model import FilingRecord
+from quantforge.registry.registry import FilingRegistry
+from quantforge.registry.store import RegistryStore
+from quantforge.sec.artifacts import ArtifactType
 
 from .builders import FilingRow, SubmissionsBuilder, document_metadata
 
@@ -120,8 +120,8 @@ def test_duplicate_document_bytes_deduped(tmp_path: Path) -> None:
 
 
 def _iter_records() -> list[FilingRecord]:
-    from openfinance.registry.submissions import parse_submissions_artifact
-    from openfinance.registry.version import TransformationVersion
+    from quantforge.registry.submissions import parse_submissions_artifact
+    from quantforge.registry.version import TransformationVersion
 
     return list(
         parse_submissions_artifact(

@@ -6,7 +6,7 @@ from datetime import UTC, datetime, timedelta, timezone
 
 import pytest
 
-from openfinance.availability.timestamps import (
+from quantforge.availability.timestamps import (
     ensure_aware_utc,
     format_utc_z,
     parse_utc,

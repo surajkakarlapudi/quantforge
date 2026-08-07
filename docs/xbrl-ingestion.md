@@ -9,7 +9,7 @@ performs **no semantic normalization** — no unit conversion, no concept mergin
 no ratios, no choosing between competing observations, no point-in-time
 selection, no public-availability determination. All of that is Phase 4.
 
-Package: `src/openfinance/xbrl/`.
+Package: `src/quantforge/xbrl/`.
 
 This layer follows [docs/data-model.md](data-model.md) exactly — the
 `RawDocument` and `RawFact` entities (§4), their identifiers (§11), and the

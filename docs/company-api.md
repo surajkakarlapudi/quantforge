@@ -1,15 +1,15 @@
 # Company Identity & Public API
 
-The **company identity layer** is the front door of OpenFinance. It resolves a
+The **company identity layer** is the front door of QuantForge. It resolves a
 user-facing identifier — a ticker (`"AAPL"`), a CIK (`320193`), or an exact
 company name — to the project's canonical filer identity, and exposes a small,
 typed façade for querying the deterministic layers beneath it:
 
 ```python
-from openfinance import Company
+from quantforge import Company
 
 apple = Company.resolve("AAPL")
-print(apple)                       # Company('AAPL', cik='320193')
+print(apple)  # Company('AAPL', cik='320193')
 
 for filing in apple.filings():
     print(filing.form, filing.filing_date)
@@ -17,8 +17,8 @@ for filing in apple.filings():
 facts = apple.facts()
 ```
 
-Packages: `src/openfinance/identity/` (resolution) and the top-level
-`openfinance.company` / `openfinance.workspace` modules (façade + wiring).
+Packages: `src/quantforge/identity/` (resolution) and the top-level
+`quantforge.company` / `quantforge.workspace` modules (façade + wiring).
 
 This layer **adds no data model of its own** and **creates no new storage**. It
 resolves an identifier to the canonical `company_id` used throughout Phases 2–5
@@ -48,7 +48,7 @@ a ticker, and never introduces a second HTTP client or storage system.
 
 Every resolution ends at the canonical filer identity defined in
 [docs/data-model.md](data-model.md) §11 and produced by
-`openfinance.registry.identity.company_id`:
+`quantforge.registry.identity.company_id`:
 
 ```
 company_id = "cik:" + zero-padded-10-digit CIK      # e.g. cik:0000320193
@@ -108,12 +108,13 @@ CIK, by title). Every CIK it emits is canonicalized through the Phase 1
 `canonical_cik`, so identity never diverges. Incomplete rows are skipped;
 a malformed document raises rather than resolving to a guess.
 
-To populate the cache the first time (requires the `OPENFINANCE_SEC_USER_AGENT`
+To populate the cache the first time (requires the `QUANTFORGE_SEC_USER_AGENT`
 email-format contact SEC's fair-access policy asks for):
 
 ```python
-from openfinance.sec import build_client
-build_client().acquire_company_tickers()   # one network call; cached thereafter
+from quantforge.sec import build_client
+
+build_client().acquire_company_tickers()  # one network call; cached thereafter
 ```
 
 ## 5. `Workspace` — wiring the phases together
@@ -128,13 +129,13 @@ composition root that assembles them from one data root:
 ```
 
 ```python
-from openfinance import Company, Workspace
+from quantforge import Company, Workspace
 
-ws = Workspace.open("/path/to/data")          # explicit root
+ws = Workspace.open("/path/to/data")  # explicit root
 apple = Company.resolve("AAPL", workspace=ws)
 ```
 
-With no arguments, `Workspace.open()` reads the root from `OPENFINANCE_DATA_ROOT`
+With no arguments, `Workspace.open()` reads the root from `QUANTFORGE_DATA_ROOT`
 (or derives it from the configured Phase 1 storage dir), and — when a User-Agent
 is configured — attaches a network client used *solely* to fetch the ticker
 mapping once. With no client and no cached mapping, ticker/name resolution fails
@@ -195,14 +196,14 @@ delegates to them rather than reimplementing any of them.
 Exported from the top-level package:
 
 ```python
-from openfinance import Company, CompanyIdentity, Workspace, PitValue, RevisedValue
+from quantforge import Company, CompanyIdentity, Workspace, PitValue, RevisedValue
 ```
 
 `Company` is the primary entry point. `Workspace` wires the backend.
 `CompanyIdentity` is the typed resolution result. `PitValue` / `RevisedValue`
 are re-exported from the point-in-time layer so the PIT-vs-revised distinction is
 visible at the import site (they remain defined in
-[`openfinance.availability`](point-in-time.md)). Internal modules
-(`openfinance.identity.*`, resolver internals, stores) remain private
+[`quantforge.availability`](point-in-time.md)). Internal modules
+(`quantforge.identity.*`, resolver internals, stores) remain private
 implementation detail.
 ```

@@ -11,13 +11,13 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass, field
 
-from openfinance.registry.submissions import SubmissionsArtifact
-from openfinance.sec.artifacts import (
+from quantforge.registry.submissions import SubmissionsArtifact
+from quantforge.sec.artifacts import (
     AcquisitionMetadata,
     ArtifactType,
     sha256_hex,
 )
-from openfinance.sec.endpoints import (
+from quantforge.sec.endpoints import (
     cik10,
     filing_document_url,
     filing_index_url,
@@ -28,7 +28,7 @@ from openfinance.sec.endpoints import (
 # A fixed retrieval timestamp: provenance must never influence identity, so the
 # exact value is irrelevant to the derived records.
 FIXED_RETRIEVED_AT = "2026-08-05T00:00:00+00:00"
-UA = "OpenFinance test@example.com"
+UA = "QuantForge test@example.com"
 
 
 @dataclass

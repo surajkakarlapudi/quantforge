@@ -1,11 +1,11 @@
-# OpenFinance
+# QuantForge
 
 > **Early-stage project.** This is a *foundational* release. It establishes the
 > repository, packaging, and development-tooling foundation only. **No financial
 > functionality is implemented yet.** See [ARCHITECTURE.md](ARCHITECTURE.md) for
 > the intended design and the current status of each component.
 
-OpenFinance aims to be reproducible, point-in-time infrastructure for financial
+QuantForge aims to be reproducible, point-in-time infrastructure for financial
 research built on public data. The guiding idea is that financial research
 should be **reproducible** and free of look-ahead bias: raw data is stored
 immutably, transformations are deterministic, and every derived value can be
@@ -55,7 +55,7 @@ uv run pre-commit install
 ## Project layout
 
 ```
-src/openfinance/   # the package (src layout)
+src/quantforge/   # the package (src layout)
 tests/             # test suite
 docs/              # documentation
 examples/          # runnable examples (empty for now)
@@ -65,7 +65,7 @@ scripts/           # developer/operational scripts (empty for now)
 
 ## Principles
 
-OpenFinance follows a small set of non-negotiable engineering principles —
+QuantForge follows a small set of non-negotiable engineering principles —
 correctness over convenience, immutable raw data, provenance, point-in-time
 integrity, determinism, and reproducibility. See the
 [Engineering Principles](ARCHITECTURE.md#engineering-principles) section of

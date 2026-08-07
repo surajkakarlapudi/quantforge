@@ -8,7 +8,7 @@ sha256-prefixed, and sensitive to every component.
 
 from __future__ import annotations
 
-from openfinance.factors.identity import (
+from quantforge.factors.identity import (
     boundary_key,
     factor_definition_id,
     research_result_id,

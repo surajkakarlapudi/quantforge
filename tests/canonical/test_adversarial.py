@@ -30,9 +30,9 @@ from __future__ import annotations
 
 import pytest
 
-from openfinance.canonical.canonicalize import Canonicalizer
-from openfinance.canonical.errors import CanonicalContradictionError
-from openfinance.canonical.taxonomy import Taxonomy
+from quantforge.canonical.canonicalize import Canonicalizer
+from quantforge.canonical.errors import CanonicalContradictionError
+from quantforge.canonical.taxonomy import Taxonomy
 from tests.xbrl.builders import Ctx, ExplicitDim, Fact, InstanceBuilder, TypedDim, Unit
 
 from .builders import canonicalize, fact_ids, facts, parse

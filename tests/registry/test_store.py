@@ -4,15 +4,15 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from openfinance.registry.model import (
+from quantforge.registry.model import (
     AmendmentLinkConfidence,
     DocumentReference,
     FilingProvenance,
     FilingRecord,
     make_filing_record,
 )
-from openfinance.registry.store import RegistryStore
-from openfinance.sec.artifacts import ArtifactType
+from quantforge.registry.store import RegistryStore
+from quantforge.sec.artifacts import ArtifactType
 
 CIK = 320193
 _PROV = FilingProvenance(

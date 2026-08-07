@@ -6,7 +6,7 @@ with full provenance. It does **not** parse, normalize, or interpret any SEC
 content — XBRL canonicalization, fact extraction, point-in-time resolution, and
 everything downstream belong to later phases.
 
-Package: `src/openfinance/sec/`.
+Package: `src/quantforge/sec/`.
 
 ## Architecture
 
@@ -43,7 +43,7 @@ All behaviour is configured from the environment. Nothing is hard-coded, and no
 secrets are read or stored. Build a client with:
 
 ```python
-from openfinance.sec import build_client
+from quantforge.sec import build_client
 
 client = build_client()  # reads SecConfig.from_env()
 ```
@@ -52,11 +52,11 @@ Environment variables:
 
 | Variable                        | Required | Default      | Meaning                                        |
 | ------------------------------- | -------- | ------------ | ---------------------------------------------- |
-| `OPENFINANCE_SEC_USER_AGENT`    | **yes**  | —            | Email-format contact identity (see below).     |
-| `OPENFINANCE_SEC_STORAGE_DIR`   | no       | `./data/sec` | Root of the content-addressed store.           |
-| `OPENFINANCE_SEC_MAX_RPS`       | no       | `8.0`        | Max requests/second (must be in `(0, 10]`).    |
-| `OPENFINANCE_SEC_TIMEOUT`       | no       | `30.0`       | Per-request socket timeout in seconds.         |
-| `OPENFINANCE_SEC_MAX_RETRIES`   | no       | `5`          | Additional attempts after the first (≥ 0).     |
+| `QUANTFORGE_SEC_USER_AGENT`    | **yes**  | —            | Email-format contact identity (see below).     |
+| `QUANTFORGE_SEC_STORAGE_DIR`   | no       | `./data/sec` | Root of the content-addressed store.           |
+| `QUANTFORGE_SEC_MAX_RPS`       | no       | `8.0`        | Max requests/second (must be in `(0, 10]`).    |
+| `QUANTFORGE_SEC_TIMEOUT`       | no       | `30.0`       | Per-request socket timeout in seconds.         |
+| `QUANTFORGE_SEC_MAX_RETRIES`   | no       | `5`          | Additional attempts after the first (≥ 0).     |
 
 Configuration is validated on construction (`ConfigError` on failure): the
 User-Agent must be non-empty and contain `@`; the rate must be in `(0, 10]`;
@@ -202,10 +202,10 @@ it is confined to pagination; the page bytes are stored unmodified.
 ```python
 import os
 
-from openfinance.sec import build_client
+from quantforge.sec import build_client
 
-os.environ["OPENFINANCE_SEC_USER_AGENT"] = "OpenFinance you@example.com"
-os.environ["OPENFINANCE_SEC_STORAGE_DIR"] = "/data/openfinance/sec"
+os.environ["QUANTFORGE_SEC_USER_AGENT"] = "QuantForge you@example.com"
+os.environ["QUANTFORGE_SEC_STORAGE_DIR"] = "/data/quantforge/sec"
 
 client = build_client()
 
@@ -218,7 +218,7 @@ print(subs.sha256, subs.deduplicated)
 pages = list(client.iter_submissions_pages(320193))
 
 # A filing package: index, then a tagged XBRL instance.
-from openfinance.sec import ArtifactType
+from quantforge.sec import ArtifactType
 
 accession = "0000320193-18-000145"
 client.acquire_filing_index(320193, accession)

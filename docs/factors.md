@@ -11,7 +11,7 @@ metric ([Phase 7](metrics.md)) and the still-deferred backtester in
 [ARCHITECTURE.md](../ARCHITECTURE.md)'s `Factors → Backtesting → Reproducible
 Research` flow.
 
-Package: `src/openfinance/factors/`.
+Package: `src/quantforge/factors/`.
 
 This layer follows [docs/data-model.md](data-model.md) exactly — the
 knowledge-state semantics (§KS), the point-in-time predicate and selection order
@@ -448,17 +448,17 @@ The `Workspace` gains a lazily-built, cached `FactorEngine` (exactly as it gaine
 `MetricEngine` in Phase 7) — additive wiring only, no new store, no directory. A
 convenience `Workspace.factor_engine` property mirrors `metric_engine`.
 
-Curated top-level exports (added to `openfinance/__init__.py`), stable surface
+Curated top-level exports (added to `quantforge/__init__.py`), stable surface
 only:
 
 ```python
-from openfinance import (
+from quantforge import (
     Company,
     PitFactor,
     RevisedFactor,  # NEW: distinct cross-sectional factor types
     Universe,  # NEW: the explicit universe
 )
-from openfinance.factors import FactorEngine  # for authoring/inspection
+from quantforge.factors import FactorEngine  # for authoring/inspection
 ```
 
 `PitFactor` / `RevisedFactor` are re-exported (like `PitValue`/`PitMetricValue`) so
@@ -585,7 +585,7 @@ continue to pass** (Phase 8 is additive).
 
 Run **outside the repository**, fully **offline** over already-cached Phase 1
 artifacts (standing constraint; live data under the sibling
-`openfinance-recon-tmp/live/`). Reusing the Phase 5/7 validation filers — Apple
+`quantforge-recon-tmp/live/`). Reusing the Phase 5/7 validation filers — Apple
 (320193), Tesla (1318605), Berkshire (1067983) — as an explicit universe,
 `live_factor_validation.py`:
 

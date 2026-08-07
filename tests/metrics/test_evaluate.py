@@ -10,18 +10,18 @@ and full provenance on both KNOWN and UNDEFINED results.
 
 from __future__ import annotations
 
-from openfinance.availability.resolve import PointInTimeResolver
-from openfinance.canonical.model import Fact
-from openfinance.metrics.evaluate import MetricEvaluator
-from openfinance.metrics.model import (
+from quantforge.availability.resolve import PointInTimeResolver
+from quantforge.canonical.model import Fact
+from quantforge.metrics.evaluate import MetricEvaluator
+from quantforge.metrics.model import (
     MetricPeriod,
     MetricStatus,
     PitMetricValue,
     UndefinedReason,
 )
-from openfinance.metrics.registry import FormulaRegistry
-from openfinance.metrics.resolve_input import MetricBoundary
-from openfinance.metrics.version import MetricEngineVersion
+from quantforge.metrics.registry import FormulaRegistry
+from quantforge.metrics.resolve_input import MetricBoundary
+from quantforge.metrics.version import MetricEngineVersion
 from tests.metrics.builders import CIK, duration, instant, simple_world, utc
 
 ACC = "0000320193-23-000106"

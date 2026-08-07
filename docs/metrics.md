@@ -9,7 +9,7 @@ the "Factors / computed signals" component that
 [docs/data-model.md](data-model.md) §9 anticipates via the `ResearchResult`
 `factor_definition_id + factor_version` pins.
 
-Package: `src/openfinance/metrics/`.
+Package: `src/quantforge/metrics/`.
 
 This layer follows [docs/data-model.md](data-model.md) exactly — the
 knowledge-state semantics (§KS), the point-in-time predicate and selection order
@@ -514,21 +514,27 @@ no `get_metric()` whose behavior depends on a nullable `as_of`.
 
 ```python
 # Low-level (engine), one filer:
-engine = MetricEngine(workspace)                 # composes Phase 4 + Phase 5 (§11)
-pit = engine.metric_as_of("current_ratio", cik, period, as_of)        # → PitMetricValue
-rev = engine.revised_metric("current_ratio", cik, period, dataset_version)  # → RevisedMetricValue
+engine = MetricEngine(workspace)  # composes Phase 4 + Phase 5 (§11)
+pit = engine.metric_as_of("current_ratio", cik, period, as_of)  # → PitMetricValue
+rev = engine.revised_metric(
+    "current_ratio", cik, period, dataset_version
+)  # → RevisedMetricValue
 ```
 
-Curated top-level exports (added to `openfinance/__init__.py`), stable public
+Curated top-level exports (added to `quantforge/__init__.py`), stable public
 surface only — internal modules stay private:
 
 ```python
-from openfinance import (
+from quantforge import (
     Company,
-    PitMetricValue, RevisedMetricValue,   # NEW: distinct metric result types
-    MetricStatus,                          # NEW
+    PitMetricValue,
+    RevisedMetricValue,  # NEW: distinct metric result types
+    MetricStatus,  # NEW
 )
-from openfinance.metrics import FormulaRegistry, FormulaDefinition   # for authoring/inspection
+from quantforge.metrics import (
+    FormulaRegistry,
+    FormulaDefinition,
+)  # for authoring/inspection
 ```
 
 `PitMetricValue` / `RevisedMetricValue` are re-exported at the top level (like
@@ -560,10 +566,12 @@ directory (the layout Phase 5 already uses), plus a lazily-constructed
 apple = Company.resolve("AAPL")
 
 # Point-in-time metric — requires a timezone-aware as_of (invariant 15):
-cr = apple.metric_as_of("current_ratio", period, as_of)     # → PitMetricValue
+cr = apple.metric_as_of("current_ratio", period, as_of)  # → PitMetricValue
 
 # Revised metric — requires an explicit pinned snapshot:
-cr_now = apple.revised_metric("current_ratio", period, dataset_version)  # → RevisedMetricValue
+cr_now = apple.revised_metric(
+    "current_ratio", period, dataset_version
+)  # → RevisedMetricValue
 ```
 
 `Company` stays a **thin façade** (its current contract): it owns no metric logic,
@@ -683,7 +691,7 @@ legitimate `KNOWN` result of `0`. Because arithmetic is `Decimal`, no floating
 
 Run **outside the repository**, fully **offline** over already-cached Phase 1
 artifacts (per the standing constraint; live data under the sibling
-`openfinance-recon-tmp/live/`). Reusing the Phase 5 validation filers — Apple
+`quantforge-recon-tmp/live/`). Reusing the Phase 5 validation filers — Apple
 (320193), Tesla (1318605), Berkshire (1067983) — `live_metric_validation.py`:
 
 1. Builds registry → canonical → availability from stored artifacts (no network).

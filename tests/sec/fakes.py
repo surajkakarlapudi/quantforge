@@ -9,8 +9,8 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 
-from openfinance.sec.errors import TransportError
-from openfinance.sec.transport import HttpRequest, HttpResponse
+from quantforge.sec.errors import TransportError
+from quantforge.sec.transport import HttpRequest, HttpResponse
 
 
 class ProgrammedTransport:

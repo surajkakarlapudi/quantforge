@@ -7,25 +7,25 @@ from pathlib import Path
 
 import pytest
 
-from openfinance.sec.artifacts import sha256_hex
-from openfinance.sec.client import SecClient
-from openfinance.sec.config import SecConfig
-from openfinance.sec.endpoints import (
+from quantforge.sec.artifacts import sha256_hex
+from quantforge.sec.client import SecClient
+from quantforge.sec.config import SecConfig
+from quantforge.sec.endpoints import (
     company_facts_url,
     company_tickers_url,
     submissions_page_url,
     submissions_url,
 )
-from openfinance.sec.errors import HttpStatusError
-from openfinance.sec.retry import RetryingHttpClient
-from openfinance.sec.storage import ArtifactStore
-from openfinance.sec.throttle import RateLimiter
-from openfinance.sec.transport import HttpResponse
+from quantforge.sec.errors import HttpStatusError
+from quantforge.sec.retry import RetryingHttpClient
+from quantforge.sec.storage import ArtifactStore
+from quantforge.sec.throttle import RateLimiter
+from quantforge.sec.transport import HttpResponse
 
 from .fakes import UrlRoutedTransport, ok, status
 
 CIK = 320193
-UA = "OpenFinance test@example.com"
+UA = "QuantForge test@example.com"
 
 
 def _make_client(

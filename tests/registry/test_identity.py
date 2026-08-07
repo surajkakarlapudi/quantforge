@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import pytest
 
-from openfinance.registry.errors import AccessionFormatError
-from openfinance.registry.identity import (
+from quantforge.registry.errors import AccessionFormatError
+from quantforge.registry.identity import (
     canonical_accession,
     cik_from_company_id,
     company_id,

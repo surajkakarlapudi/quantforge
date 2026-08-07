@@ -7,8 +7,8 @@ fixture. Everything is a pure function of its inputs — no wall-clock, no netwo
 
 from __future__ import annotations
 
-from openfinance.factors.model import FactorStatus, ResearchResult
-from openfinance.metrics.model import MetricPeriod
+from quantforge.factors.model import FactorStatus, ResearchResult
+from quantforge.metrics.model import MetricPeriod
 
 
 def research_result(

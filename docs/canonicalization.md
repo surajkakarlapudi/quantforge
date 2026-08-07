@@ -7,7 +7,7 @@ The canonicalization layer transforms the immutable, loss-preserving
 `(obs_key, filing, transformation version)` — while retaining **complete
 lineage** back to every raw fact, raw document, source artifact, and SEC filing.
 
-Package: `src/openfinance/canonical/`.
+Package: `src/quantforge/canonical/`.
 
 This layer follows [docs/data-model.md](data-model.md) exactly — the canonical
 `Fact` entity (§3), its observation key (§6.2), its identity (§11), the

@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from openfinance.xbrl.parser import ParsedInstance, parse_instance
-from openfinance.xbrl.store import RAW_XBRL_FORMAT_VERSION, RawXbrlStore
-from openfinance.xbrl.version import XbrlParserVersion
+from quantforge.xbrl.parser import ParsedInstance, parse_instance
+from quantforge.xbrl.store import RAW_XBRL_FORMAT_VERSION, RawXbrlStore
+from quantforge.xbrl.version import XbrlParserVersion
 
 from .builders import (
     Ctx,

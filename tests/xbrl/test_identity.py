@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from openfinance.xbrl.model import raw_document_id_for_bytes, raw_fact_id
-from openfinance.xbrl.parser import parse_instance
-from openfinance.xbrl.version import XbrlParserVersion
+from quantforge.xbrl.model import raw_document_id_for_bytes, raw_fact_id
+from quantforge.xbrl.parser import parse_instance
+from quantforge.xbrl.version import XbrlParserVersion
 
 from .builders import Ctx, Fact, InstanceBuilder, Unit, source_identity
 

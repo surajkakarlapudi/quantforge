@@ -10,9 +10,9 @@ from __future__ import annotations
 
 import pytest
 
-from openfinance.canonical.taxonomy import Taxonomy
-from openfinance.metrics.errors import FormulaConfigurationError
-from openfinance.metrics.formula import (
+from quantforge.canonical.taxonomy import Taxonomy
+from quantforge.metrics.errors import FormulaConfigurationError
+from quantforge.metrics.formula import (
     Add,
     ConceptCandidate,
     Const,
@@ -24,8 +24,8 @@ from openfinance.metrics.formula import (
     Ref,
     Sub,
 )
-from openfinance.metrics.units import UnitExpectation
-from openfinance.xbrl.contexts import PeriodType
+from quantforge.metrics.units import UnitExpectation
+from quantforge.xbrl.contexts import PeriodType
 
 
 def _binding(

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from openfinance.canonical.taxonomy import Taxonomy, classify_taxonomy
+from quantforge.canonical.taxonomy import Taxonomy, classify_taxonomy
 
 
 @pytest.mark.parametrize(

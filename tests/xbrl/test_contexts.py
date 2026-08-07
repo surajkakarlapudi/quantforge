@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from openfinance.xbrl.contexts import PeriodType
-from openfinance.xbrl.parser import ParsedInstance, parse_instance
+from quantforge.xbrl.contexts import PeriodType
+from quantforge.xbrl.parser import ParsedInstance, parse_instance
 
 from .builders import Ctx, ExplicitDim, Fact, InstanceBuilder, TypedDim, source_identity
 

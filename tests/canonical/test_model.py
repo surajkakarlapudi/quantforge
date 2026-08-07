@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from openfinance.canonical.model import Fact as CanonicalFact
+from quantforge.canonical.model import Fact as CanonicalFact
 from tests.xbrl.builders import Ctx, ExplicitDim, Fact, InstanceBuilder, TypedDim, Unit
 
 from .builders import facts

@@ -2,7 +2,7 @@
 
 ## Status
 
-OpenFinance is an early-stage, foundational project with no released
+QuantForge is an early-stage, foundational project with no released
 functionality. This policy establishes the reporting process from the start.
 
 ## Reporting a vulnerability

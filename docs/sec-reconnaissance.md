@@ -3,13 +3,13 @@
 > **Status: RECONNAISSANCE ONLY.** No ingestion pipeline, database, normalization,
 > or PIT query code was created. All scripts and downloaded samples live in an
 > isolated temporary directory **outside** the repository working tree
-> (`C:\dev\openfinance-recon-tmp\`, sibling to the repo) and are **not**
+> (`C:\dev\quantforge-recon-tmp\`, sibling to the repo) and are **not**
 > committed. This report records what real SEC data actually looks like and
 > validates it against [docs/data-model.md](data-model.md).
 
 ## 1. Scope
 
-Empirically inspect the SEC EDGAR interfaces OpenFinance is considering as
+Empirically inspect the SEC EDGAR interfaces QuantForge is considering as
 initial sources, and determine whether the approved data model matches reality.
 Investigations 1–15 from the task brief are all covered. We deliberately looked
 at **actual records**, not documentation, for every claim.
@@ -17,7 +17,7 @@ at **actual records**, not documentation, for every claim.
 Method: a stdlib-only (`urllib`) fetcher with a declared User-Agent, 0.35s
 rate-limit, and on-disk caching (so nothing is re-requested). No dependency was
 installed. No API key exists (SEC needs none). The User-Agent contact is read
-from `OPENFINANCE_SEC_USER_AGENT`; a generic non-personal placeholder was used —
+from `QUANTFORGE_SEC_USER_AGENT`; a generic non-personal placeholder was used —
 **no personal email is hardcoded anywhere.**
 
 ## 2. SEC endpoints inspected
@@ -253,7 +253,7 @@ must come from the instance, not companyfacts.**
 
 **Required change:** the canonical observation key (which includes
 `dimensions_hash`) **cannot be built from companyfacts alone.** For dimensional
-facts, OpenFinance must ingest and parse the **inline/standalone XBRL instance**.
+facts, QuantForge must ingest and parse the **inline/standalone XBRL instance**.
 companyfacts is usable only for the consolidated slice.
 
 ## 12. Unit findings
@@ -311,7 +311,7 @@ files**, including the full XBRL package:
 - `FilingSummary.xml`, `R*.htm` rendered reports, the primary `.htm`, exhibits,
   images, css/js.
 
-**For strong provenance OpenFinance should retain (content-addressed):** the
+**For strong provenance QuantForge should retain (content-addressed):** the
 primary document, the XBRL **instance**, and the **schema + 4 linkbases**
 (cal/def/lab/pre) — the def/lab linkbases are needed to interpret dimensions and
 concept labels. The `index.json` itself is worth keeping as the filing manifest.
@@ -499,7 +499,7 @@ instance when dimensional facts are required.
 > diverse issuers** to determine whether those findings generalize before the
 > ingestion contract is locked. Same isolation rules: stdlib-only fetch,
 > declared email-format User-Agent from env, on-disk cache, everything under
-> `C:\dev\openfinance-recon-tmp\`, nothing committed, no dependency installed.
+> `C:\dev\quantforge-recon-tmp\`, nothing committed, no dependency installed.
 
 ## II.1 Issuer set
 
@@ -846,7 +846,7 @@ Safe to rely on (validated across 6 issuers / ~180k accessions / 5 instances):
    User-Agent (403 otherwise); `data.sec.gov` is lenient; ≤10 req/s; strong
    `ETag`/`Last-Modified`/gzip.
 
-### DERIVED BY OPENFINANCE (must be computed, versioned, auditable)
+### DERIVED BY QUANTFORGE (must be computed, versioned, auditable)
 
 Not given by SEC — the implementation must derive these deterministically and
 record how/with what confidence:

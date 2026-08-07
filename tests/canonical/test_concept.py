@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from openfinance.canonical.concept import concept_from_clark
-from openfinance.canonical.taxonomy import Taxonomy
+from quantforge.canonical.concept import concept_from_clark
+from quantforge.canonical.taxonomy import Taxonomy
 
 
 def test_gaap_concept_split_and_classified() -> None:

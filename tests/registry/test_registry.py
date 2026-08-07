@@ -6,10 +6,10 @@ from pathlib import Path
 
 import pytest
 
-from openfinance.registry.errors import SourceValidationError
-from openfinance.registry.registry import FilingRegistry
-from openfinance.registry.store import RegistryStore
-from openfinance.registry.version import TransformationVersion
+from quantforge.registry.errors import SourceValidationError
+from quantforge.registry.registry import FilingRegistry
+from quantforge.registry.store import RegistryStore
+from quantforge.registry.version import TransformationVersion
 
 from .builders import FilingRow, SubmissionsBuilder
 

@@ -6,13 +6,13 @@ will grow as real functionality lands.
 
 from __future__ import annotations
 
-import openfinance
+import quantforge
 
 
 def test_package_imports() -> None:
-    assert openfinance is not None
+    assert quantforge is not None
 
 
 def test_version_is_exposed() -> None:
-    assert isinstance(openfinance.__version__, str)
-    assert openfinance.__version__
+    assert isinstance(quantforge.__version__, str)
+    assert quantforge.__version__

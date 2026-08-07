@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from openfinance.canonical.canonicalize import Canonicalizer
+from quantforge.canonical.canonicalize import Canonicalizer
 from tests.xbrl.builders import Ctx, ExplicitDim, Fact, InstanceBuilder, Unit
 
 from .builders import parse

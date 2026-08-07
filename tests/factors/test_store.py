@@ -12,8 +12,8 @@ from pathlib import Path
 
 import pytest
 
-from openfinance.factors.errors import FactorConsistencyError
-from openfinance.factors.store import ResearchResultStore
+from quantforge.factors.errors import FactorConsistencyError
+from quantforge.factors.store import ResearchResultStore
 from tests.factors.builders import research_result
 
 
