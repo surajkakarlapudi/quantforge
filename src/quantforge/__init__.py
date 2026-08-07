@@ -26,7 +26,10 @@ The universe-management layer's :class:`Universe` (Phase 9.1) is re-exported as 
 front door for assembling a deterministic, point-in-time collection of filers from
 tickers/CIKs/names — ``Universe.from_companies(["AAPL", "MSFT", "NVDA"])`` — resolved
 through the same company identity layer as :class:`Company`, so it introduces no new
-identifier system.
+identifier system. The universe-construction layer (Phase 9.2) is re-exported as
+:class:`UniverseSpecification` (the declarative, content-addressed request) and
+:class:`UniverseBuilder` (the fail-closed engine that evaluates it at a PIT/REVISED
+boundary into a :class:`Universe` plus a reproducible provenance record).
 """
 
 from __future__ import annotations
@@ -50,12 +53,21 @@ from quantforge.metrics import (
     RevisedMetricValue,
     UndefinedReason,
 )
-from quantforge.universe import Universe
+from quantforge.universe import (
+    CompanyMetricFilter,
+    ExplicitCompanyFilter,
+    SectorFilter,
+    Universe,
+    UniverseBuilder,
+    UniverseSpecification,
+)
 from quantforge.workspace import Workspace
 
 __all__ = [
     "Company",
     "CompanyIdentity",
+    "CompanyMetricFilter",
+    "ExplicitCompanyFilter",
     "FactorEngine",
     "FormulaDefinition",
     "FormulaRegistry",
@@ -68,9 +80,12 @@ __all__ = [
     "RevisedFactor",
     "RevisedMetricValue",
     "RevisedValue",
+    "SectorFilter",
     "Transform",
     "UndefinedReason",
     "Universe",
+    "UniverseBuilder",
+    "UniverseSpecification",
     "Workspace",
     "__version__",
 ]

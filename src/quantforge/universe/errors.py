@@ -25,6 +25,7 @@ from __future__ import annotations
 __all__ = [
     "UniverseConfigurationError",
     "UniverseError",
+    "UniverseSpecificationError",
 ]
 
 
@@ -39,4 +40,29 @@ class UniverseConfigurationError(UniverseError):
     to nothing after de-duplication), or for a mis-typed argument (for example a
     bare string passed where an iterable of identifiers is expected). A raised
     error is always preferable to a silently wrong or empty universe.
+    """
+
+
+class UniverseSpecificationError(UniverseConfigurationError):
+    """A universe *construction* specification is internally inconsistent (§9.2).
+
+    A subclass of :class:`UniverseConfigurationError` (a mis-specified construction
+    is a configuration bug), raised by the Phase 9.2 construction layer for a
+    specification defect our code should refuse rather than guess around:
+
+    * a specification with no filters (a construction that selects on nothing is a
+      bug, not a request for "everyone");
+    * a :class:`CompanyMetricFilter` naming an unknown ``metric_key`` — surfaced by
+      the same fail-closed :class:`~quantforge.metrics.registry.FormulaRegistry`
+      lookup that refuses a mis-typed metric (this is what rejects a not-yet-modeled
+      metric such as ``market_cap``);
+    * a serialized filter/specification whose ``kind`` or fields cannot be
+      reconstructed.
+
+    A **data condition** — a filter that legitimately excludes a company because a
+    metric is ``UNDEFINED`` at the boundary, or because it has no sector under the
+    supplied classification — is *never* raised here; it is recorded as a
+    first-class :class:`~quantforge.universe.filters.ExcludedCompany` with a reason.
+    Only an *empty final universe* fails closed, via
+    :class:`UniverseConfigurationError`, exactly as Phase 9.1 does.
     """

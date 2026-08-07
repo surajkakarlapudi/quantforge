@@ -19,6 +19,12 @@ for company_id in universe:
 `Universe` is also re-exported at the top level, so `from quantforge import
 Universe` works too.
 
+> To *construct* membership from selection rules (an explicit list, a
+> point-in-time metric threshold, a sector classification) rather than an explicit
+> list of companies, see the Phase 9.2
+> [universe-construction layer](universe-construction.md), which resolves a
+> `UniverseSpecification` into exactly this `Universe`.
+
 Package: `src/quantforge/universe/`.
 
 This layer **adds no new company-identifier system** and **creates no new

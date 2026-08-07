@@ -30,6 +30,12 @@ will expand as functionality is implemented.
   point-in-time collection of filers assembled from tickers/CIKs/names via the
   company identity layer — the foundation for later cross-sectional research
   (ranking, portfolios, backtesting are not yet implemented).
+- [Universe Construction](universe-construction.md) — Phase 9.2: a deterministic
+  construction framework (`UniverseSpecification` → `UniverseBuilder` → `Universe`)
+  that resolves an eligible membership from ordered, content-addressed selection
+  rules (explicit companies, a point-in-time metric threshold, a caller-supplied
+  sector classification) and emits a reproducible provenance record — composing the
+  existing resolver and metric engine, adding no financial logic of its own.
 - [Engineering Principles](../ARCHITECTURE.md#engineering-principles) — the
   non-negotiable principles guiding the project.
 - [Contributing](../CONTRIBUTING.md) — how to set up a development environment
