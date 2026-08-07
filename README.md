@@ -1,84 +1,75 @@
 # QuantForge
 
-> **Early-stage project.** This is a *foundational* release. It establishes the
-> repository, packaging, and development-tooling foundation only. **No financial
-> functionality is implemented yet.** See [ARCHITECTURE.md](ARCHITECTURE.md) for
-> the intended design and the current status of each component.
+> A deterministic, point-in-time financial research engine built from SEC filings.
 
-QuantForge aims to be reproducible, point-in-time infrastructure for financial
-research built on public data. The guiding idea is that financial research
-should be **reproducible** and free of look-ahead bias: raw data is stored
-immutably, transformations are deterministic, and every derived value can be
-traced back to its source as it was known at a point in time.
+QuantForge is an open-source quantitative finance infrastructure project for
+researchers, developers, and students who need reproducible financial data
+without survivorship bias, look-ahead bias, or opaque data transformations.
+
+## What QuantForge Does
+
+QuantForge turns SEC filings into a reproducible research pipeline:
+
+SEC filings
+    ↓
+Canonical financial facts
+    ↓
+Point-in-time availability
+    ↓
+Financial statements
+    ↓
+Financial metrics
+    ↓
+Cross-sectional factors
+    ↓
+Quantitative research
+
+### Core capabilities
+
+- SEC filing acquisition and provenance
+- XBRL fact extraction and canonicalization
+- Point-in-time financial data
+- PIT vs. revised data separation
+- Financial statement assembly
+- Deterministic financial metrics
+- Cross-sectional factor research
+- Full fact-to-source provenance
+- Content-addressed versioning
+- Offline/reproducible research
+## Example
+
+from quantforge import Company
+
+apple = Company.resolve("AAPL")
+
+filings = apple.filings()
+facts = apple.facts()
+## Design Principles
+
+QuantForge is built around several principles:
+
+- No look-ahead
+- No fabricated financial data
+- No silent data loss
+- Explicit PIT/REVISED separation
+- Deterministic computation
+- Full provenance
+- Versioned transformations
+- Fail-closed behavior
+- Read-only composition of lower layers
+## Project Status
+
+| Version | Capability |
+|---|---|
+| v0.1.0 | SEC acquisition, XBRL, canonical facts, PIT availability |
+| v0.2.0 | Financial statements & public Company API |
+| v0.3.0 | Financial metrics |
+| v0.4.0 | Cross-sectional factors + QuantForge rebrand |
+| Next | Research / portfolio infrastructure |
 
 ## Status
 
-| Area | Status |
-| --- | --- |
-| Repository & tooling foundation | ✅ Exists (this release) |
-| Ingestion of public financial data | 🔜 Planned |
-| Immutable raw data store | 🔜 Planned |
-| Parsing / normalization | 🔜 Planned |
-| Provenance tracking | 🔜 Planned |
-| Point-in-time data layer | 🔜 Planned |
-| Factors | 🔜 Planned |
-| Backtesting | 🔜 Planned |
-
-Nothing above marked "Planned" exists yet. The package currently exposes only a
-version string.
-
-## Requirements
-
-- Python 3.11+
-- [uv](https://docs.astral.sh/uv/) for environment and dependency management
-
-## Development setup
-
-```bash
-# Create the environment and install the package + dev tooling
-uv sync
-
-# Run the test suite
-uv run pytest
-
-# Lint and format
-uv run ruff check .
-uv run ruff format --check .
-
-# Type-check
-uv run mypy
-
-# Install git hooks (optional but recommended)
-uv run pre-commit install
-```
-
-## Project layout
-
-```
-src/quantforge/   # the package (src layout)
-tests/             # test suite
-docs/              # documentation
-examples/          # runnable examples (empty for now)
-benchmarks/        # performance benchmarks (empty for now)
-scripts/           # developer/operational scripts (empty for now)
-```
-
-## Principles
-
-QuantForge follows a small set of non-negotiable engineering principles —
-correctness over convenience, immutable raw data, provenance, point-in-time
-integrity, determinism, and reproducibility. See the
-[Engineering Principles](ARCHITECTURE.md#engineering-principles) section of
-`ARCHITECTURE.md`.
-
-## Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md).
-
-## Security
-
-See [SECURITY.md](SECURITY.md) for how to report vulnerabilities.
-
-## License
-
-[MIT](LICENSE)
+QuantForge is an active research/infrastructure project.
+Some components are provisional and explicitly versioned as such.
+The project prioritizes correctness, reproducibility, and auditability
+over breadth.
