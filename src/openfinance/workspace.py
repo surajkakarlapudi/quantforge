@@ -33,6 +33,7 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from openfinance.availability.ingest import AvailabilityIngestor
 from openfinance.availability.store import AvailabilityStore
@@ -43,6 +44,9 @@ from openfinance.registry.store import RegistryStore
 from openfinance.sec.client import SecClient
 from openfinance.sec.config import ENV_STORAGE_DIR, SecConfig
 from openfinance.sec.storage import ArtifactStore
+
+if TYPE_CHECKING:
+    from openfinance.factors.store import ResearchResultStore
 
 __all__ = ["ENV_DATA_ROOT", "Workspace"]
 
@@ -63,17 +67,21 @@ class Workspace:
         canonical_store: CanonicalFactStore,
         resolver: CompanyResolver,
         availability_store: AvailabilityStore,
+        research_result_store: ResearchResultStore | None = None,
     ) -> None:
         self._artifacts = artifact_store
         self._registry = registry
         self._canonical = canonical_store
         self._resolver = resolver
         self._availability_store = availability_store
-        # The Phase 5 façade and the Phase 7 engine are built lazily and cached, so
-        # a workspace that never touches metrics pays nothing for them (and there is
-        # no import cycle at module load — MetricEngine is imported on first use).
+        self._research_result_store = research_result_store
+        # The Phase 5 façade and the Phase 7/8 engines are built lazily and cached,
+        # so a workspace that never touches metrics or factors pays nothing for them
+        # (and there is no import cycle at module load — the engines import
+        # :class:`Workspace`, so they are imported on first use, not here).
         self._availability_ingestor: AvailabilityIngestor | None = None
         self._metric_engine: object | None = None
+        self._factor_engine: object | None = None
 
     @property
     def artifact_store(self) -> ArtifactStore:
@@ -124,6 +132,36 @@ class Workspace:
 
             self._metric_engine = MetricEngine(self)
         return self._metric_engine
+
+    @property
+    def research_result_store(self) -> ResearchResultStore:
+        """The Phase 8 :class:`ResearchResultStore` sidecar under ``<root>/research/``.
+
+        Built once and cached, mirroring the other derived stores. It sits beside
+        the Phase 5 availability tree (``availability_store.root`` is
+        ``<root>/availability``, so its parent is the data root), so no new root has
+        to be threaded through construction. A caller may inject one explicitly.
+        """
+        if self._research_result_store is None:
+            from openfinance.factors.store import ResearchResultStore
+
+            self._research_result_store = ResearchResultStore(
+                self._availability_store.root.parent
+            )
+        return self._research_result_store
+
+    @property
+    def factor_engine(self) -> object:
+        """The Phase 8 :class:`~openfinance.factors.engine.FactorEngine` (lazy).
+
+        Imported on first use to avoid a module-load import cycle (the engine
+        imports :class:`Workspace`). Cached for reuse.
+        """
+        if self._factor_engine is None:
+            from openfinance.factors.engine import FactorEngine
+
+            self._factor_engine = FactorEngine(self)
+        return self._factor_engine
 
     # -- construction --------------------------------------------------------
 
