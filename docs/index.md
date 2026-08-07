@@ -26,6 +26,10 @@ will expand as functionality is implemented.
   fail-closed derived metrics (ratios and arithmetic combinations) computed on
   demand over the point-in-time knowledge state, versioned and fully provenanced,
   served as distinct PIT and revised result types.
+- [Universe Management](universe.md) — Phase 9.1: a deterministic, immutable,
+  point-in-time collection of filers assembled from tickers/CIKs/names via the
+  company identity layer — the foundation for later cross-sectional research
+  (ranking, portfolios, backtesting are not yet implemented).
 - [Engineering Principles](../ARCHITECTURE.md#engineering-principles) — the
   non-negotiable principles guiding the project.
 - [Contributing](../CONTRIBUTING.md) — how to set up a development environment

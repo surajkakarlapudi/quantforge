@@ -20,7 +20,13 @@ remain defined in the availability, metrics, and factors layers respectively.
 :class:`FormulaRegistry` / :class:`FormulaDefinition` are exported so callers can
 enumerate and inspect the available metrics without reaching into internals. The
 factor layer's front door is :class:`FactorEngine` (evaluate one metric across a
-:class:`Universe`, optionally under a :class:`Transform`).
+universe, optionally under a :class:`Transform`).
+
+The universe-management layer's :class:`Universe` (Phase 9.1) is re-exported as the
+front door for assembling a deterministic, point-in-time collection of filers from
+tickers/CIKs/names — ``Universe.from_companies(["AAPL", "MSFT", "NVDA"])`` — resolved
+through the same company identity layer as :class:`Company`, so it introduces no new
+identifier system.
 """
 
 from __future__ import annotations
@@ -33,7 +39,6 @@ from quantforge.factors import (
     ResearchResult,
     RevisedFactor,
     Transform,
-    Universe,
 )
 from quantforge.identity.model import CompanyIdentity
 from quantforge.metrics import (
@@ -45,6 +50,7 @@ from quantforge.metrics import (
     RevisedMetricValue,
     UndefinedReason,
 )
+from quantforge.universe import Universe
 from quantforge.workspace import Workspace
 
 __all__ = [
