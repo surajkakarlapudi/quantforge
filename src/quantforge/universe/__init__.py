@@ -1,37 +1,54 @@
-"""QuantForge universe layer: management (Phase 9.1) + construction rules (Phase 9.2).
+"""QuantForge Phase 9 — the Universe Research Layer.
 
 A :class:`Universe` is a deterministic, immutable, point-in-time collection of filer
-identities — the securities a later cross-sectional step operates across. **Phase
-9.1** builds that membership foundation; it resolves and holds membership through the
-existing company identity layer (no new identifier system). **Phase 9.2** adds a
-deterministic *construction framework* on top:
+identities — the securities a later cross-sectional step operates across. Phase 9 is
+one coherent capability, delivered in three cooperating parts on a single universe
+abstraction:
 
-    UniverseSpecification  →  UniverseBuilder  →  Universe (+ UniverseConstruction)
+    Universe management  →  construction  →  inspection / analysis / comparison / export
 
-* :class:`UniverseSpecification` — the immutable, serializable, content-addressed
-  *request*: a name, a version, and an **ordered** list of selection
-  :mod:`~quantforge.universe.filters` (``ExplicitCompanyFilter``,
-  ``CompanyMetricFilter``, ``SectorFilter``). It holds no data and no boundary.
-* :class:`UniverseBuilder` — the fail-closed *engine* that evaluates a specification
-  at one PIT/REVISED boundary, composing the existing ``CompanyResolver`` and
-  ``MetricEngine``, and emits a :class:`Universe` plus a reproducible
-  :class:`UniverseConstruction` provenance record (specification identity, builder
-  version, boundary, applied filters, and every excluded company with its reason).
-* :class:`Universe` — the resolved, ordered, de-duplicated membership (Phase 9.1),
-  unchanged.
+* **Management (9.1).** A :class:`Universe` resolves and holds membership through the
+  existing company identity layer (no new identifier system), preserving first-seen
+  order and per-member provenance, and content-addressing the ordered membership::
 
-Direct membership is still available via the Phase 9.1 front door::
+      universe = Universe.from_companies(["AAPL", "MSFT", "NVDA"])
 
-    from quantforge.universe import Universe
+* **Construction (9.2).** A deterministic ``UniverseSpecification → UniverseBuilder →
+  Universe (+ UniverseConstruction)`` framework:
 
-    universe = Universe.from_companies(["AAPL", "MSFT", "NVDA"])
+  * :class:`UniverseSpecification` — the immutable, serializable, content-addressed
+    *request*: a name, a version, and an **ordered** list of selection
+    :mod:`~quantforge.universe.filters` (``ExplicitCompanyFilter``,
+    ``CompanyMetricFilter``, ``SectorFilter``). It holds no data and no boundary.
+  * :class:`UniverseBuilder` — the fail-closed *engine* that evaluates a
+    specification at one PIT/REVISED boundary, composing the existing
+    ``CompanyResolver`` and ``MetricEngine``, and emits a :class:`ConstructionResult`
+    (the :class:`Universe` plus a reproducible :class:`UniverseConstruction`
+    provenance record: specification identity, builder version, boundary, applied
+    filters, and every excluded company with its reason).
 
-Ranking, portfolios, optimization, and backtesting remain deliberately **not**
-implemented here.
+* **Research surface (this completion).** Inspection, deterministic description,
+  membership comparison, and dependency-free export on the *same* universe object —
+  no second abstraction, no financial statistics, no market data:
+
+  * inspection — :meth:`Universe.members`, :attr:`Universe.company_ids`,
+    ``len(universe)``, :meth:`Universe.contains`, and
+    :meth:`ConstructionResult.provenance` / :meth:`UniverseConstruction.excluded_for`;
+  * description — :meth:`Universe.describe` / :meth:`ConstructionResult.describe`
+    return a serializable :class:`UniverseSummary`;
+  * comparison — :meth:`Universe.compare` / :meth:`ConstructionResult.compare` return
+    a serializable :class:`UniverseComparison` that diffs by canonical ``company_id``
+    and surfaces any PIT/REVISED mode mismatch;
+  * export — :meth:`Universe.to_dict` / :meth:`Universe.to_records`.
+
+Ranking, portfolios, optimization, backtesting, price feeds, and market-data
+ingestion remain deliberately **not** implemented here — those belong to later
+phases. Phase 9 is research-*universe* infrastructure.
 """
 
 from __future__ import annotations
 
+from quantforge.universe.analysis import UniverseComparison, UniverseSummary
 from quantforge.universe.builder import UniverseBuilder
 from quantforge.universe.construction import (
     AppliedFilter,
@@ -88,6 +105,7 @@ __all__ = [
     "Universe",
     "UniverseBuilder",
     "UniverseBuilderVersion",
+    "UniverseComparison",
     "UniverseConfigurationError",
     "UniverseConstruction",
     "UniverseConstructionVersion",
@@ -95,5 +113,6 @@ __all__ = [
     "UniverseFilter",
     "UniverseSpecification",
     "UniverseSpecificationError",
+    "UniverseSummary",
     "filter_from_dict",
 ]

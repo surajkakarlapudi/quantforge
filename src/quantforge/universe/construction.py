@@ -28,9 +28,13 @@ over the same data reproduces an identical record (§12).
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 from quantforge.universe.filters import ExcludedCompany, FilterKind
 from quantforge.universe.model import Universe
+
+if TYPE_CHECKING:
+    from quantforge.universe.analysis import UniverseComparison, UniverseSummary
 
 __all__ = ["AppliedFilter", "ConstructionResult", "UniverseConstruction"]
 
@@ -85,6 +89,33 @@ class UniverseConstruction:
     applied_filters: tuple[AppliedFilter, ...]
     excluded: tuple[ExcludedCompany, ...]
 
+    @property
+    def mode(self) -> str:
+        """The PIT/REVISED boundary discriminator (``"pit"`` / ``"rev"``).
+
+        An alias of :attr:`boundary_kind`, named for the researcher-facing analysis
+        layer, where preserving the construction mode is a correctness property
+        (a PIT membership and a REVISED membership are never conflated, invariant 27).
+        """
+        return self.boundary_kind
+
+    def exclusions_by_reason(self) -> dict[str, int]:
+        """Excluded-company counts per reason, emitted sorted (deterministic)."""
+        counts: dict[str, int] = {}
+        for excluded in self.excluded:
+            key = excluded.reason.value
+            counts[key] = counts.get(key, 0) + 1
+        return dict(sorted(counts.items()))
+
+    def excluded_for(self, company_id: str) -> tuple[ExcludedCompany, ...]:
+        """Every recorded exclusion of ``company_id``, in application order.
+
+        A company can be dropped by at most one filter in a single construction (once
+        excluded it is no longer a candidate), but the return is a tuple so the
+        "why was this company not a member?" query has one uniform shape.
+        """
+        return tuple(e for e in self.excluded if e.company_id == company_id)
+
     def to_dict(self) -> dict[str, object]:
         return {
             "construction_id": self.construction_id,
@@ -109,8 +140,67 @@ class ConstructionResult:
 
     Keeping the two together (rather than mutating the universe with build metadata)
     preserves the Phase 9.1 :class:`Universe` as a pure membership value while making
-    the full construction provenance available for audit and persistence.
+    the full construction provenance available for audit and persistence. This is the
+    researcher-facing handle for a *constructed* universe: it exposes the same
+    inspection/export surface as a bare :class:`Universe`, plus a
+    provenance-carrying :meth:`describe` and a mode-aware :meth:`compare`.
     """
 
     universe: Universe
     construction: UniverseConstruction
+
+    # -- inspection ----------------------------------------------------------
+
+    def provenance(self) -> UniverseConstruction:
+        """The full construction provenance record (specification → exclusions).
+
+        The single traceable artifact: specification identity and version, builder
+        version, PIT/REVISED boundary, ordered applied filters, and every excluded
+        company with its reason. From here a researcher walks up to the specification
+        and its filters, and down to the identity resolution of each member (via
+        :meth:`Universe.members`) and the metric/PIT inputs each filter consulted.
+        """
+        return self.construction
+
+    def to_records(self) -> list[dict[str, object]]:
+        """Tabular member records, tagged with this construction's identity + mode.
+
+        Extends :meth:`Universe.to_records` with the ``construction_id`` and PIT/
+        REVISED ``mode`` on every row, so exported membership from different
+        constructions never loses which construction — or which knowledge boundary —
+        it came from when concatenated into one table.
+        """
+        mode = self.construction.mode
+        cid = self.construction.construction_id
+        rows = self.universe.to_records()
+        for row in rows:
+            row["construction_id"] = cid
+            row["mode"] = mode
+        return rows
+
+    # -- analysis (Phase 9 research layer) -----------------------------------
+
+    def describe(self) -> UniverseSummary:
+        """A deterministic summary carrying full construction provenance.
+
+        Unlike :meth:`Universe.describe`, the summary includes the specification
+        identity, the PIT/REVISED mode and boundary, the applied filters, and the
+        exclusion counts by reason.
+        """
+        from quantforge.universe.analysis import UniverseSummary
+
+        return UniverseSummary.of_construction(self)
+
+    def compare(self, other: ConstructionResult) -> UniverseComparison:
+        """Diff against another construction by membership, surfacing mode mismatch.
+
+        Returns a deterministic
+        :class:`~quantforge.universe.analysis.UniverseComparison` whose
+        :attr:`~quantforge.universe.analysis.UniverseComparison.mode_mismatch`
+        flags whether the two constructions used different PIT/REVISED boundaries — so
+        a PIT membership and a REVISED membership are never *silently* compared as if
+        they were the same knowledge state (invariant 27).
+        """
+        from quantforge.universe.analysis import UniverseComparison
+
+        return UniverseComparison.of_constructions(self, other)

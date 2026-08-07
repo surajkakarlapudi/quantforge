@@ -1,11 +1,16 @@
 # Universe Management Layer
 
-The **universe layer** (Phase 9.1) represents a *deterministic collection of
-securities at a specific point in time* — the set of filers a later
-cross-sectional step (ranking, portfolio construction, backtesting) will operate
-across. This phase builds **only** that foundation: it resolves and holds
-membership. Ranking, portfolios, and backtesting are deliberately **not**
-implemented here.
+The **universe layer** is the first part of the [Phase 9 Universe Research
+Layer](phase9-research-layer.md) — a *deterministic collection of securities at a
+specific point in time*, the set of filers a later cross-sectional step (ranking,
+portfolio construction, backtesting) will operate across. This part builds the
+membership **foundation**: it resolves and holds membership. Ranking, portfolios,
+and backtesting are deliberately **not** implemented here.
+
+> Phase 9 is one coherent capability delivered on a single `Universe`
+> abstraction: **management** (this document) → [**construction**](universe-construction.md)
+> → **research surface** (inspection, description, comparison, export — §8 below).
+> There is no second universe type.
 
 ```python
 from quantforge.universe import Universe
@@ -175,3 +180,105 @@ existing factor engine without duplicating it.
   silently accepted or guessed.
 - **Provenance first.** Every member and the builder itself carry an auditable,
   serializable record.
+
+## 8. Research surface: inspection, description, comparison, export
+
+The research surface completes Phase 9 by letting a researcher *interrogate* a
+universe — how many members, which ones, how it was built, how it differs from
+another — on the **same** `Universe` object. It adds no new abstraction and
+computes **no financial statistic**: every method is a deterministic view over the
+membership and (for constructed universes) the existing provenance record.
+
+### Inspection
+
+```python
+universe.members()  # tuple[CompanyIdentity, …] — full per-member provenance
+universe.company_ids  # tuple[str, …]  — canonical ids, ordered
+len(universe)  # member count
+universe.contains("cik:0000320193")  # membership by canonical id (never ticker/name)
+```
+
+`members()` returns the identity-layer [`CompanyIdentity`](company-api.md) value
+objects unchanged — the universe layer defines no company model of its own.
+
+### Description — `describe()`
+
+`universe.describe()` returns a deterministic, serializable **`UniverseSummary`**:
+
+```python
+summary = universe.describe()
+summary.member_count  # 3
+summary.company_ids  # ("cik:0000320193", "cik:0000789019", "cik:0001045810")
+summary.universe_id  # "sha256:…"
+summary.is_constructed  # False for a bare universe
+summary.to_dict()  # stable-shaped dict (construction-only keys are null)
+```
+
+For a bare Phase 9.1 universe the summary carries the membership essentials
+(size, ordered `company_id`s, `universe_id`, builder version). For a universe
+produced by a Phase 9.2 construction, `ConstructionResult.describe()` returns the
+same type populated with the full provenance — name, specification id, PIT/REVISED
+`mode`, boundary, applied filters, and exclusion counts by reason:
+
+```python
+result = builder.build_as_of(spec, as_of=...)
+summary = result.describe()
+summary.is_constructed  # True
+summary.mode  # "pit" (or "rev")
+summary.exclusions_by_reason  # {"metric_threshold_not_met": 1}
+```
+
+The summary is **structural only** — no metric value, price, or market-cap field
+ever appears (QuantForge holds no PIT-safe market data to compute them from).
+
+### Comparison — `compare(other)`
+
+`universe.compare(other)` returns a deterministic **`UniverseComparison`** that
+diffs the two universes **by canonical `company_id`**, never by object identity:
+
+```python
+cmp = before.compare(after)  # `before` is left/before, `after` is right/after
+cmp.removed  # in before, not after   (ordered by the left universe)
+cmp.retained  # in both                (ordered by the left universe)
+cmp.added  # in after, not before   (ordered by the right universe)
+cmp.is_identical
+cmp.to_dict()
+```
+
+Ordering is derived from the source universes' member order, never from set
+iteration, so equivalent inputs always yield an identical diff.
+
+For **constructed** universes, `ConstructionResult.compare(other)` additionally
+surfaces `mode_mismatch` — whether the two constructions used different PIT/REVISED
+boundaries. A PIT membership and a REVISED membership can be compared (the
+`company_id` set is always well-defined) but are **never silently treated as the
+same knowledge state** (invariant 27): the mismatch is flagged in the result.
+
+```python
+cmp = pit_result.compare(revised_result)
+cmp.left_mode, cmp.right_mode  # "pit", "rev"
+cmp.mode_mismatch  # True
+```
+
+### Export — `to_dict()` / `to_records()`
+
+Two dependency-free interchange formats (QuantForge adds **no** DataFrame/Parquet
+dependency merely for export):
+
+- `to_dict()` — the full serializable provenance record (§4).
+- `to_records()` — one flat `dict` per member, in deterministic order, with the
+  canonical `company_id` first and the descriptive `ticker`/`name`/resolution
+  columns alongside. It feeds `csv.DictWriter`, `pandas.DataFrame(...)`, or
+  `pyarrow.Table.from_pylist(...)` directly:
+
+```python
+universe.to_records()
+# [{"company_id": "cik:0000320193", "cik": "320193", "ticker": "AAPL",
+#   "name": "Apple Inc.", "resolved_from": "AAPL", "source": "ticker"}, …]
+```
+
+The canonical `company_id` is always the authoritative identity in an exported
+row; `ticker`/`name` are descriptive columns only. `ConstructionResult.to_records()`
+tags every row with the `construction_id` and PIT/REVISED `mode`, so membership
+exported from different constructions never loses which knowledge boundary it came
+from when concatenated into one table.

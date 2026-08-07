@@ -45,11 +45,15 @@ from __future__ import annotations
 
 from collections.abc import Iterable, Iterator
 from dataclasses import dataclass, field
+from typing import TYPE_CHECKING
 
 from quantforge.identity.model import CompanyIdentity
 from quantforge.sec.artifacts import sha256_hex
 from quantforge.universe.errors import UniverseConfigurationError
 from quantforge.universe.version import UniverseBuilderVersion
+
+if TYPE_CHECKING:
+    from quantforge.universe.analysis import UniverseComparison, UniverseSummary
 
 __all__ = ["Universe"]
 
@@ -166,6 +170,24 @@ class Universe:
         payload = _SEP.join(("universe", *self.company_ids))
         return f"sha256:{sha256_hex(payload.encode('utf-8'))}"
 
+    # -- inspection ----------------------------------------------------------
+
+    def members(self) -> tuple[CompanyIdentity, ...]:
+        """The resolved members, in deterministic order, with full provenance.
+
+        Each :class:`~quantforge.identity.model.CompanyIdentity` carries the canonical
+        ``company_id``, the descriptive ticker/name, the exact identifier the caller
+        supplied (``resolved_from``), and which lookup matched (``source``). This is
+        the identity-layer value object, reused unchanged — the universe layer defines
+        no company model of its own. Iterate :attr:`company_ids` (or the universe
+        itself) for the canonical ids alone.
+        """
+        return self.identities
+
+    def contains(self, company_id: str) -> bool:
+        """Whether ``company_id`` is a member, by canonical id (never ticker/name)."""
+        return company_id in frozenset(self.company_ids)
+
     # -- provenance ----------------------------------------------------------
 
     def to_dict(self) -> dict[str, object]:
@@ -182,6 +204,59 @@ class Universe:
             "builder_version": self.builder_version.code_version,
             "members": [identity.to_dict() for identity in self.identities],
         }
+
+    # -- export / interoperability -------------------------------------------
+
+    def to_records(self) -> list[dict[str, object]]:
+        """One flat record per member, ordered — a tabular research representation.
+
+        Returns a list of plain dicts (the row order is the universe's deterministic
+        member order), each with the canonical ``company_id`` first and the
+        descriptive labels and resolution provenance alongside. This is the
+        dependency-free interchange format: it feeds ``csv.DictWriter``,
+        ``pandas.DataFrame(...)``, ``pyarrow.Table.from_pylist(...)``, or any tabular
+        tool *without* QuantForge taking on a heavyweight dependency. The canonical
+        ``company_id`` is always the authoritative identity; ``ticker``/``name`` are
+        descriptive columns only.
+        """
+        return [
+            {
+                "company_id": identity.company_id,
+                "cik": identity.cik,
+                "ticker": identity.ticker,
+                "name": identity.name,
+                "resolved_from": identity.resolved_from,
+                "source": identity.source.value,
+            }
+            for identity in self.identities
+        ]
+
+    # -- analysis (Phase 9 research layer) -----------------------------------
+
+    def describe(self) -> UniverseSummary:
+        """A deterministic, serializable summary of this universe's membership.
+
+        For a bare Phase 9.1 universe the summary carries the membership essentials
+        (size, ordered ``company_id``s, ``universe_id``, builder version). A universe
+        produced by a Phase 9.2 construction carries richer provenance via
+        :meth:`ConstructionResult.describe`. No financial statistic is computed.
+        """
+        from quantforge.universe.analysis import UniverseSummary
+
+        return UniverseSummary.of_universe(self)
+
+    def compare(self, other: Universe) -> UniverseComparison:
+        """Diff this universe against ``other`` by canonical ``company_id`` membership.
+
+        Returns a deterministic
+        :class:`~quantforge.universe.analysis.UniverseComparison`
+        (this universe is the *left*/before side, ``other`` the *right*/after side):
+        the members added, removed, and retained, with counts. Membership is compared
+        by canonical id, never by object identity.
+        """
+        from quantforge.universe.analysis import UniverseComparison
+
+        return UniverseComparison.of_universes(self, other)
 
     # -- iteration / sizing --------------------------------------------------
 

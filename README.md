@@ -22,6 +22,8 @@ Financial metrics
     ↓
 Cross-sectional factors
     ↓
+Universe research
+    ↓
 Quantitative research
 
 ### Core capabilities
@@ -33,6 +35,7 @@ Quantitative research
 - Financial statement assembly
 - Deterministic financial metrics
 - Cross-sectional factor research
+- Universe research (deterministic membership, construction, inspection, comparison, export)
 - Full fact-to-source provenance
 - Content-addressed versioning
 - Offline/reproducible research
@@ -44,6 +47,14 @@ apple = Company.resolve("AAPL")
 
 filings = apple.filings()
 facts = apple.facts()
+
+# A universe: a deterministic, point-in-time collection of filers
+from quantforge import Universe
+
+universe = Universe.from_companies(["AAPL", "MSFT", "NVDA"])
+universe.describe()          # a deterministic, serializable UniverseSummary
+universe.compare(other)      # a UniverseComparison, diffed by canonical company_id
+universe.to_records()        # dependency-free tabular export
 ## Design Principles
 
 QuantForge is built around several principles:
@@ -65,7 +76,8 @@ QuantForge is built around several principles:
 | v0.2.0 | Financial statements & public Company API |
 | v0.3.0 | Financial metrics |
 | v0.4.0 | Cross-sectional factors + QuantForge rebrand |
-| Next | Research / portfolio infrastructure |
+| v0.5.0 | Universe research layer (management, construction, inspection, comparison, export) |
+| Next | Portfolio / backtesting infrastructure |
 
 ## Status
 

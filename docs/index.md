@@ -26,11 +26,16 @@ will expand as functionality is implemented.
   fail-closed derived metrics (ratios and arithmetic combinations) computed on
   demand over the point-in-time knowledge state, versioned and fully provenanced,
   served as distinct PIT and revised result types.
-- [Universe Management](universe.md) — Phase 9.1: a deterministic, immutable,
+- [Universe Research Layer](phase9-research-layer.md) — Phase 9: the cross-sectional
+  *universe* primitive, one coherent capability on a single `Universe` abstraction,
+  delivered in three parts (management → construction → research surface). Start here
+  for the overview; the two documents below cover the parts in depth.
+- [Universe Management](universe.md) — a deterministic, immutable,
   point-in-time collection of filers assembled from tickers/CIKs/names via the
-  company identity layer — the foundation for later cross-sectional research
-  (ranking, portfolios, backtesting are not yet implemented).
-- [Universe Construction](universe-construction.md) — Phase 9.2: a deterministic
+  company identity layer — the membership foundation for cross-sectional research
+  (ranking, portfolios, backtesting are not implemented). Also documents the
+  research surface: inspection, `describe()`, `compare()`, and `to_records()`.
+- [Universe Construction](universe-construction.md) — a deterministic
   construction framework (`UniverseSpecification` → `UniverseBuilder` → `Universe`)
   that resolves an eligible membership from ordered, content-addressed selection
   rules (explicit companies, a point-in-time metric threshold, a caller-supplied

@@ -22,14 +22,19 @@ enumerate and inspect the available metrics without reaching into internals. The
 factor layer's front door is :class:`FactorEngine` (evaluate one metric across a
 universe, optionally under a :class:`Transform`).
 
-The universe-management layer's :class:`Universe` (Phase 9.1) is re-exported as the
-front door for assembling a deterministic, point-in-time collection of filers from
-tickers/CIKs/names — ``Universe.from_companies(["AAPL", "MSFT", "NVDA"])`` — resolved
-through the same company identity layer as :class:`Company`, so it introduces no new
-identifier system. The universe-construction layer (Phase 9.2) is re-exported as
+The Phase 9 Universe Research Layer is re-exported as its front doors.
+:class:`Universe` assembles a deterministic, point-in-time collection of filers from
+tickers/CIKs/names —
+``Universe.from_companies(["AAPL", "MSFT", "NVDA"])`` — resolved through the same
+company identity layer as :class:`Company`, so it introduces no new identifier system.
 :class:`UniverseSpecification` (the declarative, content-addressed request) and
 :class:`UniverseBuilder` (the fail-closed engine that evaluates it at a PIT/REVISED
-boundary into a :class:`Universe` plus a reproducible provenance record).
+boundary into a :class:`Universe` plus a reproducible provenance record) construct a
+universe from ordered selection rules. A universe then answers researcher-facing
+questions on the same object — ``universe.describe()`` and ``universe.compare(other)``
+return the serializable :class:`UniverseSummary` / :class:`UniverseComparison` result
+types (also re-exported here) — with membership always keyed by the canonical
+``company_id`` and the PIT/REVISED distinction preserved, never conflated.
 """
 
 from __future__ import annotations
@@ -59,7 +64,9 @@ from quantforge.universe import (
     SectorFilter,
     Universe,
     UniverseBuilder,
+    UniverseComparison,
     UniverseSpecification,
+    UniverseSummary,
 )
 from quantforge.workspace import Workspace
 
@@ -85,7 +92,9 @@ __all__ = [
     "UndefinedReason",
     "Universe",
     "UniverseBuilder",
+    "UniverseComparison",
     "UniverseSpecification",
+    "UniverseSummary",
     "Workspace",
     "__version__",
 ]

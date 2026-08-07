@@ -274,6 +274,23 @@ Keeping the `UniverseConstruction` alongside the `Universe` (rather than mutatin
 the universe with build metadata) preserves the Phase 9.1 `Universe` as a pure
 membership value.
 
+The `ConstructionResult` is also the researcher-facing handle for a constructed
+universe: it exposes the same inspection/export surface as a bare `Universe`, plus
+a provenance-carrying `describe()` and a mode-aware `compare()`:
+
+```python
+result.provenance()  # the UniverseConstruction record (above)
+result.construction.excluded_for(cid)  # why a specific company is not a member
+result.construction.exclusions_by_reason()  # {"metric_threshold_not_met": 1}
+result.describe()  # a UniverseSummary with full provenance + mode
+result.compare(other_result)  # a UniverseComparison; flags PIT/REVISED mismatch
+result.to_records()  # member rows tagged with construction_id + mode
+```
+
+These belong to the Phase 9 [research surface](universe.md#8-research-surface-inspection-description-comparison-export);
+critically, `compare()` surfaces `mode_mismatch` so a PIT construction and a
+REVISED construction are never *silently* compared as the same knowledge state.
+
 ## 7. Relationship to Phase 9.1 and the factor layer
 
 - **Phase 9.1 `Universe`** is the *output* of a construction and remains usable
