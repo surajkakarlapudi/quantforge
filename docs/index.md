@@ -47,6 +47,14 @@ will expand as functionality is implemented.
   `UNDEFINED`-preserving multi-period derivations, served as distinct `PitPanel` /
   `RevisedPanel` types. The [locked architecture](phase10-panel-locked.md) is the
   normative spec.
+- [Point-in-Time Market Data Layer](phase11-market-data-locked.md) — Phase 11: a
+  provider-neutral price/market-data foundation built as a new source beneath the
+  existing stack. Canonical **unadjusted** daily OHLCV observations plus first-class
+  immutable corporate actions (splits, dividends, symbol changes, delistings,
+  mergers), served through a market PIT resolver as distinct `PitPrice` /
+  `RevisedPrice` types over an own fail-closed availability boundary. Adjusted prices
+  are a derived, PIT-gated view; adds no backtester and never rewrites a SEC `Fact`.
+  The [locked architecture](phase11-market-data-locked.md) is the normative spec.
 - [Engineering Principles](../ARCHITECTURE.md#engineering-principles) — the
   non-negotiable principles guiding the project.
 - [Contributing](../CONTRIBUTING.md) — how to set up a development environment

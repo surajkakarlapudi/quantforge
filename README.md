@@ -39,6 +39,7 @@ Quantitative research
 - Cross-sectional factor research
 - Universe research (deterministic membership, construction, inspection, comparison, export)
 - Point-in-time fundamental panels (period-series, vintage, cross-sectional matrix)
+- Point-in-time market data (unadjusted daily OHLCV + first-class corporate actions, PIT-gated adjusted views)
 - Full fact-to-source provenance
 - Content-addressed versioning
 - Offline/reproducible research
@@ -88,6 +89,7 @@ QuantForge is built around several principles:
 | v0.4.0 | Cross-sectional factors + QuantForge rebrand |
 | v0.5.0 | Universe research layer (management, construction, inspection, comparison, export) |
 | v0.6.0 | Point-in-time fundamental panel (period-series, vintage, cross-sectional matrix) |
+| v0.7.0 | Point-in-time market data layer (unadjusted OHLCV, first-class corporate actions, PIT-gated adjusted views, `PitPrice` / `RevisedPrice`) |
 | Next | Portfolio / backtesting infrastructure |
 
 ## Status

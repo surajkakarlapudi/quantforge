@@ -83,6 +83,7 @@ class Workspace:
         self._metric_engine: object | None = None
         self._factor_engine: object | None = None
         self._panel_engine: object | None = None
+        self._price_engine: object | None = None
 
     @property
     def artifact_store(self) -> ArtifactStore:
@@ -178,6 +179,29 @@ class Workspace:
 
             self._panel_engine = PanelEngine(self)
         return self._panel_engine
+
+    @property
+    def price_engine(self) -> object:
+        """The Phase 11 :class:`~quantforge.market.engine.PriceEngine` (lazy).
+
+        Imported on first use to avoid a module-load import cycle (the engine imports
+        :class:`Workspace` transitively). Cached for reuse. It owns a derived
+        :class:`~quantforge.market.store.MarketDataStore` under ``<root>/market/``
+        (canonical + availability sidecars) and reuses a Phase 1
+        :class:`~quantforge.sec.storage.ArtifactStore` under ``<root>/market/raw/``
+        for immutable vendor bytes — a sibling of the SEC acquisition tree, never
+        mixed with it. Building any new fundamentals store is avoided: the market
+        layer is additive and touches no prior phase's data.
+        """
+        if self._price_engine is None:
+            from quantforge.market.engine import PriceEngine
+            from quantforge.market.store import MarketDataStore
+
+            # The data root is the parent of the availability tree (same derivation
+            # the research sidecar uses), so no new root is threaded through open().
+            market_root = self._availability_store.root.parent / "market"
+            self._price_engine = PriceEngine(MarketDataStore(market_root))
+        return self._price_engine
 
     # -- construction --------------------------------------------------------
 

@@ -49,6 +49,14 @@ class ArtifactType(StrEnum):
     XBRL_DEFINITION = "xbrl_definition"
     XBRL_LABEL = "xbrl_label"
     XBRL_PRESENTATION = "xbrl_presentation"
+    # Phase 11 market-data raw tiers. These reuse the Phase 1 content-addressed
+    # ArtifactStore verbatim, so a raw vendor payload needs a valid ArtifactType
+    # slug. Market bytes always carry ``accession=None`` and live in a sibling
+    # ``<root>/market/raw/`` store, so they can never be associated to an SEC
+    # filing (registry.documents.associate_documents skips ``accession is None``)
+    # — the SEC acquisition tree is untouched.
+    MARKET_DAILY_BARS = "market_daily_bars"
+    MARKET_CORPORATE_ACTIONS = "market_corporate_actions"
 
 
 def sha256_hex(data: bytes) -> str:

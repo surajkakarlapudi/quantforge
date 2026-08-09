@@ -53,6 +53,7 @@ from quantforge.factors import (
     Transform,
 )
 from quantforge.identity.model import CompanyIdentity
+from quantforge.market import PitPrice, RevisedPrice
 from quantforge.metrics import (
     FormulaDefinition,
     FormulaRegistry,
@@ -88,11 +89,13 @@ __all__ = [
     "PitFactor",
     "PitMetricValue",
     "PitPanel",
+    "PitPrice",
     "PitValue",
     "ResearchResult",
     "RevisedFactor",
     "RevisedMetricValue",
     "RevisedPanel",
+    "RevisedPrice",
     "RevisedValue",
     "SectorFilter",
     "Transform",
