@@ -92,6 +92,24 @@ will expand as functionality is implemented.
   analysis untouched). Exactly one pure `render_markdown(report, store)` proves the
   content/presentation split, formatting ten documented sections with zero effect on identity or
   storage. The [locked architecture](phase14-reporting-locked.md) is the normative spec.
+- [Performance & Benchmark-Relative Analytics](phase15-analytics-locked.md) — Phase 15: a risk &
+  benchmark-relative analytics layer strictly *above* Phase 12, a pure consumer of already-sealed,
+  PIT-correct `BacktestResult`s that computes the statistic family Phase 12 explicitly deferred. A
+  declarative, content-addressed `AnalyticsSpecification` (a `subject_id`, an optional
+  `benchmark_id`, the VaR confidences, and the annualization convention) drives
+  `AnalyticsEngine.compute`, which re-verifies each referenced backtest's content hash from the
+  shared sidecar (fail closed on any absent/drifted reference) and computes downside/drawdown risk,
+  historical **nearest-rank** VaR/CVaR (deterministic, no RNG), return-distribution moments, and —
+  only against a **benchmark that is itself a sealed backtest** — tracking error, information ratio,
+  capture, and single-factor closed-form OLS alpha/beta (multi-factor deferred). It adds only what
+  Phase 12 does not already seal (return/volatility/Sharpe/max-drawdown are never recomputed); every
+  undefinable statistic is a first-class `UNDEFINED` cell with a reason — never fabricated, never a
+  divide-by-zero. The sealed `PerformanceAnalytics` is a `ResearchRecord` persisted write-once to
+  the existing sidecar (no new store), byte-identically round-tripping; `analytics_id` folds the
+  engine+formula version, the declared request, both referenced content hashes, and the computed
+  answer. All arithmetic runs under the pinned `Decimal` context; no float, wall-clock, or RNG
+  enters any value or id. The [locked architecture](phase15-analytics-locked.md) is the normative
+  spec.
 - [Engineering Principles](../ARCHITECTURE.md#engineering-principles) — the
   non-negotiable principles guiding the project.
 - [Contributing](../CONTRIBUTING.md) — how to set up a development environment
@@ -101,6 +119,6 @@ will expand as functionality is implemented.
 ## Status
 
 The point-in-time data, metrics, universe, panel, market-data, backtesting,
-comparative-research, and research-reporting layers are implemented (Phases 1–14). Source
-ingestion connectors remain planned; the engine operates over content-addressed corpora it
-is given.
+comparative-research, research-reporting, and performance-analytics layers are implemented
+(Phases 1–15). Source ingestion connectors remain planned; the engine operates over
+content-addressed corpora it is given.

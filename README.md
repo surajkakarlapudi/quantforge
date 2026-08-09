@@ -45,6 +45,7 @@ Quantitative research
 - Point-in-time backtesting (declarative content-addressed strategies, pinned dual corpora, engine-owned execution, corporate-action accounting, reproducible results)
 - Comparative research (declarative experiment sweeps + deterministic backtest comparison)
 - Research reporting & explainability (content-addressed, reference-only research reports with a deterministic Markdown renderer)
+- Performance & benchmark-relative analytics (downside/drawdown risk, historical VaR/CVaR, distribution moments, and — against a benchmark that is itself a sealed backtest — tracking error, information ratio, capture, and single-factor OLS alpha/beta, sealed as a content-addressed record)
 - Full fact-to-source provenance
 - Content-addressed versioning
 - Offline/reproducible research
@@ -80,6 +81,19 @@ from quantforge.report import render_markdown
 spec = ReportSpecification(name="momentum-study", scope="experiment", subject_id=experiment_id)
 report = workspace.report_engine.build(spec)   # a sealed, write-once ResearchReport
 markdown = render_markdown(report, workspace.research_result_store)
+
+# Performance & benchmark-relative analytics: risk and relative statistics over a
+# sealed backtest (and, optionally, a benchmark that is itself a sealed backtest)
+from quantforge import AnalyticsSpecification
+
+spec = AnalyticsSpecification(
+    name="vs-equal-weight",
+    subject_id=strategy_backtest_id,
+    benchmark_id=equal_weight_backtest_id,   # a sealed BacktestResult, not external data
+    var_confidences=("0.95", "0.99"),
+    periods_per_year="12",
+)
+analytics = workspace.analytics_engine.compute(spec)   # a sealed, write-once PerformanceAnalytics
 ## Design Principles
 
 QuantForge is built around several principles:
@@ -107,7 +121,8 @@ QuantForge is built around several principles:
 | v0.8.0 | Deterministic point-in-time backtesting engine (declarative content-addressed strategies, pinned dual corpora, engine-owned execution, corporate-action accounting, fail-closed simulation, reproducible `backtest_id`) |
 | v0.9.0 | Comparative research (declarative content-addressed experiment sweeps over a closed parameter vocabulary + deterministic backtest comparison, reusing sealed Phase 12 results) |
 | v0.10.0 | Research reporting & explainability (content-addressed, reference-only `ResearchReport` over sealed backtests/experiments + a single deterministic Markdown renderer, write-once to the existing sidecar) |
-| Next | Multi-factor strategies / richer execution & cost models |
+| v0.11.0 | Performance & benchmark-relative analytics (pure consumer of sealed backtests: downside/drawdown risk, historical nearest-rank VaR/CVaR, distribution moments, tracking error, information ratio, capture, single-factor OLS alpha/beta; UNDEFINED-preserving; sealed as a content-addressed `PerformanceAnalytics` record) |
+| Next | Multi-factor attribution / richer execution & cost models |
 
 ## Status
 

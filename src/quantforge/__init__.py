@@ -43,6 +43,10 @@ types (also re-exported here) — with membership always keyed by the canonical
 
 from __future__ import annotations
 
+from quantforge.analytics import (
+    AnalyticsSpecification,
+    PerformanceAnalytics,
+)
 from quantforge.availability.resolve import PitValue, RevisedValue
 from quantforge.backtest import (
     AccountingPolicy,
@@ -98,6 +102,7 @@ from quantforge.workspace import Workspace
 
 __all__ = [
     "AccountingPolicy",
+    "AnalyticsSpecification",
     "BacktestComparison",
     "BacktestResult",
     "BacktestSpecification",
@@ -113,6 +118,7 @@ __all__ = [
     "FormulaRegistry",
     "MetricPeriod",
     "MetricStatus",
+    "PerformanceAnalytics",
     "PitFactor",
     "PitMetricValue",
     "PitPanel",
