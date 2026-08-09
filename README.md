@@ -24,6 +24,8 @@ Cross-sectional factors
     ↓
 Universe research
     ↓
+Fundamental panels
+    ↓
 Quantitative research
 
 ### Core capabilities
@@ -36,6 +38,7 @@ Quantitative research
 - Deterministic financial metrics
 - Cross-sectional factor research
 - Universe research (deterministic membership, construction, inspection, comparison, export)
+- Point-in-time fundamental panels (period-series, vintage, cross-sectional matrix)
 - Full fact-to-source provenance
 - Content-addressed versioning
 - Offline/reproducible research
@@ -55,6 +58,13 @@ universe = Universe.from_companies(["AAPL", "MSFT", "NVDA"])
 universe.describe()          # a deterministic, serializable UniverseSummary
 universe.compare(other)      # a UniverseComparison, diffed by canonical company_id
 universe.to_records()        # dependency-free tabular export
+
+# A fundamental panel: one metric over an explicit, content-addressed time axis
+from quantforge.panel import PeriodAxis
+from quantforge.xbrl.contexts import PeriodType
+
+axis = PeriodAxis.annual("2018-12-31", "2023-12-31", period_type=PeriodType.INSTANT)
+panel = apple.panel_as_of("current_ratio", axis, as_of)  # a PitPanel, one cell/period
 ## Design Principles
 
 QuantForge is built around several principles:
@@ -77,6 +87,7 @@ QuantForge is built around several principles:
 | v0.3.0 | Financial metrics |
 | v0.4.0 | Cross-sectional factors + QuantForge rebrand |
 | v0.5.0 | Universe research layer (management, construction, inspection, comparison, export) |
+| v0.6.0 | Point-in-time fundamental panel (period-series, vintage, cross-sectional matrix) |
 | Next | Portfolio / backtesting infrastructure |
 
 ## Status

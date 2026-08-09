@@ -82,6 +82,7 @@ class Workspace:
         self._availability_ingestor: AvailabilityIngestor | None = None
         self._metric_engine: object | None = None
         self._factor_engine: object | None = None
+        self._panel_engine: object | None = None
 
     @property
     def artifact_store(self) -> ArtifactStore:
@@ -162,6 +163,21 @@ class Workspace:
 
             self._factor_engine = FactorEngine(self)
         return self._factor_engine
+
+    @property
+    def panel_engine(self) -> object:
+        """The Phase 10 :class:`~quantforge.panel.engine.PanelEngine` (lazy).
+
+        Imported on first use to avoid a module-load import cycle (the engine
+        imports :class:`Workspace`). Cached for reuse; it reuses this workspace's
+        Phase 7 metric engine, Phase 8 factor engine, and research sidecar rather
+        than building any new store.
+        """
+        if self._panel_engine is None:
+            from quantforge.panel.engine import PanelEngine
+
+            self._panel_engine = PanelEngine(self)
+        return self._panel_engine
 
     # -- construction --------------------------------------------------------
 

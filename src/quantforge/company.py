@@ -18,6 +18,9 @@ to the existing layers —
 * :meth:`facts`   → Phase 4 :class:`~quantforge.canonical.store.CanonicalFactStore`
 * :meth:`metric_as_of` / :meth:`revised_metric`
   → Phase 7 :class:`~quantforge.metrics.engine.MetricEngine`
+* :meth:`panel_as_of` / :meth:`vintage_as_of` / :meth:`revised_panel`
+  → Phase 10 :class:`~quantforge.panel.engine.PanelEngine` (per-filer shapes only;
+  the cross-sectional matrix stays engine-only, Decision D6)
 
 so it can never diverge from the system of record. All identity flows through the
 canonical ``company_id`` (data-model §11); the ticker/name are descriptive labels
@@ -45,6 +48,10 @@ from quantforge.metrics.model import (
     PitMetricValue,
     RevisedMetricValue,
 )
+from quantforge.panel.axis import PeriodAxis
+from quantforge.panel.derive import Derivation
+from quantforge.panel.engine import PanelEngine
+from quantforge.panel.model import PitPanel, RevisedPanel
 from quantforge.registry.model import FilingRecord
 from quantforge.registry.registry import FilingRegistry
 from quantforge.workspace import Workspace
@@ -66,6 +73,7 @@ class Company:
     _registry: FilingRegistry
     _canonical: CanonicalFactStore
     _metric_engine: MetricEngine
+    _panel_engine: PanelEngine
 
     # -- construction --------------------------------------------------------
 
@@ -99,11 +107,14 @@ class Company:
         """Build a company from an already-resolved identity + a workspace."""
         engine = workspace.metric_engine
         assert isinstance(engine, MetricEngine)  # the workspace builds exactly this
+        panel_engine = workspace.panel_engine
+        assert isinstance(panel_engine, PanelEngine)  # the workspace builds this
         return cls(
             identity=identity,
             _registry=workspace.registry,
             _canonical=workspace.canonical_store,
             _metric_engine=engine,
+            _panel_engine=panel_engine,
         )
 
     # -- identity accessors --------------------------------------------------
@@ -184,6 +195,67 @@ class Company:
     def dataset_version(self) -> DatasetVersion:
         """The reproducible snapshot pin for this filer's REVISED metrics (§8)."""
         return self._metric_engine.dataset_version_for(self.cik)
+
+    # -- fundamental panels (Phase 10) --------------------------------------
+
+    def panel_as_of(
+        self,
+        metric_key: str,
+        axis: PeriodAxis,
+        as_of: datetime,
+        *,
+        derivation: Derivation | None = None,
+    ) -> PitPanel:
+        """The point-in-time period-series for this filer at ``as_of`` (§2, D6).
+
+        A thin delegation to :meth:`PanelEngine.panel_as_of` — one metric over the
+        declared :class:`~quantforge.panel.axis.PeriodAxis`, every period evaluated at
+        the same ``as_of`` (timezone-aware; a naive instant is rejected by the Phase 5
+        choke point). An optional multi-period
+        :class:`~quantforge.panel.derive.Derivation` applies over the series. Returns a
+        :class:`~quantforge.panel.model.PitPanel`. The cross-sectional matrix spans
+        filers and so stays engine-only (:meth:`PanelEngine.panel_across`).
+        """
+        return self._panel_engine.panel_as_of(
+            metric_key, self.cik, axis, as_of, derivation=derivation
+        )
+
+    def vintage_as_of(
+        self,
+        metric_key: str,
+        period: MetricPeriod,
+        as_of_axis: list[datetime] | tuple[datetime, ...],
+    ) -> PitPanel:
+        """The vintage / knowledge-evolution panel for this filer+period (Phase 10 §2).
+
+        A thin delegation to :meth:`PanelEngine.vintage_as_of`: one metric at one
+        fiscal ``period`` across many ``as_of`` instants, making restatement effects
+        first-class. PIT-only — REVISED has no ``as_of`` axis (§3.1). Returns a
+        :class:`~quantforge.panel.model.PitPanel`.
+        """
+        return self._panel_engine.vintage_as_of(
+            metric_key, self.cik, period, as_of_axis
+        )
+
+    def revised_panel(
+        self,
+        metric_key: str,
+        axis: PeriodAxis,
+        dataset_version: DatasetVersion | None = None,
+        *,
+        derivation: Derivation | None = None,
+    ) -> RevisedPanel:
+        """The revised period-series for this filer over a pinned snapshot (§2).
+
+        A thin delegation to :meth:`PanelEngine.revised_panel`. Returns a
+        :class:`~quantforge.panel.model.RevisedPanel`, which is *not* interchangeable
+        with a :class:`~quantforge.panel.model.PitPanel` (invariant 28); call
+        :meth:`RevisedPanel.reinterpret_as_pit` for an explicit, re-evaluating
+        conversion. REVISED has no vintage shape (§3.1).
+        """
+        return self._panel_engine.revised_panel(
+            metric_key, self.cik, axis, dataset_version, derivation=derivation
+        )
 
     def __repr__(self) -> str:
         label = self.ticker or self.name or self.cik

@@ -14,9 +14,13 @@ The public API is intentionally small. The front door is :class:`Company`::
 cross-sectional factors); it adds no data model of its own. The point-in-time
 result types (:class:`PitValue` / :class:`RevisedValue`), the derived-metric result
 types (:class:`PitMetricValue` / :class:`RevisedMetricValue`), and the
-cross-sectional factor types (:class:`PitFactor` / :class:`RevisedFactor`) are
+cross-sectional factor types (:class:`PitFactor` / :class:`RevisedFactor`), and the
+fundamental-panel result types (:class:`PitPanel` / :class:`RevisedPanel`) are
 re-exported so the PIT-vs-revised distinction is visible at the import site; they
-remain defined in the availability, metrics, and factors layers respectively.
+remain defined in the availability, metrics, factors, and panel layers respectively.
+The Phase 10 panel front door is :class:`~quantforge.panel.PanelEngine` (evaluate one
+metric over a :class:`~quantforge.panel.PeriodAxis`), reached via
+``Workspace.panel_engine`` or the thin per-filer :meth:`Company.panel_as_of`.
 :class:`FormulaRegistry` / :class:`FormulaDefinition` are exported so callers can
 enumerate and inspect the available metrics without reaching into internals. The
 factor layer's front door is :class:`FactorEngine` (evaluate one metric across a
@@ -58,6 +62,7 @@ from quantforge.metrics import (
     RevisedMetricValue,
     UndefinedReason,
 )
+from quantforge.panel import PitPanel, RevisedPanel
 from quantforge.universe import (
     CompanyMetricFilter,
     ExplicitCompanyFilter,
@@ -82,10 +87,12 @@ __all__ = [
     "MetricStatus",
     "PitFactor",
     "PitMetricValue",
+    "PitPanel",
     "PitValue",
     "ResearchResult",
     "RevisedFactor",
     "RevisedMetricValue",
+    "RevisedPanel",
     "RevisedValue",
     "SectorFilter",
     "Transform",

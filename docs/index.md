@@ -41,6 +41,12 @@ will expand as functionality is implemented.
   rules (explicit companies, a point-in-time metric threshold, a caller-supplied
   sector classification) and emits a reproducible provenance record — composing the
   existing resolver and metric engine, adding no financial logic of its own.
+- [Point-in-Time Fundamental Panel](panel.md) — Phase 10: one Phase 7 metric
+  evaluated over an explicit, content-addressed period axis, in three shapes
+  (period-series, vintage/knowledge-evolution, cross-sectional matrix) with
+  `UNDEFINED`-preserving multi-period derivations, served as distinct `PitPanel` /
+  `RevisedPanel` types. The [locked architecture](phase10-panel-locked.md) is the
+  normative spec.
 - [Engineering Principles](../ARCHITECTURE.md#engineering-principles) — the
   non-negotiable principles guiding the project.
 - [Contributing](../CONTRIBUTING.md) — how to set up a development environment

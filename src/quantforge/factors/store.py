@@ -29,12 +29,39 @@ from __future__ import annotations
 
 import json
 import os
+from collections.abc import Callable
 from pathlib import Path
+from typing import Protocol, TypeVar, runtime_checkable
 
 from quantforge.factors.errors import FactorConsistencyError
 from quantforge.factors.model import ResearchResult
 
-__all__ = ["RESEARCH_RESULT_FORMAT_VERSION", "ResearchResultStore"]
+__all__ = [
+    "RESEARCH_RESULT_FORMAT_VERSION",
+    "ResearchRecord",
+    "ResearchResultStore",
+]
+
+
+@runtime_checkable
+class ResearchRecord(Protocol):
+    """The minimal shape a record must have to live in the sidecar.
+
+    Phase 8's :class:`~quantforge.factors.model.ResearchResult` and Phase 10's
+    :class:`~quantforge.panel.model.PanelResearchResult` both satisfy this — a
+    content-addressed id plus a deterministic ``to_dict``. Keeping the store typed
+    to this protocol (rather than a single concrete class) is what lets Phase 10
+    **reuse** the sidecar's write-once, fail-closed, atomic file I/O instead of
+    duplicating it (Decision D4), while each layer keeps its own §9 record schema.
+    """
+
+    @property
+    def research_result_id(self) -> str: ...
+
+    def to_dict(self) -> dict[str, object]: ...
+
+
+_RecordT = TypeVar("_RecordT")
 
 #: On-disk container format version — distinct from any factor/engine logic version.
 RESEARCH_RESULT_FORMAT_VERSION = 1
@@ -58,13 +85,17 @@ class ResearchResultStore:
         slug = research_result_id.replace(":", "-")
         return self._dir / f"{slug}.json"
 
-    def write(self, result: ResearchResult) -> Path:
-        """Persist a ResearchResult write-once; return its path.
+    def write(self, result: ResearchRecord) -> Path:
+        """Persist a research record write-once; return its path.
 
-        Idempotent when the same result is recomputed (byte-identical payload → a
-        no-op). A *differing* payload under an existing ``research_result_id`` is a
-        determinism violation and fails closed (:class:`FactorConsistencyError`) —
-        never a silent overwrite (§7, §15).
+        Accepts any :class:`ResearchRecord` — the Phase 8
+        :class:`~quantforge.factors.model.ResearchResult` or the Phase 10
+        :class:`~quantforge.panel.model.PanelResearchResult` — so both layers share
+        this one sidecar rather than duplicating its I/O (Decision D4). Idempotent
+        when the same result is recomputed (byte-identical payload → a no-op). A
+        *differing* payload under an existing ``research_result_id`` is a determinism
+        violation and fails closed (:class:`FactorConsistencyError`) — never a silent
+        overwrite (§7, §15).
         """
         document = {
             "research_result_format_version": RESEARCH_RESULT_FORMAT_VERSION,
@@ -95,7 +126,21 @@ class ResearchResultStore:
         return path
 
     def read(self, research_result_id: str) -> ResearchResult | None:
-        """Read back a stored ResearchResult by id (``None`` if not present)."""
+        """Read back a stored Phase 8 ResearchResult by id (``None`` if not present)."""
+        return self.read_as(research_result_id, ResearchResult.from_dict)
+
+    def read_as(
+        self,
+        research_result_id: str,
+        from_dict: Callable[[dict[str, object]], _RecordT],
+    ) -> _RecordT | None:
+        """Read back a stored record by id, decoding with ``from_dict``.
+
+        Generic over the record type so Phase 10 can round-trip its own
+        :class:`~quantforge.panel.model.PanelResearchResult` through this same
+        sidecar (Decision D4) without the store depending on the panel layer.
+        Returns ``None`` when the id is not present.
+        """
         path = self._result_path(research_result_id)
         if not path.exists():
             return None
@@ -103,9 +148,9 @@ class ResearchResultStore:
         raw = document.get("research_result")
         if not isinstance(raw, dict):
             raise FactorConsistencyError(
-                f"stored ResearchResult {research_result_id} is malformed"
+                f"stored research record {research_result_id} is malformed"
             )
-        return ResearchResult.from_dict(raw)
+        return from_dict(raw)
 
     def has(self, research_result_id: str) -> bool:
         return self._result_path(research_result_id).exists()
