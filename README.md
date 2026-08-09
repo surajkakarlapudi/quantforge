@@ -43,6 +43,8 @@ Quantitative research
 - Point-in-time fundamental panels (period-series, vintage, cross-sectional matrix)
 - Point-in-time market data (unadjusted daily OHLCV + first-class corporate actions, PIT-gated adjusted views)
 - Point-in-time backtesting (declarative content-addressed strategies, pinned dual corpora, engine-owned execution, corporate-action accounting, reproducible results)
+- Comparative research (declarative experiment sweeps + deterministic backtest comparison)
+- Research reporting & explainability (content-addressed, reference-only research reports with a deterministic Markdown renderer)
 - Full fact-to-source provenance
 - Content-addressed versioning
 - Offline/reproducible research
@@ -69,6 +71,15 @@ from quantforge.xbrl.contexts import PeriodType
 
 axis = PeriodAxis.annual("2018-12-31", "2023-12-31", period_type=PeriodType.INSTANT)
 panel = apple.panel_as_of("current_ratio", axis, as_of)  # a PitPanel, one cell/period
+
+# A research report: a content-addressed, reference-only manifest over a sealed
+# backtest or experiment, rendered to deterministic Markdown
+from quantforge import ReportSpecification
+from quantforge.report import render_markdown
+
+spec = ReportSpecification(name="momentum-study", scope="experiment", subject_id=experiment_id)
+report = workspace.report_engine.build(spec)   # a sealed, write-once ResearchReport
+markdown = render_markdown(report, workspace.research_result_store)
 ## Design Principles
 
 QuantForge is built around several principles:
@@ -95,6 +106,7 @@ QuantForge is built around several principles:
 | v0.7.0 | Point-in-time market data layer (unadjusted OHLCV, first-class corporate actions, PIT-gated adjusted views, `PitPrice` / `RevisedPrice`) |
 | v0.8.0 | Deterministic point-in-time backtesting engine (declarative content-addressed strategies, pinned dual corpora, engine-owned execution, corporate-action accounting, fail-closed simulation, reproducible `backtest_id`) |
 | v0.9.0 | Comparative research (declarative content-addressed experiment sweeps over a closed parameter vocabulary + deterministic backtest comparison, reusing sealed Phase 12 results) |
+| v0.10.0 | Research reporting & explainability (content-addressed, reference-only `ResearchReport` over sealed backtests/experiments + a single deterministic Markdown renderer, write-once to the existing sidecar) |
 | Next | Multi-factor strategies / richer execution & cost models |
 
 ## Status

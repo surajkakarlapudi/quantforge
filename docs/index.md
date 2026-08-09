@@ -77,6 +77,21 @@ will expand as functionality is implemented.
   incommensurable engine versions, with corpus `pin_mismatch` surfaced rather than
   silently compared. The [locked architecture](phase13-comparative-research-locked.md) is
   the normative spec.
+- [Research Reporting & Explainability](phase14-reporting-locked.md) — Phase 14: a reporting
+  layer strictly *above* Phase 13, a pure consumer of already-sealed, PIT-correct artifacts.
+  A declarative, content-addressed `ReportSpecification` (scope ∈ `{backtest, experiment}`, a
+  `subject_id`, optional comparison directives) drives `ReportEngine.build`, which resolves and
+  verifies each referenced artifact from the shared sidecar (fail closed on any missing/drifted
+  reference) and seals a `ResearchReport`: a **reference-only** manifest of `(kind, reference_id,
+  content_hash, detail)` pointers (never a copy of a financial value) plus the reporting intent
+  and an explicit PIT `boundary_kind`. The report is a `ResearchRecord` persisted write-once to
+  the existing sidecar (no new store), byte-identically round-tripping; `report_id` folds the
+  request + referenced content hashes only — never presentation, schema/format version, or time —
+  so it is sensitive to any change in a reported artifact yet invariant under renderer edits. A
+  comparison is referenced by intent and recomputed deterministically (never persisted; Phase 13
+  analysis untouched). Exactly one pure `render_markdown(report, store)` proves the
+  content/presentation split, formatting ten documented sections with zero effect on identity or
+  storage. The [locked architecture](phase14-reporting-locked.md) is the normative spec.
 - [Engineering Principles](../ARCHITECTURE.md#engineering-principles) — the
   non-negotiable principles guiding the project.
 - [Contributing](../CONTRIBUTING.md) — how to set up a development environment
@@ -85,6 +100,7 @@ will expand as functionality is implemented.
 
 ## Status
 
-The point-in-time data, metrics, universe, panel, market-data, backtesting, and
-comparative-research layers are implemented (Phases 1–13). Source ingestion connectors
-remain planned; the engine operates over content-addressed corpora it is given.
+The point-in-time data, metrics, universe, panel, market-data, backtesting,
+comparative-research, and research-reporting layers are implemented (Phases 1–14). Source
+ingestion connectors remain planned; the engine operates over content-addressed corpora it
+is given.

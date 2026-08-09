@@ -86,6 +86,7 @@ class Workspace:
         self._price_engine: object | None = None
         self._backtest_engine: object | None = None
         self._experiment_engine: object | None = None
+        self._report_engine: object | None = None
 
     @property
     def artifact_store(self) -> ArtifactStore:
@@ -238,6 +239,25 @@ class Workspace:
 
             self._experiment_engine = ExperimentEngine(self)
         return self._experiment_engine
+
+    @property
+    def report_engine(self) -> object:
+        """The Phase 14 :class:`~quantforge.report.engine.ReportEngine` (lazy).
+
+        Imported on first use to avoid a module-load import cycle (the engine imports
+        :class:`Workspace`). Cached for reuse. It sits strictly above Phase 13: it
+        resolves already-sealed backtest/experiment artifacts (and recomputes their
+        comparisons deterministically) from this workspace's shared research sidecar
+        and seals a content-addressed
+        :class:`~quantforge.report.result.ResearchReport` back to the same sidecar — it
+        creates no new store and duplicates no resolution logic, exactly as the other
+        derived engines do.
+        """
+        if self._report_engine is None:
+            from quantforge.report.engine import ReportEngine
+
+            self._report_engine = ReportEngine(self)
+        return self._report_engine
 
     # -- construction --------------------------------------------------------
 

@@ -79,6 +79,11 @@ from quantforge.metrics import (
     UndefinedReason,
 )
 from quantforge.panel import PitPanel, RevisedPanel
+from quantforge.report import (
+    ReportReference,
+    ReportSpecification,
+    ResearchReport,
+)
 from quantforge.universe import (
     CompanyMetricFilter,
     ExplicitCompanyFilter,
@@ -114,6 +119,9 @@ __all__ = [
     "PitPrice",
     "PitValue",
     "RebalanceSchedule",
+    "ReportReference",
+    "ReportSpecification",
+    "ResearchReport",
     "ResearchResult",
     "RevisedFactor",
     "RevisedMetricValue",
