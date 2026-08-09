@@ -4,8 +4,8 @@ This document describes the **intended** high-level architecture of QuantForge
 and the **current status** of each component.
 
 > **Important:** The acquisition, storage, parsing, provenance, point-in-time,
-> and derived-metrics layers now exist (Phases 1–5 and 7; see "Implemented
-> layers" below). Backtesting remains *planned*.
+> derived-metrics, factor, universe, panel, market-data, and backtesting layers
+> now exist (Phases 1–12; see "Implemented layers" below).
 
 > **Data model.** The canonical financial-fact and provenance model that
 > underpins the immutable-raw-data, normalization, provenance, and
@@ -43,7 +43,10 @@ and the **current status** of each component.
 > versioned, fully-provenanced derived metrics (ratios and arithmetic
 > combinations) on demand over the point-in-time knowledge state — served, like
 > Phase 5, as distinct PIT and revised result types so a metric can never
-> silently consume revised history. Backtesting remains planned.
+> silently consume revised history. Above the market-data layer, a **backtesting
+> / research-simulation layer** ([docs/phase12-backtesting-proposal.md](docs/phase12-backtesting-proposal.md))
+> now exists: a deterministic, point-in-time strategy simulator over the pinned
+> fundamentals + market corpora, content-addressed end to end.
 
 ## High-level data flow
 
@@ -92,7 +95,7 @@ and the **current status** of each component.
 | **Universe research surface** | ✅ Exists (Phase 9) | The researcher-facing completion of Phase 9, on the *same* `Universe` object (no second abstraction): inspection (`members()`, `company_ids`, `contains()`), deterministic serializable description (`describe()` → `UniverseSummary`), membership comparison by canonical `company_id` (`compare()` → `UniverseComparison`, which flags any PIT/REVISED `mode_mismatch`), and dependency-free export (`to_dict()`, `to_records()`). Computes no financial statistic and adds no dependency. `ConstructionResult` exposes the same surface enriched with construction provenance. See [docs/phase9-research-layer.md](docs/phase9-research-layer.md). |
 | **Fundamental panel** | ✅ Exists (Phase 10) | One Phase 7 metric evaluated over an explicit, content-addressed period axis, in three shapes — period-series, vintage/knowledge-evolution, and cross-sectional matrix (the last reusing the Phase 9 `Universe`) — with `UNDEFINED`-preserving multi-period derivations (`growth`, `ttm`, `average_balance`, `level_vs_history`). Compute-on-demand and fully provenanced per cell, served as distinct `PitPanel` / `RevisedPanel` types (a `RevisedPanel` can never be passed where a `PitPanel` is required). Adds no market data and no backtester. See [docs/panel.md](docs/panel.md); the [locked architecture](docs/phase10-panel-locked.md) is the normative spec. |
 | **Market data** | ✅ Exists (Phase 11) | A provider-neutral, point-in-time market-data layer added as a *new source beneath* the existing stack (never through it). Canonical **unadjusted** daily OHLCV `PriceObservation`s keyed by `(security_id, trading_date, field)`, plus first-class immutable `CorporateAction`s (split / dividend / symbol-change / delisting / merger), each carrying its own fail-closed availability boundary under a versioned market `AvailabilityPolicy`. Instrument identity reuses the designed `security_id` (`cik:<CIK>#class:<...>`; ticker is never identity). Adjusted prices are a derived, versioned, PIT-gated *view* over the immutable actions — never the stored value. Served as distinct `PitPrice` / `RevisedPrice` types (a `RevisedPrice` can never be passed where a `PitPrice` is required). Reuses the Phase 1 content-addressed storage and Phase 5 PIT machinery; edits no prior store, adds no runtime dependency, introduces no database, and builds no backtester. Never rewrites a SEC `Fact`. See the [locked architecture](docs/phase11-market-data-locked.md). |
-| **Backtesting** | 🔜 Planned | Evaluates strategies over point-in-time data with reproducible results. Consumes the Phase 11 PIT-only hand-off (`price_as_of` / `price_series_as_of` / `adjusted_series_as_of` returning `PitPrice` / `PitPriceSeries`); `strategy_version` stays reserved. |
+| **Backtesting** | ✅ Exists (Phase 12) | A deterministic, point-in-time strategy simulator over the pinned fundamentals + market corpora. A strategy is a declarative, content-addressed spec (`signal → rank → select → weight`); the engine owns execution (strategies emit only `TargetWeights`), consuming the Phase 11 PIT-only hand-off (`price_as_of` / `price_series_as_of` returning `PitPrice` / `PitPriceSeries`), applying `CorporateAction`s (split / dividend / delisting / merger / symbol-change) through Phase 11, honoring survivorship through Phase 9, and computing v1 statistics (cumulative/period return, Sharpe, max drawdown, turnover). Every decision at time `T` sees only PIT-eligible-at-`T` data (BT-2); **both** corpus snapshots are pinned and verified (BT-1); missing data is recorded in the ledger, never guessed (BT-4); and the whole run is content-addressed by a `backtest_id` folding every result-changing input (D6) — same inputs reproduce the same id and result on any machine. Reuses the existing stores and PIT machinery; adds no runtime dependency and no database. See [docs/phase12-backtesting-proposal.md](docs/phase12-backtesting-proposal.md). |
 | **Reproducible Research** | 🔜 Planned | The end goal: analyses that can be re-run to produce identical results. |
 | **Repository & tooling foundation** | ✅ Exists | Packaging (src layout, `pyproject.toml`, `uv.lock`), tests, lint/format, type checking, pre-commit, and docs. |
 

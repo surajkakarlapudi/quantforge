@@ -26,6 +26,8 @@ Universe research
     ↓
 Fundamental panels
     ↓
+Point-in-time backtesting
+    ↓
 Quantitative research
 
 ### Core capabilities
@@ -40,6 +42,7 @@ Quantitative research
 - Universe research (deterministic membership, construction, inspection, comparison, export)
 - Point-in-time fundamental panels (period-series, vintage, cross-sectional matrix)
 - Point-in-time market data (unadjusted daily OHLCV + first-class corporate actions, PIT-gated adjusted views)
+- Point-in-time backtesting (declarative content-addressed strategies, pinned dual corpora, engine-owned execution, corporate-action accounting, reproducible results)
 - Full fact-to-source provenance
 - Content-addressed versioning
 - Offline/reproducible research
@@ -90,7 +93,8 @@ QuantForge is built around several principles:
 | v0.5.0 | Universe research layer (management, construction, inspection, comparison, export) |
 | v0.6.0 | Point-in-time fundamental panel (period-series, vintage, cross-sectional matrix) |
 | v0.7.0 | Point-in-time market data layer (unadjusted OHLCV, first-class corporate actions, PIT-gated adjusted views, `PitPrice` / `RevisedPrice`) |
-| Next | Portfolio / backtesting infrastructure |
+| v0.8.0 | Deterministic point-in-time backtesting engine (declarative content-addressed strategies, pinned dual corpora, engine-owned execution, corporate-action accounting, fail-closed simulation, reproducible `backtest_id`) |
+| Next | Multi-factor strategies / richer execution & cost models |
 
 ## Status
 

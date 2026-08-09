@@ -55,6 +55,16 @@ will expand as functionality is implemented.
   `RevisedPrice` types over an own fail-closed availability boundary. Adjusted prices
   are a derived, PIT-gated view; adds no backtester and never rewrites a SEC `Fact`.
   The [locked architecture](phase11-market-data-locked.md) is the normative spec.
+- [Backtesting / Research Simulation](phase12-backtesting-proposal.md) — Phase 12: a
+  deterministic, point-in-time strategy simulator over the pinned fundamentals +
+  market corpora. A strategy is a declarative, content-addressed spec (signal → rank
+  → select → weight); the engine owns execution (strategies emit only target
+  weights), applies corporate actions through Phase 11, honors survivorship through
+  Phase 9, and fails closed (missing data is recorded in the ledger, never guessed).
+  Every decision at time `T` sees only PIT-eligible-at-`T` data, both corpus snapshots
+  are pinned and verified, and the whole run is content-addressed by a `backtest_id`
+  folding every result-changing input — same inputs reproduce the same id and result
+  on any machine. Adds no runtime dependency and no database.
 - [Engineering Principles](../ARCHITECTURE.md#engineering-principles) — the
   non-negotiable principles guiding the project.
 - [Contributing](../CONTRIBUTING.md) — how to set up a development environment

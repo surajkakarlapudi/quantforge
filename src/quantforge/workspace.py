@@ -84,6 +84,7 @@ class Workspace:
         self._factor_engine: object | None = None
         self._panel_engine: object | None = None
         self._price_engine: object | None = None
+        self._backtest_engine: object | None = None
 
     @property
     def artifact_store(self) -> ArtifactStore:
@@ -202,6 +203,23 @@ class Workspace:
             market_root = self._availability_store.root.parent / "market"
             self._price_engine = PriceEngine(MarketDataStore(market_root))
         return self._price_engine
+
+    @property
+    def backtest_engine(self) -> object:
+        """The Phase 12 :class:`~quantforge.backtest.engine.BacktestEngine` (lazy).
+
+        Imported on first use to avoid a module-load import cycle (the engine imports
+        :class:`Workspace`). Cached for reuse. It composes this workspace's Phase 8
+        factor engine, Phase 10 panel engine, and Phase 11 price engine through their
+        public ``*_as_of`` accessors and builds a Phase 9 universe builder over the
+        same metric engine — it creates no new store and duplicates no resolution
+        logic, exactly as :attr:`price_engine` and the other derived engines do.
+        """
+        if self._backtest_engine is None:
+            from quantforge.backtest.engine import BacktestEngine
+
+            self._backtest_engine = BacktestEngine(self)
+        return self._backtest_engine
 
     # -- construction --------------------------------------------------------
 

@@ -85,6 +85,13 @@ class AvailabilityStore:
 
         path = self._company_path(company_id)
         path.parent.mkdir(parents=True, exist_ok=True)
+        # Idempotent skip: re-deriving one filer's availability (e.g. every backtest
+        # rebalance) reproduces byte-identical content, so there is no need to rewrite.
+        # Skipping the replace keeps the derivation deterministic *and* avoids a
+        # transient Windows ``os.replace`` lock on a destination another handle just
+        # touched — the same write-once discipline used across the project's stores.
+        if path.exists() and path.read_bytes() == payload:
+            return path
         tmp_path = path.parent / f".{path.name}.{os.getpid()}.tmp"
         with open(tmp_path, "wb") as fh:
             fh.write(payload)

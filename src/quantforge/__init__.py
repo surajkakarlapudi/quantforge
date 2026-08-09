@@ -44,6 +44,15 @@ types (also re-exported here) — with membership always keyed by the canonical
 from __future__ import annotations
 
 from quantforge.availability.resolve import PitValue, RevisedValue
+from quantforge.backtest import (
+    AccountingPolicy,
+    BacktestResult,
+    BacktestSpecification,
+    CostModel,
+    RebalanceSchedule,
+    StrategySpecification,
+    TargetWeights,
+)
 from quantforge.company import Company
 from quantforge.factors import (
     FactorEngine,
@@ -77,9 +86,13 @@ from quantforge.universe import (
 from quantforge.workspace import Workspace
 
 __all__ = [
+    "AccountingPolicy",
+    "BacktestResult",
+    "BacktestSpecification",
     "Company",
     "CompanyIdentity",
     "CompanyMetricFilter",
+    "CostModel",
     "ExplicitCompanyFilter",
     "FactorEngine",
     "FormulaDefinition",
@@ -91,6 +104,7 @@ __all__ = [
     "PitPanel",
     "PitPrice",
     "PitValue",
+    "RebalanceSchedule",
     "ResearchResult",
     "RevisedFactor",
     "RevisedMetricValue",
@@ -98,6 +112,8 @@ __all__ = [
     "RevisedPrice",
     "RevisedValue",
     "SectorFilter",
+    "StrategySpecification",
+    "TargetWeights",
     "Transform",
     "UndefinedReason",
     "Universe",
