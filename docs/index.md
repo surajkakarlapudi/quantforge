@@ -65,6 +65,18 @@ will expand as functionality is implemented.
   are pinned and verified, and the whole run is content-addressed by a `backtest_id`
   folding every result-changing input — same inputs reproduce the same id and result
   on any machine. Adds no runtime dependency and no database.
+- [Comparative Research](phase13-comparative-research-locked.md) — Phase 13: reproducible
+  research strictly *above* Phase 12, a pure consumer of already-sealed, PIT-correct
+  backtests. A declarative, content-addressed `ExperimentSpecification` sweeps a closed
+  v1 vocabulary of backtest parameters (corpus pins are inherited verbatim, never swept);
+  `ExperimentEngine.run` deterministically expands the Cartesian product, runs each child
+  through the Phase 12 engine, and seals a thin `ExperimentResult` ledger of
+  `(coordinate, backtest_id)` pointers to the shared research sidecar (write-once, no new
+  store). `BacktestComparison` ranks sealed backtests (or an experiment's children) by one
+  v1 performance statistic — fail-closed on unknown statistics, absent members, and
+  incommensurable engine versions, with corpus `pin_mismatch` surfaced rather than
+  silently compared. The [locked architecture](phase13-comparative-research-locked.md) is
+  the normative spec.
 - [Engineering Principles](../ARCHITECTURE.md#engineering-principles) — the
   non-negotiable principles guiding the project.
 - [Contributing](../CONTRIBUTING.md) — how to set up a development environment
@@ -73,5 +85,6 @@ will expand as functionality is implemented.
 
 ## Status
 
-No financial functionality is implemented yet. The current release establishes
-the repository, packaging, and development-tooling foundation only.
+The point-in-time data, metrics, universe, panel, market-data, backtesting, and
+comparative-research layers are implemented (Phases 1–13). Source ingestion connectors
+remain planned; the engine operates over content-addressed corpora it is given.

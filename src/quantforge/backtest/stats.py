@@ -77,6 +77,46 @@ class PerformanceStatistics:
             "period_returns": list(self.period_returns),
         }
 
+    @classmethod
+    def from_dict(cls, raw: dict[str, object]) -> PerformanceStatistics:
+        """Reconstruct the statistics from their :meth:`to_dict` payload (Phase 13 D3).
+
+        The additive inverse of :meth:`to_dict`, so a sealed
+        :class:`~quantforge.backtest.result.BacktestResult` round-trips byte-identically
+        through the research sidecar. ``periods`` is a required int, every statistic a
+        required decimal string, and ``period_returns`` an ordered list of decimal
+        strings; a malformed payload fails closed with a :class:`ValueError`.
+        """
+        periods = raw["periods"]
+        if not isinstance(periods, int):
+            raise ValueError("periods must be an int")
+        returns = raw["period_returns"]
+        if not isinstance(returns, list) or not all(
+            isinstance(r, str) for r in returns
+        ):
+            raise ValueError("period_returns must be a list of strings")
+        return cls(
+            periods=periods,
+            initial_equity=_req_str(raw, "initial_equity"),
+            final_equity=_req_str(raw, "final_equity"),
+            peak_equity=_req_str(raw, "peak_equity"),
+            cumulative_return=_req_str(raw, "cumulative_return"),
+            mean_period_return=_req_str(raw, "mean_period_return"),
+            volatility=_req_str(raw, "volatility"),
+            sharpe=_req_str(raw, "sharpe"),
+            max_drawdown=_req_str(raw, "max_drawdown"),
+            mean_turnover=_req_str(raw, "mean_turnover"),
+            period_returns=tuple(returns),
+        )
+
+
+def _req_str(raw: dict[str, object], key: str) -> str:
+    """Read a required string from a decoded payload; fail closed otherwise."""
+    value = raw[key]
+    if not isinstance(value, str):
+        raise ValueError(f"{key} must be a string")
+    return value
+
 
 def compute_statistics(
     equity_curve: list[Decimal],

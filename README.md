@@ -94,6 +94,7 @@ QuantForge is built around several principles:
 | v0.6.0 | Point-in-time fundamental panel (period-series, vintage, cross-sectional matrix) |
 | v0.7.0 | Point-in-time market data layer (unadjusted OHLCV, first-class corporate actions, PIT-gated adjusted views, `PitPrice` / `RevisedPrice`) |
 | v0.8.0 | Deterministic point-in-time backtesting engine (declarative content-addressed strategies, pinned dual corpora, engine-owned execution, corporate-action accounting, fail-closed simulation, reproducible `backtest_id`) |
+| v0.9.0 | Comparative research (declarative content-addressed experiment sweeps over a closed parameter vocabulary + deterministic backtest comparison, reusing sealed Phase 12 results) |
 | Next | Multi-factor strategies / richer execution & cost models |
 
 ## Status

@@ -31,6 +31,19 @@ __all__ = ["Portfolio", "Position"]
 _ZERO = Decimal(0)
 
 
+def _req_str(raw: dict[str, object], key: str) -> str:
+    """Read a required string from a decoded payload; fail closed otherwise.
+
+    The fail-closed decode idiom shared with :mod:`quantforge.factors.model` — a
+    ``from_dict`` reconstruction refuses a malformed or wrong-typed field rather than
+    guessing, so a corrupt sidecar payload can never silently produce a wrong result.
+    """
+    value = raw[key]
+    if not isinstance(value, str):
+        raise ValueError(f"{key} must be a string")
+    return value
+
+
 @dataclass(frozen=True, slots=True)
 class Position:
     """An immutable snapshot of one holding: ``security_id`` + unadjusted shares.
@@ -48,6 +61,21 @@ class Position:
 
     def to_dict(self) -> dict[str, object]:
         return {"security_id": self.security_id, "shares": self.shares}
+
+    @classmethod
+    def from_dict(cls, raw: dict[str, object]) -> Position:
+        """Reconstruct a :class:`Position` from its :meth:`to_dict` payload.
+
+        The additive inverse of :meth:`to_dict` (Phase 13 D3): a sealed
+        :class:`~quantforge.backtest.result.BacktestResult` read back from the sidecar
+        must reconstruct byte-identically, so every nested value type round-trips. Both
+        fields are required strings; a malformed payload fails closed with a
+        :class:`ValueError` (the same discipline the factor/panel decoders use).
+        """
+        return cls(
+            security_id=_req_str(raw, "security_id"),
+            shares=_req_str(raw, "shares"),
+        )
 
 
 class Portfolio:

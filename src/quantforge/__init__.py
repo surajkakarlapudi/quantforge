@@ -54,6 +54,12 @@ from quantforge.backtest import (
     TargetWeights,
 )
 from quantforge.company import Company
+from quantforge.experiment import (
+    BacktestComparison,
+    ExperimentResult,
+    ExperimentSpecification,
+    SweepAxis,
+)
 from quantforge.factors import (
     FactorEngine,
     PitFactor,
@@ -87,12 +93,15 @@ from quantforge.workspace import Workspace
 
 __all__ = [
     "AccountingPolicy",
+    "BacktestComparison",
     "BacktestResult",
     "BacktestSpecification",
     "Company",
     "CompanyIdentity",
     "CompanyMetricFilter",
     "CostModel",
+    "ExperimentResult",
+    "ExperimentSpecification",
     "ExplicitCompanyFilter",
     "FactorEngine",
     "FormulaDefinition",
@@ -113,6 +122,7 @@ __all__ = [
     "RevisedValue",
     "SectorFilter",
     "StrategySpecification",
+    "SweepAxis",
     "TargetWeights",
     "Transform",
     "UndefinedReason",
