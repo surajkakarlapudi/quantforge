@@ -158,6 +158,40 @@ will expand as functionality is implemented.
   the series (D4). All arithmetic runs under the pinned `Decimal` context; no float, wall-clock, or
   RNG enters any value or id. The [locked architecture](phase17-factor-attribution-locked.md) is the
   normative spec.
+- [Cross-Sectional Factor-Return Regression](phase18-cross-sectional-regression-locked.md) — Phase
+  18: a cross-sectional factor-return-regression layer (the Fama–MacBeth method) — the multivariate
+  cross-sectional sibling of the Phase 16 signal-diagnostics layer, as Phase 17 is the multivariate
+  time-series sibling of Phase 15 — sitting strictly *above* the Phase 9 universe, Phase 10 panel,
+  and Phase 11 price layers and composing them only (it never consumes a `BacktestResult`). A
+  declarative, content-addressed `CrossSectionalRegressionSpecification` (a name, an **ordered** tuple
+  of at most `K_MAX = 8` `FactorSpec` signals — each a `(metric_key, MetricPeriod)`, order semantic
+  and never sorted, the display `label` identity-invisible — a Phase 9 `UniverseSpecification`, a
+  Phase 12 `RebalanceSchedule` of evaluation `as_of` instants, a `"<n>d"` forward horizon, an
+  intercept flag defaulting on, and the two corpus pins — all folded into identity) drives
+  `CrossSectionalRegressionEngine.estimate`, which re-verifies **both** corpora and fails closed on
+  any pin mismatch or non-unique normalizer (XS-1). At each scheduled `T` it rebuilds membership PIT
+  as-of `T` (survivorship-free), reads the *K*-signal cross-section as **PIT-eligible-at-`T`** values
+  via `panel_across(as_of=T)` (XS-3), and pairs each member with its realized **forward** return over
+  `[T, T+h]` trading days through the Phase 11 PIT-gated adjusted view (the Phase 16 forward-return
+  machinery reused verbatim); a member lacking any signal at `T` or a computable forward return is
+  excluded and recorded in coverage, never imputed (XS-4). When the eligible-member count clears the
+  degrees-of-freedom floor (`n_members >= K + include_intercept + 1`) it runs one exact-`Decimal`
+  cross-sectional OLS of the forward returns on the *K* **raw** signals (plus an optional intercept)
+  via the shared `quantforge._linalg` LDLᵀ solver with an **exact zero-pivot test** — a below-floor or
+  singular date is a recorded `UNDEFINED` block, never raised — then aggregates each coefficient's
+  per-date series into a Fama–MacBeth premium (time-series mean, plain **population** standard error
+  `popStd/√M`, t-statistic). A run yielding fewer than two valid dates fails closed. The output is
+  **ex-post, not PIT** — `CrossSectionalRegression` is not a `Pit*` type and exposes no as-of accessor;
+  `boundary_kind="pit"` documents only that the signal side was PIT-eligible (XS-2). Every undefinable
+  statistic (a singular/collinear design, insufficient members, a zero-variance regressand, no or a
+  single valid date, zero cross-date dispersion) is a first-class `UNDEFINED` cell with its reason —
+  never a fabricated `0`, dropped factor, or divide-by-zero. The sealed `CrossSectionalRegression` is a
+  `ResearchRecord` persisted write-once to the existing sidecar (no new store), byte-identically
+  round-tripping; `crosssection_id` folds the engine + formula + spec version, the full declared
+  request, **both** corpus pins, and the `result_hash` over the computed answer (coverage is audit
+  metadata and is not folded). All arithmetic runs under the pinned `Decimal` context; no float,
+  wall-clock, or RNG enters any value or id. The
+  [locked architecture](phase18-cross-sectional-regression-locked.md) is the normative spec.
 - [Engineering Principles](../ARCHITECTURE.md#engineering-principles) — the
   non-negotiable principles guiding the project.
 - [Contributing](../CONTRIBUTING.md) — how to set up a development environment
@@ -167,6 +201,7 @@ will expand as functionality is implemented.
 ## Status
 
 The point-in-time data, metrics, universe, panel, market-data, backtesting,
-comparative-research, research-reporting, performance-analytics, signal-diagnostics, and
-multi-factor performance-attribution layers are implemented (Phases 1–17). Source ingestion
+comparative-research, research-reporting, performance-analytics, signal-diagnostics,
+multi-factor performance-attribution, and cross-sectional factor-return-regression
+(Fama–MacBeth premia) layers are implemented (Phases 1–18). Source ingestion
 connectors remain planned; the engine operates over content-addressed corpora it is given.

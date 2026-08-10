@@ -50,6 +50,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from decimal import Context, Decimal, InvalidOperation, localcontext
 
+from quantforge._linalg import inverse_diagonal as _inverse_diagonal
+from quantforge._linalg import ldl as _ldl
+from quantforge._linalg import ldl_solve as _ldl_solve
 from quantforge.attribution.errors import AttributionConfigurationError
 from quantforge.attribution.model import (
     DIAGNOSTIC_KEYS,
@@ -122,66 +125,11 @@ def parse_returns(
         return parsed
 
 
-# -- exact-Decimal linear algebra (run inside an active localcontext) --------
-
-
-def _ldl(a: list[list[Decimal]]) -> tuple[list[list[Decimal]], list[Decimal]] | None:
-    """LDLᵀ factorization of a symmetric matrix; ``None`` if not positive-definite.
-
-    Returns unit-lower-triangular ``L`` and the diagonal ``D`` such that ``A = L·D·Lᵀ``.
-    A pivot ``D[j] <= 0`` means ``A`` is not positive-definite (rank-deficient /
-    collinear design) — the exact zero-pivot test of §18 — and yields ``None`` so the
-    caller records ``SINGULAR_DESIGN`` rather than fabricating a coefficient. No float
-    tolerance enters the test; the pivot is an exact ``Decimal``.
-    """
-    p = len(a)
-    lower = [[_ZERO] * p for _ in range(p)]
-    diag = [_ZERO] * p
-    for j in range(p):
-        pivot = a[j][j] - sum((lower[j][k] ** 2) * diag[k] for k in range(j))
-        if pivot <= _ZERO:
-            return None
-        diag[j] = pivot
-        lower[j][j] = _ONE
-        for i in range(j + 1, p):
-            off = a[i][j] - sum(lower[i][k] * lower[j][k] * diag[k] for k in range(j))
-            lower[i][j] = off / pivot
-    return lower, diag
-
-
-def _ldl_solve(
-    lower: list[list[Decimal]], diag: list[Decimal], b: list[Decimal]
-) -> list[Decimal]:
-    """Solve ``A·x = b`` given the ``A = L·D·Lᵀ`` factorization (forward/diag/back)."""
-    p = len(diag)
-    # Forward: L z = b (L unit lower triangular).
-    z = [_ZERO] * p
-    for i in range(p):
-        z[i] = b[i] - sum(lower[i][k] * z[k] for k in range(i))
-    # Diagonal: D w = z.
-    w = [z[i] / diag[i] for i in range(p)]
-    # Back: Lᵀ x = w (Lᵀ unit upper triangular).
-    x = [_ZERO] * p
-    for i in range(p - 1, -1, -1):
-        x[i] = w[i] - sum(lower[k][i] * x[k] for k in range(i + 1, p))
-    return x
-
-
-def _inverse_diagonal(lower: list[list[Decimal]], diag: list[Decimal]) -> list[Decimal]:
-    """The diagonal of ``A⁻¹`` from the factorization (one solve per unit vector).
-
-    Only the diagonal is needed — the coefficient standard errors are
-    ``√(sigma_sq·(A⁻¹)ᵢᵢ)`` — so column ``j`` of ``A⁻¹`` is obtained by solving ``A·z =
-    eⱼ`` and its ``j``-th entry taken.
-    """
-    p = len(diag)
-    out: list[Decimal] = []
-    for j in range(p):
-        unit = [_ZERO] * p
-        unit[j] = _ONE
-        column = _ldl_solve(lower, diag, unit)
-        out.append(column[j])
-    return out
+# -- exact-Decimal linear algebra --------------------------------------------
+# The LDLᵀ factorization / solves live in the shared internal helper
+# ``quantforge._linalg`` (imported above as ``_ldl`` / ``_ldl_solve`` /
+# ``_inverse_diagonal``) so this layer and the cross-sectional regression share one
+# verified, byte-identical solver. They run inside the ``localcontext`` opened below.
 
 
 def _known(value: Decimal) -> StatValue:

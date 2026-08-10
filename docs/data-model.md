@@ -1014,6 +1014,51 @@ warnings.
     copy, and a revised value is never written back over the observation it
     supersedes (cf. invariants 5, 22).
 
+**Signal-diagnostics invariants** (Phase 16; additive — these do not weaken 1–30)
+SD-1. **Corpus pinning for a diagnostic.** A signal-diagnostics run records and,
+    on re-run, re-verifies **both** the fundamentals `dataset_version_id` and the
+    market `market_dataset_version_id`; a mismatch fails closed, and a changed
+    corpus yields a different `diagnostics_id`. (The BT-1 analog for a
+    read-both-corpora diagnostic over an append-only store.)
+SD-2. **A forward-looking diagnostic is not a PIT value.** A `SignalDiagnostics`
+    incorporates realized *forward* (post-`T`) returns and can never be
+    substituted where a PIT as-of-`T` value/signal is required; it is not a
+    `Pit*` type and exposes no as-of accessor. `boundary_kind = "pit"` documents
+    that the *signal* was PIT-eligible, not that the diagnostic is a PIT value.
+    (The direct analog of invariant 28.)
+SD-3. **Signal PIT-eligibility.** The signal at each evaluation date `T` is read
+    PIT-eligible-at-`T` (via `panel_across(..., as_of=T)`, invariant 29); no
+    post-`T` data ever contaminates the signal side.
+SD-4. **Fail-closed pairing.** A member lacking a PIT signal at `T` or a
+    computable forward return is excluded from that date's pair set and recorded
+    in coverage; it is never imputed, zero-filled, or fabricated (cf. invariants
+    9, 12).
+
+**Cross-sectional-regression invariants** (Phase 18; additive — these do not weaken 1–30)
+XS-1. **Corpus pinning for a regression.** A cross-sectional-regression run
+    records and, on re-run, re-verifies **both** the fundamentals
+    `dataset_version_id` and the market `market_dataset_version_id`; a mismatch —
+    or a corpus that does not admit a single normalizing transformation version —
+    fails closed, and a changed corpus yields a different `crosssection_id`. (The
+    SD-1 analog for a read-both-corpora regression over an append-only store.)
+XS-2. **A forward-looking regression is not a PIT value.** A
+    `CrossSectionalRegression` regresses realized *forward* (post-`T`) returns on
+    as-of-`T` signals and can never be substituted where a PIT as-of-`T`
+    value/signal is required; it is not a `Pit*` type and exposes no as-of
+    accessor. `boundary_kind = "pit"` documents that the *signal side* was
+    PIT-eligible, not that the regression is a PIT value. (The direct analog of
+    invariant 28 / SD-2.)
+XS-3. **Signal PIT-eligibility.** Each factor's signal at every evaluation date
+    `T` is read PIT-eligible-at-`T` (via `panel_across(..., as_of=T)`, invariant
+    29); no post-`T` data ever contaminates any signal column.
+XS-4. **Fail-closed pairing.** A member lacking **any** of the `K` PIT signals at
+    `T` or a computable forward return is excluded from that date's cross-section
+    and recorded in coverage; it is never imputed, zero-filled, or fabricated. A
+    per-date design below the degrees-of-freedom floor
+    (`n_members < K + include_intercept + 1`) or singular is a recorded
+    `UNDEFINED` date, never raised and never silently dropped (cf. invariants 9,
+    12; SD-4).
+
 ---
 
 ## 13. Adversarial cases

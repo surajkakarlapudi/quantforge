@@ -62,6 +62,11 @@ from quantforge.backtest import (
     TargetWeights,
 )
 from quantforge.company import Company
+from quantforge.crosssection import (
+    CrossSectionalRegression,
+    CrossSectionalRegressionSpecification,
+    FactorSpec,
+)
 from quantforge.diagnostics import (
     SignalDiagnostics,
     SignalDiagnosticsSpecification,
@@ -119,11 +124,14 @@ __all__ = [
     "CompanyIdentity",
     "CompanyMetricFilter",
     "CostModel",
+    "CrossSectionalRegression",
+    "CrossSectionalRegressionSpecification",
     "ExperimentResult",
     "ExperimentSpecification",
     "ExplicitCompanyFilter",
     "FactorAttribution",
     "FactorEngine",
+    "FactorSpec",
     "FormulaDefinition",
     "FormulaRegistry",
     "MetricPeriod",

@@ -16,3 +16,11 @@ def test_package_imports() -> None:
 def test_version_is_exposed() -> None:
     assert isinstance(quantforge.__version__, str)
     assert quantforge.__version__
+
+
+def test_crosssection_public_api_is_exported() -> None:
+    # The Phase 18 request/result types are top-level; the engine is reached via the
+    # Workspace, not re-exported here.
+    assert quantforge.CrossSectionalRegressionSpecification is not None
+    assert quantforge.CrossSectionalRegression is not None
+    assert quantforge.FactorSpec is not None

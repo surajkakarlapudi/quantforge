@@ -90,6 +90,7 @@ class Workspace:
         self._analytics_engine: object | None = None
         self._signal_diagnostics_engine: object | None = None
         self._attribution_engine: object | None = None
+        self._crosssection_engine: object | None = None
 
     @property
     def artifact_store(self) -> ArtifactStore:
@@ -321,6 +322,30 @@ class Workspace:
 
             self._attribution_engine = AttributionEngine(self)
         return self._attribution_engine
+
+    @property
+    def crosssection_engine(self) -> object:
+        """The Phase 18 cross-sectional-regression engine (lazy).
+
+        :class:`~quantforge.crosssection.engine.CrossSectionalRegressionEngine` is
+        imported on first use to avoid a module-load import cycle (the engine imports
+        :class:`Workspace`). Cached for reuse. The multivariate cross-sectional sibling
+        of the Phase 16 diagnostics engine: a pure consumer that composes this
+        workspace's Phase 9 universe builder, Phase 10 panel engine, and Phase 11 price
+        engine to run one exact-``Decimal`` OLS of realized forward returns on an
+        as-of-``T`` ``K``-signal cross-section per scheduled date, aggregates the
+        per-date coefficients into Fama-MacBeth premia, and seals a content-addressed
+        :class:`~quantforge.crosssection.result.CrossSectionalRegression` back to the
+        shared research sidecar - it creates no new store and duplicates no resolution
+        logic, exactly as the other derived engines do.
+        """
+        if self._crosssection_engine is None:
+            from quantforge.crosssection.engine import (
+                CrossSectionalRegressionEngine,
+            )
+
+            self._crosssection_engine = CrossSectionalRegressionEngine(self)
+        return self._crosssection_engine
 
     # -- construction --------------------------------------------------------
 
