@@ -58,6 +58,10 @@ from quantforge.backtest import (
     TargetWeights,
 )
 from quantforge.company import Company
+from quantforge.diagnostics import (
+    SignalDiagnostics,
+    SignalDiagnosticsSpecification,
+)
 from quantforge.experiment import (
     BacktestComparison,
     ExperimentResult,
@@ -135,6 +139,8 @@ __all__ = [
     "RevisedPrice",
     "RevisedValue",
     "SectorFilter",
+    "SignalDiagnostics",
+    "SignalDiagnosticsSpecification",
     "StrategySpecification",
     "SweepAxis",
     "TargetWeights",

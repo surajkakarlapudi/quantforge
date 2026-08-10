@@ -110,6 +110,28 @@ will expand as functionality is implemented.
   answer. All arithmetic runs under the pinned `Decimal` context; no float, wall-clock, or RNG
   enters any value or id. The [locked architecture](phase15-analytics-locked.md) is the normative
   spec.
+- [Cross-Sectional Signal Diagnostics](phase16-signal-diagnostics-locked.md) — Phase 16: a
+  signal-diagnostics layer *parallel* to Phase 12 (the diagnostic sibling of the backtester),
+  strictly *above* the Phase 9 universe, Phase 10 panel, and Phase 11 price layers and composing
+  them only — it never consumes a `BacktestResult`. A declarative, content-addressed
+  `SignalDiagnosticsSpecification` (one signal `metric_key`, its explicit `MetricPeriod`, a Phase 9
+  `UniverseSpecification`, a Phase 12 `RebalanceSchedule` of evaluation `as_of` instants, a `"<n>d"`
+  forward horizon, a quantile count, the closed IC-method set, and both corpus pins) drives
+  `SignalDiagnosticsEngine.evaluate`, which re-verifies **both** corpora (fundamentals + market) and
+  fails closed on any pin mismatch (SD-1 — a changed corpus yields a different `diagnostics_id`). At
+  each scheduled `T` it reads the signal as a **PIT-eligible-at-`T`** value (SD-3) and pairs it
+  against the realized **forward** return over the horizon; a member lacking a PIT signal or a
+  computable forward return is excluded and recorded in coverage, never imputed (SD-4). It computes
+  per-date Spearman + Pearson IC, quantile-bucket profiles + a top-minus-bottom spread, and an IC
+  summary (mean, population std, information ratio, t-stat, hit-rate). The forward return is a
+  diagnostic, **not** a PIT value — no `Pit*` type, no as-of accessor; `boundary_kind="pit"`
+  documents only the signal side (SD-2). Every undefinable statistic is a first-class `UNDEFINED`
+  cell with its reason — never fabricated, never a divide-by-zero. The sealed `SignalDiagnostics` is
+  a `ResearchRecord` persisted write-once to the existing sidecar (no new store), byte-identically
+  round-tripping; `diagnostics_id` folds the engine + formula + spec version, the full declared
+  request, both corpus pins, and the `result_hash` over the computed answer. All arithmetic runs
+  under the pinned `Decimal` context; no float, wall-clock, or RNG enters any value or id. The
+  [locked architecture](phase16-signal-diagnostics-locked.md) is the normative spec.
 - [Engineering Principles](../ARCHITECTURE.md#engineering-principles) — the
   non-negotiable principles guiding the project.
 - [Contributing](../CONTRIBUTING.md) — how to set up a development environment
@@ -119,6 +141,6 @@ will expand as functionality is implemented.
 ## Status
 
 The point-in-time data, metrics, universe, panel, market-data, backtesting,
-comparative-research, research-reporting, and performance-analytics layers are implemented
-(Phases 1–15). Source ingestion connectors remain planned; the engine operates over
+comparative-research, research-reporting, performance-analytics, and signal-diagnostics layers are
+implemented (Phases 1–16). Source ingestion connectors remain planned; the engine operates over
 content-addressed corpora it is given.

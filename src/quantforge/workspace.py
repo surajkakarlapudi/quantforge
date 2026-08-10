@@ -88,6 +88,7 @@ class Workspace:
         self._experiment_engine: object | None = None
         self._report_engine: object | None = None
         self._analytics_engine: object | None = None
+        self._signal_diagnostics_engine: object | None = None
 
     @property
     def artifact_store(self) -> ArtifactStore:
@@ -278,6 +279,26 @@ class Workspace:
 
             self._analytics_engine = AnalyticsEngine(self)
         return self._analytics_engine
+
+    @property
+    def signal_diagnostics_engine(self) -> object:
+        """The Phase 16 :class:`~quantforge.diagnostics.engine.SignalDiagnosticsEngine`.
+
+        Imported on first use to avoid a module-load import cycle (the engine imports
+        :class:`Workspace`). Cached for reuse. The diagnostic sibling of the Phase 12
+        backtester: a pure consumer that composes this workspace's Phase 9 universe
+        builder, Phase 10 panel engine, and Phase 11 price engine to measure whether an
+        as-of-``T`` signal cross-section predicts realized forward returns, and seals a
+        content-addressed
+        :class:`~quantforge.diagnostics.result.SignalDiagnostics` back to the shared
+        research sidecar — it creates no new store and duplicates no resolution logic,
+        exactly as the other derived engines do.
+        """
+        if self._signal_diagnostics_engine is None:
+            from quantforge.diagnostics.engine import SignalDiagnosticsEngine
+
+            self._signal_diagnostics_engine = SignalDiagnosticsEngine(self)
+        return self._signal_diagnostics_engine
 
     # -- construction --------------------------------------------------------
 

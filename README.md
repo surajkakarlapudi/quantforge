@@ -122,6 +122,7 @@ QuantForge is built around several principles:
 | v0.9.0 | Comparative research (declarative content-addressed experiment sweeps over a closed parameter vocabulary + deterministic backtest comparison, reusing sealed Phase 12 results) |
 | v0.10.0 | Research reporting & explainability (content-addressed, reference-only `ResearchReport` over sealed backtests/experiments + a single deterministic Markdown renderer, write-once to the existing sidecar) |
 | v0.11.0 | Performance & benchmark-relative analytics (pure consumer of sealed backtests: downside/drawdown risk, historical nearest-rank VaR/CVaR, distribution moments, tracking error, information ratio, capture, single-factor OLS alpha/beta; UNDEFINED-preserving; sealed as a content-addressed `PerformanceAnalytics` record) |
+| v0.12.0 | Cross-sectional signal diagnostics (pure consumer above universe/panel/price layers, diagnostic sibling of the backtester: per-date Spearman + Pearson IC of an as-of-`T` signal against realized forward returns, quantile-bucket profiles + top-minus-bottom spread, IC summary; both corpora pinned & re-verified, fail-closed pairing with auditable coverage, UNDEFINED-preserving; sealed as a content-addressed `SignalDiagnostics` record) |
 | Next | Multi-factor attribution / richer execution & cost models |
 
 ## Status
