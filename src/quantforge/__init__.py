@@ -47,6 +47,10 @@ from quantforge.analytics import (
     AnalyticsSpecification,
     PerformanceAnalytics,
 )
+from quantforge.attribution import (
+    AttributionSpecification,
+    FactorAttribution,
+)
 from quantforge.availability.resolve import PitValue, RevisedValue
 from quantforge.backtest import (
     AccountingPolicy,
@@ -107,6 +111,7 @@ from quantforge.workspace import Workspace
 __all__ = [
     "AccountingPolicy",
     "AnalyticsSpecification",
+    "AttributionSpecification",
     "BacktestComparison",
     "BacktestResult",
     "BacktestSpecification",
@@ -117,6 +122,7 @@ __all__ = [
     "ExperimentResult",
     "ExperimentSpecification",
     "ExplicitCompanyFilter",
+    "FactorAttribution",
     "FactorEngine",
     "FormulaDefinition",
     "FormulaRegistry",

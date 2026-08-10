@@ -132,6 +132,32 @@ will expand as functionality is implemented.
   request, both corpus pins, and the `result_hash` over the computed answer. All arithmetic runs
   under the pinned `Decimal` context; no float, wall-clock, or RNG enters any value or id. The
   [locked architecture](phase16-signal-diagnostics-locked.md) is the normative spec.
+- [Multi-Factor Performance Attribution](phase17-factor-attribution-locked.md) — Phase 17: a
+  multi-factor attribution layer strictly *above* Phase 12 — a sibling of the Phase 15 analytics
+  layer and the multi-factor generalization Phase 15 explicitly deferred — a pure consumer of
+  already-sealed, PIT-correct `BacktestResult`s. A declarative, content-addressed
+  `AttributionSpecification` (a `subject_id`, an **ordered** tuple of at most `K_MAX = 8` factor
+  `backtest_id`s — each a sealed backtest, generalizing the Phase 15 D3 benchmark convention to *K*
+  factors, D1 — and the annualization convention, folded into identity) drives
+  `AttributionEngine.attribute`, which re-verifies each referenced backtest's content hash from the
+  shared sidecar (fail closed on any absent/drifted reference), enforces commensurability (same
+  `schedule_id`, equal return length, same engine version — FA-3) and `n >= K + 2` degrees of
+  freedom, and regresses the subject's **excess** return on the *K* factor **excess** returns
+  (excess-on-excess) via an exact-`Decimal` LDLᵀ solve with an exact zero-pivot test. It reports
+  per-factor betas + alpha, R² / adjusted R² / residual std error, classical coefficient std errors
+  / t-statistics (D5), and a sample mean-excess decomposition. Every undefinable statistic (singular
+  design, zero-variance regressand, perfect fit) is a first-class `UNDEFINED` cell with its reason —
+  never a fabricated coefficient, silently dropped factor, or divide-by-zero (FA-4). The output is
+  **ex-post, not PIT** — `FactorAttribution` is not a `Pit*` type and exposes no as-of accessor;
+  `boundary_kind="pit"` documents only that the underlying backtests were PIT walks (FA-2). Distinct
+  corpus pins are surfaced as `pin_mismatch`, never silently reconciled (FA-1). The sealed
+  `FactorAttribution` is a `ResearchRecord` persisted write-once to the existing sidecar (no new
+  store), byte-identically round-tripping; `attribution_id` folds the engine + formula version, the
+  full declared request, the subject and every ordered factor `result_hash`, and the `result_hash`
+  over the computed answer (one id, D2). Only a deterministic residual **digest** is persisted, never
+  the series (D4). All arithmetic runs under the pinned `Decimal` context; no float, wall-clock, or
+  RNG enters any value or id. The [locked architecture](phase17-factor-attribution-locked.md) is the
+  normative spec.
 - [Engineering Principles](../ARCHITECTURE.md#engineering-principles) — the
   non-negotiable principles guiding the project.
 - [Contributing](../CONTRIBUTING.md) — how to set up a development environment
@@ -141,6 +167,6 @@ will expand as functionality is implemented.
 ## Status
 
 The point-in-time data, metrics, universe, panel, market-data, backtesting,
-comparative-research, research-reporting, performance-analytics, and signal-diagnostics layers are
-implemented (Phases 1–16). Source ingestion connectors remain planned; the engine operates over
-content-addressed corpora it is given.
+comparative-research, research-reporting, performance-analytics, signal-diagnostics, and
+multi-factor performance-attribution layers are implemented (Phases 1–17). Source ingestion
+connectors remain planned; the engine operates over content-addressed corpora it is given.

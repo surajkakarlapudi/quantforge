@@ -89,6 +89,7 @@ class Workspace:
         self._report_engine: object | None = None
         self._analytics_engine: object | None = None
         self._signal_diagnostics_engine: object | None = None
+        self._attribution_engine: object | None = None
 
     @property
     def artifact_store(self) -> ArtifactStore:
@@ -299,6 +300,27 @@ class Workspace:
 
             self._signal_diagnostics_engine = SignalDiagnosticsEngine(self)
         return self._signal_diagnostics_engine
+
+    @property
+    def attribution_engine(self) -> object:
+        """The Phase 17 attribution engine (lazy).
+
+        :class:`~quantforge.attribution.engine.AttributionEngine` is imported on first
+        use to avoid a module-load import cycle (the engine imports :class:`Workspace`).
+        Cached for reuse. It sits strictly above Phase 12: it resolves an already-sealed
+        subject backtest and *K* factor backtests from this workspace's shared research
+        sidecar, regresses the subject's excess return on the factors' excess returns
+        (multi-factor OLS — the multi-factor generalization Phase 15 deferred), and
+        seals a content-addressed
+        :class:`~quantforge.attribution.result.FactorAttribution` back to the same
+        sidecar — it creates no new store and duplicates no resolution logic, exactly as
+        the other derived engines do.
+        """
+        if self._attribution_engine is None:
+            from quantforge.attribution.engine import AttributionEngine
+
+            self._attribution_engine = AttributionEngine(self)
+        return self._attribution_engine
 
     # -- construction --------------------------------------------------------
 

@@ -46,6 +46,7 @@ Quantitative research
 - Comparative research (declarative experiment sweeps + deterministic backtest comparison)
 - Research reporting & explainability (content-addressed, reference-only research reports with a deterministic Markdown renderer)
 - Performance & benchmark-relative analytics (downside/drawdown risk, historical VaR/CVaR, distribution moments, and — against a benchmark that is itself a sealed backtest — tracking error, information ratio, capture, and single-factor OLS alpha/beta, sealed as a content-addressed record)
+- Multi-factor performance attribution (exact-`Decimal` OLS of a subject backtest's excess return on *K* factor backtests' excess returns: per-factor betas + alpha, R² / adjusted R², classical coefficient std errors / t-statistics, and a sample mean-excess decomposition; ex-post — not a PIT value; sealed as a content-addressed record)
 - Full fact-to-source provenance
 - Content-addressed versioning
 - Offline/reproducible research
@@ -123,7 +124,8 @@ QuantForge is built around several principles:
 | v0.10.0 | Research reporting & explainability (content-addressed, reference-only `ResearchReport` over sealed backtests/experiments + a single deterministic Markdown renderer, write-once to the existing sidecar) |
 | v0.11.0 | Performance & benchmark-relative analytics (pure consumer of sealed backtests: downside/drawdown risk, historical nearest-rank VaR/CVaR, distribution moments, tracking error, information ratio, capture, single-factor OLS alpha/beta; UNDEFINED-preserving; sealed as a content-addressed `PerformanceAnalytics` record) |
 | v0.12.0 | Cross-sectional signal diagnostics (pure consumer above universe/panel/price layers, diagnostic sibling of the backtester: per-date Spearman + Pearson IC of an as-of-`T` signal against realized forward returns, quantile-bucket profiles + top-minus-bottom spread, IC summary; both corpora pinned & re-verified, fail-closed pairing with auditable coverage, UNDEFINED-preserving; sealed as a content-addressed `SignalDiagnostics` record) |
-| Next | Multi-factor attribution / richer execution & cost models |
+| v0.14.0 | Multi-factor performance attribution (pure consumer of sealed backtests, sibling of the analytics layer: exact-`Decimal` OLS of a subject's excess return on *K* factor backtests' excess returns via LDLᵀ with an exact zero-pivot test; per-factor betas + alpha, R² / adjusted R² / residual std error, classical coefficient std errors / t-statistics, sample mean-excess decomposition; commensurability + drift verified, corpus pins surfaced, UNDEFINED-preserving; ex-post — not a PIT value; sealed as a content-addressed `FactorAttribution` record) |
+| Next | Long/short factor-portfolio construction / richer execution & cost models |
 
 ## Status
 
