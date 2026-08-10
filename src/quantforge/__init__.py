@@ -77,6 +77,10 @@ from quantforge.experiment import (
     ExperimentSpecification,
     SweepAxis,
 )
+from quantforge.factorportfolio import (
+    FactorPortfolio,
+    FactorPortfolioSpecification,
+)
 from quantforge.factors import (
     FactorEngine,
     PitFactor,
@@ -131,6 +135,8 @@ __all__ = [
     "ExplicitCompanyFilter",
     "FactorAttribution",
     "FactorEngine",
+    "FactorPortfolio",
+    "FactorPortfolioSpecification",
     "FactorSpec",
     "FormulaDefinition",
     "FormulaRegistry",

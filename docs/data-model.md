@@ -1059,6 +1059,34 @@ XS-4. **Fail-closed pairing.** A member lacking **any** of the `K` PIT signals a
     `UNDEFINED` date, never raised and never silently dropped (cf. invariants 9,
     12; SD-4).
 
+**Factor-portfolio-construction invariants** (Phase 19; additive — these do not weaken 1–30)
+P19-1. **Corpus pinning for a factor portfolio.** A factor-portfolio run records
+    and, on re-run, re-verifies **both** the fundamentals `dataset_version_id` and
+    the market `market_dataset_version_id`; a mismatch — or a corpus that does not
+    admit a single normalizing transformation version — fails closed, and a changed
+    corpus yields a different `factor_portfolio_id`. (The SD-1 / XS-1 analog.)
+P19-2. **A factor return series is not a PIT value.** A `FactorPortfolio` chains
+    realized *forward* (post-`T`) returns of a characteristic-sorted long/short
+    portfolio and can never be substituted where a PIT as-of-`T` value/signal is
+    required; it is not a `Pit*` type and exposes no as-of accessor.
+    `boundary_kind = "pit"` documents that the *signal side* was PIT-eligible, not
+    that the series is a PIT value. (The direct analog of invariant 28 / SD-2 /
+    XS-2.)
+P19-3. **Signal PIT-eligibility.** The signal at every rebalance date `T` is read
+    PIT-eligible-at-`T` (via `panel_across(..., as_of=T)`, invariant 29); no post-`T`
+    data ever contaminates leg formation.
+P19-4. **Fail-closed pairing and leg formation.** A member lacking the PIT signal
+    at `T` or a computable forward return is excluded from that period and recorded
+    in coverage; it is never imputed, zero-filled, or fabricated. A period below the
+    member floor (`n_members < 2·Q`) or with an empty long or short leg is a recorded
+    `UNDEFINED` period, never raised and never silently dropped (cf. invariants 9,
+    12; SD-4 / XS-4).
+P19-5. **A factor portfolio is not a `BacktestResult`.** A `FactorPortfolio` is a
+    distinct record type; it is not interchangeable with a sealed `BacktestResult`,
+    does not enter Phase 12's identity, and must not be passed where a
+    `BacktestResult` is required (enforced by type) — keeping the Phase 12
+    execution-simulation and Phase 19 factor-construction artifacts distinct.
+
 ---
 
 ## 13. Adversarial cases

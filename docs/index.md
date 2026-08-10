@@ -192,6 +192,42 @@ will expand as functionality is implemented.
   metadata and is not folded). All arithmetic runs under the pinned `Decimal` context; no float,
   wall-clock, or RNG enters any value or id. The
   [locked architecture](phase18-cross-sectional-regression-locked.md) is the normative spec.
+- [Factor-Portfolio Construction](phase19-factor-portfolio-locked.md) — Phase 19: a
+  characteristic-sorted long/short factor-portfolio-construction layer — the first member of a new
+  **portfolio-construction** capability class, a *constructive* sibling of the Phase 16
+  signal-diagnostics layer — sitting strictly *above* the Phase 9 universe, Phase 10 panel, and Phase
+  11 price layers and composing them only (it consumes **no** `BacktestResult` and produces none,
+  P19-5). A declarative, content-addressed `FactorPortfolioSpecification` (a name, one signal
+  `metric_key` + the explicit `MetricPeriod` it is read for, a Phase 9 `UniverseSpecification`, a
+  Phase 12 `RebalanceSchedule` of evaluation `as_of` instants, a `"<n>d"` forward horizon, a quantile
+  count `Q >= 2`, a leg-weighting scheme — v1 closed vocabulary `{"equal"}` — the annualization
+  convention `risk_free_per_period` / `periods_per_year`, and the two corpus pins — all folded into
+  identity) drives `FactorPortfolioEngine.construct`, which re-verifies **both** corpora and fails
+  closed on any pin mismatch or non-unique normalizer (P19-1). At each scheduled `T` it rebuilds
+  membership PIT as-of `T` (survivorship-free), reads the signal cross-section as
+  **PIT-eligible-at-`T`** values via `panel_across(as_of=T)` (P19-3), and pairs each member with its
+  realized **forward** return over `[T, T+h]` trading days through the Phase 11 PIT-gated adjusted
+  view (the Phase 16 forward-return machinery reused verbatim); a member lacking the PIT signal at
+  `T` or a computable forward return is excluded and recorded in coverage, never imputed (P19-4). It
+  sorts the surviving members into `Q` quantile buckets by the PIT signal (the Phase 16
+  `quantile_buckets` rule reused verbatim), forms the **long** (top bucket) + **short** (bottom
+  bucket) legs, equal-weights each leg, and computes the per-period factor return `f_T = mean(long) -
+  mean(short)` (high-minus-low on the raw signal, dollar-neutral, gross); a period below the member
+  floor (`n_members < 2·Q`) or with an empty long/short leg is a recorded `UNDEFINED` period, never
+  raised. It then aggregates the `M` valid per-period returns into a summary — compounded cumulative,
+  mean, **population** volatility, annualized Sharpe (via `Decimal.sqrt`), the mean's t-statistic
+  `mean/(popStd/√M)`, and hit rate. A run yielding fewer than two valid periods fails closed. The
+  output is **ex-post, not PIT** — `FactorPortfolio` is not a `Pit*` type and exposes no as-of
+  accessor; `boundary_kind="pit"` documents only that the signal side was PIT-eligible (P19-2), and
+  it is not a `BacktestResult` (P19-5). Every undefinable statistic (insufficient members, an empty
+  long/short leg, no or a single valid period, zero return variance) is a first-class `UNDEFINED`
+  cell with its reason — never a fabricated `0`, `NaN`/`Inf`, or divide-by-zero. The sealed
+  `FactorPortfolio` is a `ResearchRecord` persisted write-once to the existing sidecar (no new store),
+  byte-identically round-tripping; `factor_portfolio_id` folds the engine + formula + spec version,
+  the full declared request, **both** corpus pins, and the `result_hash` over the computed answer
+  (per-period leg membership and coverage are audit metadata and are not folded). All arithmetic runs
+  under the pinned `Decimal` context; no float, wall-clock, or RNG enters any value or id. The
+  [locked architecture](phase19-factor-portfolio-locked.md) is the normative spec.
 - [Engineering Principles](../ARCHITECTURE.md#engineering-principles) — the
   non-negotiable principles guiding the project.
 - [Contributing](../CONTRIBUTING.md) — how to set up a development environment
@@ -202,6 +238,7 @@ will expand as functionality is implemented.
 
 The point-in-time data, metrics, universe, panel, market-data, backtesting,
 comparative-research, research-reporting, performance-analytics, signal-diagnostics,
-multi-factor performance-attribution, and cross-sectional factor-return-regression
-(Fama–MacBeth premia) layers are implemented (Phases 1–18). Source ingestion
+multi-factor performance-attribution, cross-sectional factor-return-regression
+(Fama–MacBeth premia), and characteristic-sorted long/short factor-portfolio-construction
+layers are implemented (Phases 1–19). Source ingestion
 connectors remain planned; the engine operates over content-addressed corpora it is given.

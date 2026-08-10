@@ -91,6 +91,7 @@ class Workspace:
         self._signal_diagnostics_engine: object | None = None
         self._attribution_engine: object | None = None
         self._crosssection_engine: object | None = None
+        self._factor_portfolio_engine: object | None = None
 
     @property
     def artifact_store(self) -> ArtifactStore:
@@ -346,6 +347,29 @@ class Workspace:
 
             self._crosssection_engine = CrossSectionalRegressionEngine(self)
         return self._crosssection_engine
+
+    @property
+    def factor_portfolio_engine(self) -> object:
+        """The Phase 19 characteristic-sorted factor-portfolio engine (lazy).
+
+        :class:`~quantforge.factorportfolio.engine.FactorPortfolioEngine` is imported on
+        first use to avoid a module-load import cycle (the engine imports
+        :class:`Workspace`). Cached for reuse. The first member of a new
+        portfolio-construction capability class - a constructive sibling that composes
+        this workspace's Phase 9 universe builder, Phase 10 panel engine, and Phase 11
+        price engine to sort each scheduled date's members into ``Q`` quantiles by an
+        as-of-``T`` signal, form equal-weight long (top) / short (bottom) legs, take the
+        long-minus-short forward-return spread as that period's factor return, chain the
+        valid periods into a return series + summary, and seal a content-addressed
+        :class:`~quantforge.factorportfolio.result.FactorPortfolio` back to the shared
+        research sidecar - it creates no new store, duplicates no resolution logic, and
+        consumes no ``BacktestResult``, exactly as the other derived engines do.
+        """
+        if self._factor_portfolio_engine is None:
+            from quantforge.factorportfolio.engine import FactorPortfolioEngine
+
+            self._factor_portfolio_engine = FactorPortfolioEngine(self)
+        return self._factor_portfolio_engine
 
     # -- construction --------------------------------------------------------
 

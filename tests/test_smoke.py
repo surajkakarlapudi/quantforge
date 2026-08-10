@@ -24,3 +24,10 @@ def test_crosssection_public_api_is_exported() -> None:
     assert quantforge.CrossSectionalRegressionSpecification is not None
     assert quantforge.CrossSectionalRegression is not None
     assert quantforge.FactorSpec is not None
+
+
+def test_factorportfolio_public_api_is_exported() -> None:
+    # The Phase 19 request/result types are top-level; the engine is reached via the
+    # Workspace, not re-exported here.
+    assert quantforge.FactorPortfolioSpecification is not None
+    assert quantforge.FactorPortfolio is not None
