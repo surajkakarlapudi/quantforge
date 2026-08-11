@@ -1087,6 +1087,44 @@ P19-5. **A factor portfolio is not a `BacktestResult`.** A `FactorPortfolio` is 
     `BacktestResult` is required (enforced by type) — keeping the Phase 12
     execution-simulation and Phase 19 factor-construction artifacts distinct.
 
+**Factor-risk-model invariants** (Phase 20; additive — these do not weaken 1–30)
+FR-1. **Reference verification and transitive pinning.** A factor-risk model
+    resolves each referenced `factor_portfolio_id` from the shared research
+    sidecar and re-verifies that the resolved record's `research_result_id` equals
+    the requested id; a missing id or a key/content disagreement fails closed.
+    Each referenced factor's sealed `result_hash` is folded into `factor_risk_id`
+    (in request order), so the model's identity is transitively sensitive to any
+    change in any referenced factor — the Phase 17 attribution discipline, adapted
+    to a `FactorPortfolio` (which exposes no public content→hash recompute).
+FR-2. **A factor risk model is not a PIT value.** A `FactorRiskModel` is the
+    ex-post second-moment structure of realized factor returns and can never be
+    substituted where a PIT as-of-`T` value/signal is required; it is not a `Pit*`
+    type and exposes no as-of accessor. `boundary_kind = "pit"` documents that the
+    *underlying factor portfolios* were PIT walks (their signal side was
+    PIT-eligible), not that the matrix is a PIT value. (The direct analog of
+    invariant 28 / SD-2 / XS-2 / P19-2.)
+FR-3. **Commensurability, fail closed; pins surfaced.** Every referenced factor
+    must share one exact `schedule_id` **and** one
+    `factor_portfolio_engine_version_id` (their return series align on a common
+    rebalance calendar and were produced by one engine logic); a difference is
+    raised, never silently aligned. A corpus-pin difference across the referenced
+    factors (fundamentals `dataset_version_id` or market
+    `market_dataset_version_id`) is **not** raised — it is carried and surfaced as
+    `pin_mismatch` (the `FactorAttribution.pin_mismatch` convention).
+FR-4. **Complete-case alignment and fail-closed degeneracy.** The estimation
+    window is the intersection of the `as_of` instants where **every** factor
+    carries a KNOWN return, in shared ascending date order; a date where any factor
+    is UNDEFINED is excluded, never filled, interpolated, or zero-imputed. A common
+    window shorter than `_MIN_PERIODS = 2` is raised. A correlation cell whose
+    factor has zero volatility over the window is a recorded `UNDEFINED`
+    `ZERO_VARIANCE`, never a divide-by-zero, fabricated `0`, `NaN`, or `Inf`
+    (population moments ÷M; means, volatilities, and covariances stay KNOWN).
+FR-5. **A factor risk model is not a `BacktestResult`.** A `FactorRiskModel` is a
+    distinct record type; it is not interchangeable with a sealed `BacktestResult`
+    (nor with a `FactorPortfolio` — it holds only pointers and the derived
+    moments), does not enter Phase 12's identity, and must not be passed where a
+    `BacktestResult` is required (enforced by type).
+
 ---
 
 ## 13. Adversarial cases

@@ -81,6 +81,10 @@ from quantforge.factorportfolio import (
     FactorPortfolio,
     FactorPortfolioSpecification,
 )
+from quantforge.factorrisk import (
+    FactorRiskModel,
+    FactorRiskSpecification,
+)
 from quantforge.factors import (
     FactorEngine,
     PitFactor,
@@ -137,6 +141,8 @@ __all__ = [
     "FactorEngine",
     "FactorPortfolio",
     "FactorPortfolioSpecification",
+    "FactorRiskModel",
+    "FactorRiskSpecification",
     "FactorSpec",
     "FormulaDefinition",
     "FormulaRegistry",

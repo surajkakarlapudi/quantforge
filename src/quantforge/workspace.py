@@ -92,6 +92,7 @@ class Workspace:
         self._attribution_engine: object | None = None
         self._crosssection_engine: object | None = None
         self._factor_portfolio_engine: object | None = None
+        self._factor_risk_engine: object | None = None
 
     @property
     def artifact_store(self) -> ArtifactStore:
@@ -370,6 +371,30 @@ class Workspace:
 
             self._factor_portfolio_engine = FactorPortfolioEngine(self)
         return self._factor_portfolio_engine
+
+    @property
+    def factor_risk_engine(self) -> object:
+        """The Phase 20 factor covariance/correlation risk-model engine (lazy).
+
+        :class:`~quantforge.factorrisk.engine.FactorRiskEngine` is imported on first use
+        to avoid a module-load import cycle (the engine imports :class:`Workspace`).
+        Cached for reuse. The first member of a new risk-modelling capability class - a
+        pure consumer that resolves an ordered set of *N* sealed
+        :class:`~quantforge.factorportfolio.result.FactorPortfolio` records from this
+        workspace's shared research sidecar, re-verifies each, complete-case aligns
+        their KNOWN factor return series on a common time axis, and estimates the
+        second-moment structure (per-factor means and population volatilities, the
+        ``N x N`` population covariance matrix, and the companion correlation matrix)
+        under the pinned decimal context, sealing a content-addressed
+        :class:`~quantforge.factorrisk.result.FactorRiskModel` back to the same sidecar
+        - it creates no new store, duplicates no resolution logic, and consumes no
+        ``BacktestResult``, exactly as the other derived engines do.
+        """
+        if self._factor_risk_engine is None:
+            from quantforge.factorrisk.engine import FactorRiskEngine
+
+            self._factor_risk_engine = FactorRiskEngine(self)
+        return self._factor_risk_engine
 
     # -- construction --------------------------------------------------------
 

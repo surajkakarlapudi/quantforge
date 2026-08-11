@@ -228,6 +228,34 @@ will expand as functionality is implemented.
   (per-period leg membership and coverage are audit metadata and are not folded). All arithmetic runs
   under the pinned `Decimal` context; no float, wall-clock, or RNG enters any value or id. The
   [locked architecture](phase19-factor-portfolio-locked.md) is the normative spec.
+- [Factor Risk Model](phase20-factor-risk-model-locked.md) — Phase 20: a factor-risk-modelling
+  layer strictly *above* Phase 19 — the first member of a new **risk-modelling** capability class,
+  a pure-consumer sibling of the Phase 15/17 backtest-consumer layers (it references sealed
+  artifacts, not a raw corpus). A declarative, content-addressed `FactorRiskSpecification` (a name,
+  an **ordered** tuple of `2..N_MAX = 16` sealed `FactorPortfolio` ids — order semantic, no
+  duplicate — and the annualization convention `periods_per_year`, folded into identity) drives
+  `FactorRiskEngine.estimate`, which resolves and re-verifies each referenced factor from the shared
+  sidecar (folding each factor's `result_hash` for transitive pinning, FR-1), enforces
+  commensurability — one shared `schedule_id` **and** one `factor_portfolio_engine_version_id`, else
+  fail closed (FR-3; a corpus-pin difference is surfaced as `pin_mismatch`, never raised or
+  reconciled) — and complete-case aligns the factors' KNOWN `(as_of, factor_return)` series on the
+  intersection of dates where **every** factor is KNOWN (ascending; never filled or interpolated),
+  requiring at least `_MIN_PERIODS = 2` common dates or it fails closed (FR-4). Over that window it
+  estimates, under the pinned `Decimal` context, the per-factor mean + **population** volatility
+  vectors (`√((1/M)Σ(f-mean)²)` via `Decimal.sqrt`), the `N x N` population covariance matrix
+  `cov(i,j) = (1/M)Σ(f_i-mean_i)(f_j-mean_j)`, and the companion correlation matrix
+  `cov(i,j)/(vol_i·vol_j)` — per-period and annualized (`vol·√ppy`, `cov·ppy`), stored as the
+  **upper triangle** only. A zero-variance factor's correlation (its `0/0` diagonal included) is a
+  first-class `UNDEFINED` `ZERO_VARIANCE` cell — never a divide-by-zero; means, volatilities, and
+  covariances stay KNOWN. The output is **ex-post, not PIT** — `FactorRiskModel` is not a `Pit*`
+  type and exposes no as-of accessor; `boundary_kind="pit"` documents only that the underlying
+  factor portfolios were PIT walks (FR-2), and it is not a `BacktestResult` (FR-5). The sealed
+  `FactorRiskModel` is a `ResearchRecord` persisted write-once to the existing sidecar (no new
+  store), byte-identically round-tripping; `factor_risk_id` folds the engine + formula + spec
+  version, the declared request, the **ordered** factor `result_hash`es, and the `result_hash` over
+  the computed answer (coverage is audit metadata and is not folded). All arithmetic runs under the
+  pinned `Decimal` context; no float, wall-clock, or RNG enters any value or id. The
+  [locked architecture](phase20-factor-risk-model-locked.md) is the normative spec.
 - [Engineering Principles](../ARCHITECTURE.md#engineering-principles) — the
   non-negotiable principles guiding the project.
 - [Contributing](../CONTRIBUTING.md) — how to set up a development environment
@@ -239,6 +267,7 @@ will expand as functionality is implemented.
 The point-in-time data, metrics, universe, panel, market-data, backtesting,
 comparative-research, research-reporting, performance-analytics, signal-diagnostics,
 multi-factor performance-attribution, cross-sectional factor-return-regression
-(Fama–MacBeth premia), and characteristic-sorted long/short factor-portfolio-construction
-layers are implemented (Phases 1–19). Source ingestion
+(Fama–MacBeth premia), characteristic-sorted long/short factor-portfolio-construction,
+and factor-risk-model (factor covariance & correlation estimation)
+layers are implemented (Phases 1–20). Source ingestion
 connectors remain planned; the engine operates over content-addressed corpora it is given.
