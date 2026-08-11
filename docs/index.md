@@ -256,6 +256,33 @@ will expand as functionality is implemented.
   the computed answer (coverage is audit metadata and is not folded). All arithmetic runs under the
   pinned `Decimal` context; no float, wall-clock, or RNG enters any value or id. The
   [locked architecture](phase20-factor-risk-model-locked.md) is the normative spec.
+- [Portfolio Optimization](phase21-portfolio-optimization-locked.md) — Phase 21: a
+  factor-risk-aware portfolio-optimization layer strictly *above* Phase 20 — the **first
+  optimization layer** in the project and the first member of a new **optimization** capability
+  class, the pure-consumer sibling of Phase 20 (it references one sealed `FactorRiskModel`, not a
+  raw corpus). A declarative, content-addressed `PortfolioOptimizationSpecification` (a name, exactly
+  one sealed `factor_risk_id`, the objective `minimum_variance` — the sole v1 vocabulary — and the
+  constraint flag `fully_invested`, which must be identically `True`, all folded into identity)
+  drives `PortfolioOptimizationEngine.optimize`, which resolves and re-verifies the referenced model
+  from the shared sidecar (folding its `result_hash` for transitive pinning, PO-1; a missing / drifted
+  / non-`FactorRiskModel` reference fails closed), re-checks the inherited factor-count bound
+  `2..N_MAX = 16`, and reconstructs the full symmetric `N x N` factor covariance `Σ` fail-closed from
+  the sealed **upper-triangle** cells — consumed as-is, never recomputed, shrunk, or regularized
+  (PO-3). Under the pinned `Decimal` context it solves the **fully-invested global minimum-variance**
+  problem `min wᵀΣw s.t. 1ᵀw = 1` in **closed form** via the existing exact-`Decimal` `_linalg` LDLᵀ
+  primitives (`w = Σ⁻¹1 / 1ᵀΣ⁻¹1`, unchanged `_linalg`): per-factor GMV weights in factor order (a
+  weight may be negative), achieved per-period variance `wᵀΣw`, and volatility. A non-positive-definite
+  `Σ` — the exact LDLᵀ zero-pivot test — is a first-class `UNDEFINED` `SINGULAR_COVARIANCE` result
+  (every weight / variance / volatility UNDEFINED together), never a divide-by-zero, pseudo-inverse,
+  dropped factor, or repaired matrix (PO-4). The output is **ex-post, not PIT** — `PortfolioOptimization`
+  is not a `Pit*` type and exposes no as-of accessor (PO-2), and it is not a `BacktestResult` and
+  performs no execution (PO-5). The sealed `PortfolioOptimization` is a `ResearchRecord` persisted
+  write-once to the existing sidecar (no new store), byte-identically round-tripping; `optimization_id`
+  folds the engine + solve + spec version, the declared request + canonical constraint spec, the
+  covariance basis, the referenced `factor_risk_id` + its `result_hash`, and the `result_hash` over the
+  computed answer. All arithmetic runs under the pinned `Decimal` context; no float, iteration,
+  wall-clock, or RNG enters any value or id. The
+  [locked architecture](phase21-portfolio-optimization-locked.md) is the normative spec.
 - [Engineering Principles](../ARCHITECTURE.md#engineering-principles) — the
   non-negotiable principles guiding the project.
 - [Contributing](../CONTRIBUTING.md) — how to set up a development environment
@@ -268,6 +295,7 @@ The point-in-time data, metrics, universe, panel, market-data, backtesting,
 comparative-research, research-reporting, performance-analytics, signal-diagnostics,
 multi-factor performance-attribution, cross-sectional factor-return-regression
 (Fama–MacBeth premia), characteristic-sorted long/short factor-portfolio-construction,
-and factor-risk-model (factor covariance & correlation estimation)
-layers are implemented (Phases 1–20). Source ingestion
+factor-risk-model (factor covariance & correlation estimation), and factor-risk-aware
+portfolio-optimization (fully-invested global minimum-variance)
+layers are implemented (Phases 1–21). Source ingestion
 connectors remain planned; the engine operates over content-addressed corpora it is given.

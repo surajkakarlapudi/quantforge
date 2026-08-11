@@ -369,20 +369,24 @@ ws = Workspace.open(root)
 
 # absolute risk profile of one sealed backtest
 spec = AnalyticsSpecification(name="risk-profile", subject_id=strategy_backtest_id)
-analytics = ws.analytics_engine.compute(spec)          # a sealed, write-once PerformanceAnalytics
+analytics = ws.analytics_engine.compute(
+    spec
+)  # a sealed, write-once PerformanceAnalytics
 
 # benchmark-relative evaluation vs a sealed equal-weight buy-and-hold backtest
 rel = AnalyticsSpecification(
     name="vs-equal-weight",
     subject_id=strategy_backtest_id,
-    benchmark_id=equal_weight_backtest_id,             # a sealed BacktestResult, never external data
+    benchmark_id=equal_weight_backtest_id,  # a sealed BacktestResult, never external data
     var_confidences=("0.95", "0.99"),
     periods_per_year="12",
 )
 result = ws.analytics_engine.compute(rel)
 
 # typed read-back (byte-identical round-trip)
-again = ws.research_result_store.read_as(result.research_result_id, PerformanceAnalytics.from_dict)
+again = ws.research_result_store.read_as(
+    result.research_result_id, PerformanceAnalytics.from_dict
+)
 ```
 
 `AnalyticsEngine` is reached only through `Workspace.analytics_engine` (a lazy, cached,

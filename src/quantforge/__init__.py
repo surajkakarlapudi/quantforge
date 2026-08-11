@@ -103,6 +103,10 @@ from quantforge.metrics import (
     RevisedMetricValue,
     UndefinedReason,
 )
+from quantforge.optimization import (
+    PortfolioOptimization,
+    PortfolioOptimizationSpecification,
+)
 from quantforge.panel import PitPanel, RevisedPanel
 from quantforge.report import (
     ReportReference,
@@ -154,6 +158,8 @@ __all__ = [
     "PitPanel",
     "PitPrice",
     "PitValue",
+    "PortfolioOptimization",
+    "PortfolioOptimizationSpecification",
     "RebalanceSchedule",
     "ReportReference",
     "ReportSpecification",

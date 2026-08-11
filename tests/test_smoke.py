@@ -38,3 +38,10 @@ def test_factorrisk_public_api_is_exported() -> None:
     # Workspace, not re-exported here.
     assert quantforge.FactorRiskSpecification is not None
     assert quantforge.FactorRiskModel is not None
+
+
+def test_optimization_public_api_is_exported() -> None:
+    # The Phase 21 request/result types are top-level; the engine is reached via the
+    # Workspace, not re-exported here.
+    assert quantforge.PortfolioOptimizationSpecification is not None
+    assert quantforge.PortfolioOptimization is not None

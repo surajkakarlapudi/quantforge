@@ -1125,6 +1125,43 @@ FR-5. **A factor risk model is not a `BacktestResult`.** A `FactorRiskModel` is 
     moments), does not enter Phase 12's identity, and must not be passed where a
     `BacktestResult` is required (enforced by type).
 
+**Portfolio-optimization invariants** (Phase 21; additive — these do not weaken 1–30)
+PO-1. **Reference verification and transitive pinning.** A portfolio optimization
+    resolves the single referenced `factor_risk_id` from the shared research
+    sidecar and re-verifies that the resolved record's `research_result_id` equals
+    the requested id; a missing id, a key/content disagreement, or a resolved
+    record that is not a `FactorRiskModel` fails closed. The risk model's sealed
+    `result_hash` is folded into `optimization_id`, so the optimization's identity
+    is transitively sensitive to any change in the risk model — and, through it, in
+    any referenced factor or corpus (the FR-1 discipline, one layer up).
+PO-2. **An optimization is not a PIT value.** A `PortfolioOptimization` is a
+    function of the ex-post `FactorRiskModel` covariance and is itself ex-post; it
+    can never be substituted where a PIT as-of-`T` value/signal is required, is not
+    a `Pit*` type, and exposes no as-of accessor. `boundary_kind = "pit"` documents
+    that the *underlying factor portfolios* were PIT walks, not that the weights are
+    a PIT value. (The direct analog of invariant 28 / SD-2 / XS-2 / P19-2 / FR-2.)
+PO-3. **Single covariance source; no fabricated inputs.** The optimizer consumes
+    the sealed `FactorRiskModel` covariance as-is and never recomputes, shrinks, or
+    regularizes it, and never fabricates an expected-return, risk-free, or benchmark
+    input; the v1 objective (minimum-variance) depends on the covariance matrix
+    only. A covariance cell that decodes as non-finite or UNDEFINED (a corrupt
+    sealed record) fails closed. (Enforces "do not create a second covariance
+    source" and "UNDEFINED preferable to an invented input.")
+PO-4. **Fail-closed degeneracy, never repaired.** A non-positive-definite covariance
+    matrix (the exact `Decimal` LDLᵀ zero-pivot test) is a recorded `UNDEFINED`
+    `SINGULAR_COVARIANCE` result — every weight cell and the portfolio
+    variance/volatility UNDEFINED together — never a divide-by-zero, pseudo-inverse,
+    dropped factor, or regularized matrix. An infeasible/degenerate problem is
+    recorded, never silently made feasible. (The XS-4 / P19-4 / FR-4 fail-closed
+    posture, adapted to an optimizer; the analog of `SINGULAR_DESIGN` in the
+    exact-`Decimal` OLS solver.)
+PO-5. **An optimization is not a `BacktestResult` and performs no execution.** A
+    `PortfolioOptimization` is a distinct record type; it does not enter Phase 12's
+    identity, must not be passed where a `BacktestResult` is required (enforced by
+    type), and simulates no fills, cash, positions, or costs — it is an allocation
+    decision, not an execution. (The P19-5 / FR-5 discipline; the Phase 12
+    boundary.)
+
 ---
 
 ## 13. Adversarial cases

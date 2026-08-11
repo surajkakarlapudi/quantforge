@@ -303,8 +303,15 @@ nothing. Curated top-level exports keep the PIT/REVISED distinction visible:
 ```python
 from quantforge import PitPrice, RevisedPrice
 from quantforge.market import (
-    PriceEngine, PriceAxis, MarketDataProvider, FakeMarketDataProvider,
-    DateRange, RawMarketDocument, PitPrice, PitPriceSeries, RevisedPrice,
+    PriceEngine,
+    PriceAxis,
+    MarketDataProvider,
+    FakeMarketDataProvider,
+    DateRange,
+    RawMarketDocument,
+    PitPrice,
+    PitPriceSeries,
+    RevisedPrice,
 )
 ```
 

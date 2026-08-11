@@ -93,6 +93,7 @@ class Workspace:
         self._crosssection_engine: object | None = None
         self._factor_portfolio_engine: object | None = None
         self._factor_risk_engine: object | None = None
+        self._optimization_engine: object | None = None
 
     @property
     def artifact_store(self) -> ArtifactStore:
@@ -395,6 +396,31 @@ class Workspace:
 
             self._factor_risk_engine = FactorRiskEngine(self)
         return self._factor_risk_engine
+
+    @property
+    def optimization_engine(self) -> object:
+        """The Phase 21 global minimum-variance portfolio-optimization engine (lazy).
+
+        :class:`~quantforge.optimization.engine.PortfolioOptimizationEngine` is imported
+        on first use to avoid a module-load import cycle (the engine imports
+        :class:`Workspace`). Cached for reuse. The first member of a new
+        portfolio-construction-over-a-risk-model capability class - a pure consumer
+        strictly above Phase 20 that resolves exactly one sealed
+        :class:`~quantforge.factorrisk.result.FactorRiskModel` from this workspace's
+        shared research sidecar, re-verifies it, reconstructs the full symmetric
+        ``N x N`` factor covariance matrix from its sealed upper-triangle cells, solves
+        the fully-invested global minimum-variance factor-weight problem
+        ``w = Σ⁻¹1 / (1ᵀΣ⁻¹1)`` under the pinned decimal context via the shared
+        exact-``Decimal`` LDLᵀ factorization, and seals a content-addressed
+        :class:`~quantforge.optimization.result.PortfolioOptimization` back to the same
+        sidecar - it creates no new store, duplicates no resolution logic, and consumes
+        no ``BacktestResult``, exactly as the other derived engines do.
+        """
+        if self._optimization_engine is None:
+            from quantforge.optimization.engine import PortfolioOptimizationEngine
+
+            self._optimization_engine = PortfolioOptimizationEngine(self)
+        return self._optimization_engine
 
     # -- construction --------------------------------------------------------
 
