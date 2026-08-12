@@ -45,3 +45,10 @@ def test_optimization_public_api_is_exported() -> None:
     # Workspace, not re-exported here.
     assert quantforge.PortfolioOptimizationSpecification is not None
     assert quantforge.PortfolioOptimization is not None
+
+
+def test_walkforward_public_api_is_exported() -> None:
+    # The Phase 22 request/result types are top-level; the engine is reached via the
+    # Workspace, not re-exported here.
+    assert quantforge.WalkForwardEvaluationSpecification is not None
+    assert quantforge.WalkForwardEvaluation is not None

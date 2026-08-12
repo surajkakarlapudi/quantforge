@@ -283,6 +283,35 @@ will expand as functionality is implemented.
   computed answer. All arithmetic runs under the pinned `Decimal` context; no float, iteration,
   wall-clock, or RNG enters any value or id. The
   [locked architecture](phase21-portfolio-optimization-locked.md) is the normative spec.
+- [Walk-Forward Out-of-Sample Evaluation](phase22-walk-forward-evaluation-locked.md) — Phase 22:
+  a walk-forward out-of-sample-evaluation layer strictly *above* Phase 21 — the **first genuine
+  consumer** of the Phase 21 optimizer and the project's first **train-before-test** temporal
+  discipline. A declarative, content-addressed `WalkForwardEvaluationSpecification` (a name, exactly
+  one sealed `optimization_id` recipe, and a `TrainingPolicy` — `expanding`\|`rolling`,
+  `min_train_periods >= 2`, `test_periods >= 1`, `rolling_length` iff rolling — all folded into
+  identity) drives `WalkForwardEvaluationEngine.evaluate`, which resolves and re-verifies the recipe
+  (id match, `status = OPTIMAL`, objective `minimum_variance`, constraint `{"fully_invested": True}`,
+  WF-5) and, transitively, its `FactorRiskModel` (with a `result_hash` pin match) and every
+  `FactorPortfolio` (WF-1), inherits one shared `risk_free_per_period`, and complete-case aligns the
+  factors' KNOWN `(as_of, factor_return)` series on the common date axis (WF-6). It partitions that
+  axis into ordered `train → test` windows with a strict no-look-ahead split `train_end == test_start`
+  (WF-2), and per window **re-estimates** the covariance (Phase 20 method), **re-solves** the
+  fully-invested GMV weights (Phase 21 method), and **realizes** them held constant against the
+  strictly-subsequent test returns `r_t = Σ_i w_{k,i}·f_{i,t}`, sealing per-window and aggregate
+  **predicted-vs-realized** variance. A non-positive-definite training covariance is a first-class
+  `UNDEFINED` `SINGULAR_TRAINING_COVARIANCE` window, never repaired (WF-4); fewer than 2 REALIZED
+  windows fails closed. It chains the OOS returns and summarizes them by composing the Phase 19
+  `series_summary` (compounded cumulative, mean, population volatility, annualized Sharpe, t-statistic,
+  hit rate). Phase 22 introduces **no new numerical formula** — it composes three pinned pure methods
+  (Phase 19/20/21), whose versions are folded into the engine identity (WF-5) — and no `_linalg`
+  change. The output is **ex-post — not a PIT value and not a `BacktestResult`** (WF-3). The sealed
+  `WalkForwardEvaluation` is a `ResearchRecord` persisted write-once to the existing sidecar (no new
+  store), byte-identically round-tripping; `walk_forward_id` folds the engine + composed-method +
+  decimal-context version, the declared request + canonical training policy, the inherited
+  `schedule_id`, the referenced `optimization_id` + its `result_hash`, and the `result_hash` over the
+  computed walk. All arithmetic runs under the pinned `Decimal` context; no float, iteration,
+  wall-clock, or RNG enters any value or id. The
+  [locked architecture](phase22-walk-forward-evaluation-locked.md) is the normative spec.
 - [Engineering Principles](../ARCHITECTURE.md#engineering-principles) — the
   non-negotiable principles guiding the project.
 - [Contributing](../CONTRIBUTING.md) — how to set up a development environment
@@ -297,5 +326,5 @@ multi-factor performance-attribution, cross-sectional factor-return-regression
 (Fama–MacBeth premia), characteristic-sorted long/short factor-portfolio-construction,
 factor-risk-model (factor covariance & correlation estimation), and factor-risk-aware
 portfolio-optimization (fully-invested global minimum-variance)
-layers are implemented (Phases 1–21). Source ingestion
+layers are implemented (Phases 1–22). Source ingestion
 connectors remain planned; the engine operates over content-addressed corpora it is given.

@@ -123,6 +123,10 @@ from quantforge.universe import (
     UniverseSpecification,
     UniverseSummary,
 )
+from quantforge.walkforward import (
+    WalkForwardEvaluation,
+    WalkForwardEvaluationSpecification,
+)
 from quantforge.workspace import Workspace
 
 __all__ = [
@@ -183,6 +187,8 @@ __all__ = [
     "UniverseComparison",
     "UniverseSpecification",
     "UniverseSummary",
+    "WalkForwardEvaluation",
+    "WalkForwardEvaluationSpecification",
     "Workspace",
     "__version__",
 ]

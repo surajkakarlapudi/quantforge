@@ -94,6 +94,7 @@ class Workspace:
         self._factor_portfolio_engine: object | None = None
         self._factor_risk_engine: object | None = None
         self._optimization_engine: object | None = None
+        self._walk_forward_engine: object | None = None
 
     @property
     def artifact_store(self) -> ArtifactStore:
@@ -421,6 +422,34 @@ class Workspace:
 
             self._optimization_engine = PortfolioOptimizationEngine(self)
         return self._optimization_engine
+
+    @property
+    def walk_forward_engine(self) -> object:
+        """The Phase 22 walk-forward out-of-sample evaluation engine (lazy).
+
+        :class:`~quantforge.walkforward.engine.WalkForwardEvaluationEngine` is imported
+        on first use to avoid a module-load import cycle (the engine imports
+        :class:`Workspace`). Cached for reuse. The first member of a new
+        out-of-sample-evaluation capability class - a pure consumer strictly above Phase
+        21 that resolves exactly one sealed
+        :class:`~quantforge.optimization.result.PortfolioOptimization` GMV recipe from
+        this workspace's shared research sidecar, transitively resolves the referenced
+        :class:`~quantforge.factorrisk.result.FactorRiskModel` and its factor
+        portfolios, aligns their return series on a common complete-case axis,
+        partitions it into ordered train->test windows, re-estimates the covariance
+        (Phase 20 method) and re-solves the GMV weights (Phase 21 method) on each
+        training span, realizes those weights against the strictly-subsequent test
+        returns, summarizes the chained out-of-sample series (Phase 19 method), and
+        seals a content-addressed
+        :class:`~quantforge.walkforward.result.WalkForwardEvaluation` back to the same
+        sidecar - it creates no new store, duplicates no resolution logic, and consumes
+        no ``BacktestResult``, exactly as the other derived engines do.
+        """
+        if self._walk_forward_engine is None:
+            from quantforge.walkforward.engine import WalkForwardEvaluationEngine
+
+            self._walk_forward_engine = WalkForwardEvaluationEngine(self)
+        return self._walk_forward_engine
 
     # -- construction --------------------------------------------------------
 

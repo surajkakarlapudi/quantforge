@@ -1162,6 +1162,54 @@ PO-5. **An optimization is not a `BacktestResult` and performs no execution.** A
     decision, not an execution. (The P19-5 / FR-5 discipline; the Phase 12
     boundary.)
 
+**Walk-forward-evaluation invariants** (Phase 22; additive — these do not weaken 1–30)
+WF-1. **Reference verification and transitive pinning.** A walk-forward evaluation
+    resolves the single referenced `optimization_id` from the shared research
+    sidecar, re-verifies that the resolved record's `research_result_id` equals the
+    requested id and that its `status` is `OPTIMAL`, and resolves the
+    transitively-referenced `FactorRiskModel` (checking its sealed `result_hash`
+    equals the recipe's pinned pointer) and every `FactorPortfolio`; any missing,
+    non-decoding, id-mismatched, or drifted reference fails closed. The recipe's
+    `result_hash` is folded into `walk_forward_id`, so the evaluation's identity is
+    transitively sensitive to any change in the recipe — and, through it, the risk
+    model, any factor, or the corpus. (The PO-1 / FR-1 discipline, one layer up.)
+WF-2. **Strict train-before-test split (no look-ahead).** For each window,
+    `train_end == test_start`: the covariance is estimated using only aligned returns
+    strictly before the rebalance cut, and the resulting GMV weights are realized only
+    against returns at or after the cut. The training span never overlaps the test
+    span and no future period ever informs a window's weights. (The ex-post analog of
+    the PIT no-look-ahead rule, invariant 29, applied to the estimation/application
+    boundary; violating it silently re-creates the in-sample tautology.)
+WF-3. **A walk-forward evaluation is not a PIT value and not a `BacktestResult`.** A
+    `WalkForwardEvaluation` is a function of ex-post factor return series and is itself
+    ex-post; it is not a `Pit*` type, exposes no as-of accessor, is a distinct record
+    type, and simulates no fills, cash, positions, or costs. `boundary_kind = "pit"`
+    documents only that the *underlying factor portfolios* were PIT walks. (The
+    PO-2 / PO-5 / FR-2 / FR-5 discipline, one layer up.)
+WF-4. **Fail-closed window degeneracy, never repaired.** A window whose re-estimated
+    training covariance is not positive-definite (the exact `Decimal` LDLᵀ zero-pivot
+    test) is a recorded `UNDEFINED` `SINGULAR_TRAINING_COVARIANCE` window carrying no
+    weights and no OOS returns — never a divide-by-zero, pseudo-inverse, dropped,
+    filled, or regularized window; the evaluation still seals. A run producing fewer
+    than `MIN_VALID_WINDOWS = 2` candidate or REALIZED windows fails closed — no
+    defensible OOS summary exists. (The XS-4 / P19-4 / PO-4 posture, adapted to
+    windows; a silently-dropped bad window would bias the OOS series.)
+WF-5. **Single methodology source; no fabricated inputs.** The per-window covariance
+    and GMV weights are produced by the Phase 20 estimator and Phase 21 solver methods
+    only, and the OOS series is summarized by the Phase 19 method; all three composed
+    method versions are folded into the engine identity, so a change in any composed
+    method yields a new, distinguishable engine id. The objective and constraint are
+    inherited from the recipe (verified `minimum_variance` / `{"fully_invested":
+    true}`); no second covariance estimator, no shrinkage/regularization, and no
+    expected-return / risk-free / benchmark input is introduced. (The PO-3 discipline,
+    keeping the walk a faithful test of the actual recipe.)
+WF-6. **Complete-case alignment is deterministic and shared across factors.** The
+    evaluated return axis is the intersection of `as_of` dates where **every** factor
+    carries a KNOWN return, ascending; a date where any factor is UNDEFINED is
+    excluded, never filled or interpolated, and window bounds are a pure, total
+    function of that axis and the `TrainingPolicy`. (The FR-4 complete-case rule,
+    reused — avoids mixing differently-covered factors within a window.)
+
 ---
 
 ## 13. Adversarial cases
