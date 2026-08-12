@@ -59,3 +59,10 @@ def test_campaign_public_api_is_exported() -> None:
     # Workspace, not re-exported here.
     assert quantforge.ResearchCampaignSpecification is not None
     assert quantforge.ResearchCampaignEvaluation is not None
+
+
+def test_comparison_public_api_is_exported() -> None:
+    # The Phase 24 request/result types are top-level; the engine is reached via the
+    # Workspace, not re-exported here.
+    assert quantforge.StrategyComparisonSpecification is not None
+    assert quantforge.StrategyComparison is not None

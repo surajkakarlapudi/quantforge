@@ -1261,6 +1261,66 @@ CE-6. **A campaign evaluation is not a PIT value and not a `BacktestResult`.** A
     positions, or costs. `boundary_kind = "pit"` documents only that the *underlying trials*
     were PIT walks. (The WF-3 / PO-2 / PO-5 discipline, one layer up.)
 
+**Strategy-comparison invariants** (Phase 24; additive — these do not weaken 1–30)
+SC-1. **Reference verification and transitive pinning.** A strategy comparison resolves each
+    of its `2..N_MAX` referenced `walk_forward_id`s (each a sealed `WalkForwardEvaluation`)
+    from the shared research sidecar, re-verifies that every resolved record's
+    `research_result_id` equals the requested id and that its roll-up `status` is `REALIZED`,
+    and folds each strategy's `result_hash` — in request order — into
+    `strategy_comparison_id`. The transitive reconstruction chain (optimization → risk model
+    → factors) that the date reconstruction re-resolves is likewise verified id-by-id and
+    hash-by-hash against the pin; any missing, non-decoding, id-mismatched, non-`REALIZED`,
+    or drifted reference fails closed. (The FR-1 / PO-1 / WF-1 / CE-1 discipline, one layer
+    up.)
+SC-2. **Commensurability is required, fail closed; pins surfaced.** All strategies must share
+    one exact `schedule_id`, one `factor_portfolio_engine_version_id`, one
+    `periods_per_year`, **and** one `risk_free_per_period`, else the reconstructed return
+    series are not drawn onto one comparable footing (differing calendar axes, Sharpe
+    annualization, or excess basis) and a paired-difference comparison is meaningless — a
+    disagreement raises. A corpus-pin difference is not raised: it is carried as the sorted
+    distinct union and surfaced as `pin_mismatch`. (The CE-3 convention, adapted to a set of
+    walk-forwards.)
+SC-3. **Date-reconstruction alignment.** A sealed `WalkForwardEvaluation` stores no dates,
+    and each strategy has its own complete-case axis, so returns are aligned by reconstructed
+    **calendar date**, never by raw position and never by axis index. Each strategy's
+    complete-case date axis is recomputed with the walk-forward engine's exact
+    `_known_returns` / `_common_dates` logic (WF-6), each REALIZED window's returns mapped
+    onto it, and the reconstruction bound to the sealed `common_periods` and chained
+    `oos_returns` by two fail-closed guards; each pair is aligned complete-case on the
+    intersection of the two date sets. (A disclosed deviation from the Phase 24 proposal's
+    axis-index alignment, which is unsound across differing axes.)
+SC-4. **Fail-closed degeneracy, never repaired.** A pair whose overlap is fewer than
+    `MIN_OVERLAP_PERIODS = 2` shared dates is a recorded all-`UNDEFINED` cell
+    (`INSUFFICIENT_OVERLAP`); a pair whose paired difference has exactly zero population
+    variance records `UNDEFINED` `t_stat` / `p_value` (`ZERO_DIFFERENCE_VARIANCE`) with the
+    mean, standard error, and Sharpe difference `KNOWN`; a pair one of whose strategies sealed
+    an `UNDEFINED` annualized OOS Sharpe records `UNDEFINED` `sharpe_diff`
+    (`UNDEFINED_STRATEGY_SHARPE` — structurally rare, retained as a fail-closed guard, a
+    disclosed extension of the proposal's closed two-reason set) with the paired-difference
+    statistics unaffected — never a divide-by-zero; the record always seals. (The XS-4 /
+    P19-4 / FR-4 / PO-4 / WF-4 / CE-4 posture, adapted to pairs.)
+SC-5. **Single deterministic methodology.** One exact-`Decimal` paired-difference method (mean
+    difference, population-variance standard error, `t` statistic, and two-sided
+    `p = 2·(1 − Φ(|t|))` clamped to `[0,1]`), reusing the shared exact-`Decimal` standard-normal
+    `Φ` (extracted byte-identically to `quantforge/_stats/normal.py`, preserving every Phase 23
+    id) — all folded into the engine identity; one `Decimal.sqrt` per pair; no RNG, no
+    data-dependent iteration, no `_linalg` change, no new primitive. (The WF-5 / CE-5
+    discipline, reusing the extracted primitive.)
+SC-6. **A comparison is not a PIT value and not a `BacktestResult`.** A paired-difference
+    comparison over realized OOS return series is ex-post; `StrategyComparison` is not a
+    `Pit*` type, exposes no as-of accessor, is a distinct record type, and simulates no fills,
+    cash, positions, or costs. `boundary_kind = "pit"` documents only that the *underlying
+    strategies* were PIT walks. (The WF-3 / PO-2 / CE-6 discipline, one layer up.)
+SC-7. **Measurement-only.** The artifact seals per-pair statistics with no family-wise / FDR
+    multiple-comparison adjustment; that correction is left to a future consumer of the
+    pairwise matrix (mirroring how Phase 22 seals Sharpes and Phase 23 corrects for
+    selection).
+SC-8. **Antisymmetry.** Only the `i<j` upper-triangle cells are stored; the `(j, i)` view is
+    the exact sign-flip of `mean_diff` / `t_stat` / `sharpe_diff` (via context-free
+    `Decimal.copy_negate`, with negated zero re-canonicalized to positive zero) with
+    `p_value` / `stderr_diff` / `overlap_periods` preserved and labels swapped; `i == j` has
+    no cell (the matrix has no diagonal).
+
 ---
 
 ## 13. Adversarial cases

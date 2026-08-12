@@ -96,6 +96,7 @@ class Workspace:
         self._optimization_engine: object | None = None
         self._walk_forward_engine: object | None = None
         self._campaign_engine: object | None = None
+        self._comparison_engine: object | None = None
 
     @property
     def artifact_store(self) -> ArtifactStore:
@@ -478,6 +479,32 @@ class Workspace:
 
             self._campaign_engine = ResearchCampaignEngine(self)
         return self._campaign_engine
+
+    @property
+    def comparison_engine(self) -> object:
+        """The Phase 24 pairwise out-of-sample strategy-comparison engine (lazy).
+
+        :class:`~quantforge.comparison.engine.StrategyComparisonEngine` is imported on
+        first use to avoid a module-load import cycle (the engine imports
+        :class:`Workspace`). Cached for reuse. The first member of a new
+        strategy-comparison capability class - a pure consumer strictly above Phase 22
+        that resolves an ordered set of ``N`` sealed
+        :class:`~quantforge.walkforward.result.WalkForwardEvaluation` records (the
+        competing strategies) from this workspace's shared research sidecar, verifies
+        they are commensurable, reconstructs each strategy's realized out-of-sample
+        return series by calendar date, and for every upper-triangle ``(i < j)`` pair
+        computes the paired-difference statistics (mean out-of-sample return difference,
+        standard error, ``t`` statistic, two-sided ``p`` value, descriptive Sharpe
+        difference), sealing a content-addressed
+        :class:`~quantforge.comparison.result.StrategyComparison` back to the same
+        sidecar - it creates no new store and duplicates no resolution logic, exactly as
+        the other derived engines do.
+        """
+        if self._comparison_engine is None:
+            from quantforge.comparison.engine import StrategyComparisonEngine
+
+            self._comparison_engine = StrategyComparisonEngine(self)
+        return self._comparison_engine
 
     # -- construction --------------------------------------------------------
 

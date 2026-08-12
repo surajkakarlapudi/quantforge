@@ -345,6 +345,37 @@ will expand as functionality is implemented.
   and the `result_hash` over the computed answer. All arithmetic runs under the pinned `Decimal`
   context; no float, wall-clock, or RNG enters any value or id. The
   [locked architecture](phase23-research-campaign-evaluation-locked.md) is the normative spec.
+- [Pairwise Out-of-Sample Strategy Comparison](phase24-strategy-comparison-locked.md) —
+  Phase 24: the platform's first **relative / comparative testing** layer and the second
+  consumer of the Phase 22 terminal leaf (the first to read `oos_returns` as a *series*). A
+  declarative, content-addressed `StrategyComparisonSpecification` (a name and an **ordered**
+  tuple of `2..N_MAX = 32` sealed `WalkForwardEvaluation` ids — the *strategies* of one
+  comparison, order semantic and never sorted, fixing the `strategy_1..N` labels and the
+  upper-triangle pair order) drives `StrategyComparisonEngine.compare`, which resolves and
+  re-verifies each strategy (id match, roll-up `status = REALIZED`, folding each `result_hash`
+  for transitive pinning, SC-1) and enforces commensurability — one shared `schedule_id`,
+  `factor_portfolio_engine_version_id`, `periods_per_year`, **and** `risk_free_per_period`,
+  else fail closed (SC-2; a corpus-pin difference is surfaced as `pin_mismatch`). It
+  **reconstructs** each strategy's realized OOS series by re-resolving its transitive
+  `optimization → risk model → factors` chain and recomputing the deterministic complete-case
+  **calendar-date** axis (identical to the walk engine's logic, guarded against the sealed
+  `common_periods` / `oos_returns`, SC-3), then over each upper-triangle `(i<j)` pair aligned
+  by date intersection seals the mean per-period difference `d̄`, its population-variance
+  standard error, the paired `t = d̄/stderr`, the two-sided `p = 2·(1 − Φ(|t|))` (via the
+  Phase 23 `Φ`, now extracted byte-identically to a shared `_stats/normal.py`), and the
+  descriptive Sharpe point difference. Every undefinable pair (overlap `<
+  MIN_OVERLAP_PERIODS = 2` → `INSUFFICIENT_OVERLAP`; zero paired-difference variance →
+  `ZERO_DIFFERENCE_VARIANCE` on `t`/`p`; an undefined leg Sharpe → `UNDEFINED_STRATEGY_SHARPE`
+  on `sharpe_diff`) is a first-class `UNDEFINED` cell, never a divide-by-zero (SC-4). Only the
+  `i<j` triangle is stored; `(j,i)` is an exact sign-flip (SC-8). Measurement-only — no
+  family-wise / FDR correction (SC-7). The output is **ex-post — not a PIT value and not a
+  `BacktestResult`** (SC-6). The sealed `StrategyComparison` is a `ResearchRecord` persisted
+  write-once to the existing sidecar (no new store), byte-identically round-tripping;
+  `strategy_comparison_id` folds the engine + method + normal + decimal-context version, the
+  declared request, the ordered strategy `result_hash`es, `periods_per_year`, and the
+  `result_hash` over the computed answer. Introduces no new numerical primitive, no `_linalg`
+  change, no RNG/iteration, and no runtime dependency. The
+  [locked architecture](phase24-strategy-comparison-locked.md) is the normative spec.
 - [Engineering Principles](../ARCHITECTURE.md#engineering-principles) — the
   non-negotiable principles guiding the project.
 - [Contributing](../CONTRIBUTING.md) — how to set up a development environment
@@ -359,7 +390,8 @@ multi-factor performance-attribution, cross-sectional factor-return-regression
 (Fama–MacBeth premia), characteristic-sorted long/short factor-portfolio-construction,
 factor-risk-model (factor covariance & correlation estimation), factor-risk-aware
 portfolio-optimization (fully-invested global minimum-variance), walk-forward out-of-sample
-evaluation (train-before-test), and out-of-sample research-campaign evaluation with
-selection-bias correction (Probabilistic & Deflated Sharpe Ratios)
-layers are implemented (Phases 1–23). Source ingestion
+evaluation (train-before-test), out-of-sample research-campaign evaluation with
+selection-bias correction (Probabilistic & Deflated Sharpe Ratios), and pairwise
+out-of-sample strategy comparison (paired-difference t-tests over aligned OOS return series)
+layers are implemented (Phases 1–24). Source ingestion
 connectors remain planned; the engine operates over content-addressed corpora it is given.

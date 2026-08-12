@@ -66,6 +66,10 @@ from quantforge.campaign import (
     ResearchCampaignSpecification,
 )
 from quantforge.company import Company
+from quantforge.comparison import (
+    StrategyComparison,
+    StrategyComparisonSpecification,
+)
 from quantforge.crosssection import (
     CrossSectionalRegression,
     CrossSectionalRegressionSpecification,
@@ -183,6 +187,8 @@ __all__ = [
     "SectorFilter",
     "SignalDiagnostics",
     "SignalDiagnosticsSpecification",
+    "StrategyComparison",
+    "StrategyComparisonSpecification",
     "StrategySpecification",
     "SweepAxis",
     "TargetWeights",
