@@ -61,6 +61,10 @@ from quantforge.backtest import (
     StrategySpecification,
     TargetWeights,
 )
+from quantforge.campaign import (
+    ResearchCampaignEvaluation,
+    ResearchCampaignSpecification,
+)
 from quantforge.company import Company
 from quantforge.crosssection import (
     CrossSectionalRegression,
@@ -167,6 +171,8 @@ __all__ = [
     "RebalanceSchedule",
     "ReportReference",
     "ReportSpecification",
+    "ResearchCampaignEvaluation",
+    "ResearchCampaignSpecification",
     "ResearchReport",
     "ResearchResult",
     "RevisedFactor",

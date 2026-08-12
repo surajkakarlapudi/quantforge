@@ -95,6 +95,7 @@ class Workspace:
         self._factor_risk_engine: object | None = None
         self._optimization_engine: object | None = None
         self._walk_forward_engine: object | None = None
+        self._campaign_engine: object | None = None
 
     @property
     def artifact_store(self) -> ArtifactStore:
@@ -450,6 +451,33 @@ class Workspace:
 
             self._walk_forward_engine = WalkForwardEvaluationEngine(self)
         return self._walk_forward_engine
+
+    @property
+    def campaign_engine(self) -> object:
+        """The Phase 23 out-of-sample research-campaign evaluation engine (lazy).
+
+        :class:`~quantforge.campaign.engine.ResearchCampaignEngine` is imported on
+        first use to avoid a module-load import cycle (the engine imports
+        :class:`Workspace`). Cached for reuse. The first member of a new
+        research-campaign capability class - a pure consumer strictly above Phase 22
+        that resolves an ordered set of ``N`` sealed
+        :class:`~quantforge.walkforward.result.WalkForwardEvaluation` records (the
+        trials of one research campaign) from this workspace's shared research
+        sidecar, verifies they are commensurable, estimates each trial's
+        out-of-sample Sharpe / skew / kurtosis and Probabilistic Sharpe Ratio (Phase
+        23 method), selects the best out-of-sample Sharpe, estimates the
+        expected-maximum Sharpe under the null, and deflates the best trial's
+        significance for the size of the search (the Deflated Sharpe Ratio), sealing
+        a content-addressed
+        :class:`~quantforge.campaign.result.ResearchCampaignEvaluation` back to the
+        same sidecar - it creates no new store and duplicates no resolution logic,
+        exactly as the other derived engines do.
+        """
+        if self._campaign_engine is None:
+            from quantforge.campaign.engine import ResearchCampaignEngine
+
+            self._campaign_engine = ResearchCampaignEngine(self)
+        return self._campaign_engine
 
     # -- construction --------------------------------------------------------
 

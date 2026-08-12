@@ -1210,6 +1210,57 @@ WF-6. **Complete-case alignment is deterministic and shared across factors.** Th
     function of that axis and the `TrainingPolicy`. (The FR-4 complete-case rule,
     reused — avoids mixing differently-covered factors within a window.)
 
+**Research-campaign-evaluation invariants** (Phase 23; additive — these do not weaken 1–30)
+CE-1. **Reference verification and transitive pinning.** A research-campaign evaluation
+    resolves each of its `2..N_MAX` referenced `trial_id`s (each a sealed
+    `WalkForwardEvaluation`) from the shared research sidecar, re-verifies that every
+    resolved record's `research_result_id` equals the requested id and that its roll-up
+    `status` is `REALIZED`, and folds each trial's `result_hash` — in request order —
+    into `campaign_id`; any missing, non-decoding, id-mismatched, or non-`REALIZED`
+    reference fails closed. A walk-forward `result_hash` transitively content-addresses
+    its optimization → risk model → factors → corpora, so the campaign's identity is
+    sensitive to any change in any referenced trial. (The FR-1 / PO-1 / WF-1 discipline,
+    one layer up.)
+CE-2. **Honest selection-bias accounting.** The search size `N` folded into the Deflated
+    Sharpe Ratio is the count of **all** submitted trials — valid *and* `UNDEFINED` —
+    because every trial submitted was genuinely tried; the cross-trial Sharpe dispersion
+    `V` uses the valid trials only; and the reported significance is that of the
+    **selected** (maximum-Sharpe, ties→lowest request index) trial. `N` is never
+    under-counted and the correction is never omitted when it is computable — under-counting
+    `N` would under-deflate the best Sharpe and defeat the phase.
+CE-3. **Commensurability is required, fail closed; pins surfaced.** All trials must share one
+    exact `schedule_id` **and** one `factor_portfolio_engine_version_id`, else the OOS
+    Sharpe ratios are not drawn from one comparable search and the correction is
+    meaningless — a disagreement raises. A corpus-pin **difference** across trials is not
+    raised: it is carried as the sorted distinct union and surfaced as `pin_mismatch`, never
+    silently reconciled. (The FR-3 convention, adapted to a set of walk-forwards.)
+CE-4. **Fail-closed degeneracy, never repaired.** A trial with fewer than two OOS periods
+    (`INSUFFICIENT_OOS_PERIODS`), zero OOS population variance (`ZERO_OOS_VARIANCE`), or a
+    non-positive Probabilistic-Sharpe-Ratio estimator variance (`DEGENERATE_SHARPE_ESTIMATOR`
+    — mathematically `≥ 0` for any valid moment set, retained as a razor-edge guard) is a
+    recorded `UNDEFINED` trial cell carrying its reason, excluded from selection and from the
+    dispersion `V` — never a divide-by-zero, fabricated `0`, or silently dropped trial. A
+    campaign with fewer than `MIN_VALID_TRIALS = 2` valid trials records its selection, `V`,
+    expected-maximum Sharpe, and Deflated Sharpe Ratio as `UNDEFINED`
+    `INSUFFICIENT_VALID_TRIALS`; the record still seals. (The XS-4 / P19-4 / FR-4 / PO-4 /
+    WF-4 posture, adapted to trials.)
+CE-5. **Single methodology source; deterministic transcendentals; no fabricated inputs.** One
+    correction method (the López de Prado Probabilistic/Deflated Sharpe Ratio) with a
+    self-contained exact-`Decimal` moment computation and a phase-local exact-`Decimal`
+    standard-normal `Φ` / `Z⁻¹` primitive — all folded into the engine identity; no second
+    moment estimator, no shrinkage, no bootstrap/RNG, and no expected-return input beyond the
+    declared per-period benchmark Sharpe `SR*`. `Φ` (an all-positive-term `erf` series) and
+    `Z⁻¹` (a fixed-iteration bisection) run under the pinned decimal context with a fixed
+    termination, and the Euler–Mascheroni `γ` / `π` are documented `Decimal` literals — so
+    every value is bit-identical on any platform. (The WF-5 / PO-3 discipline, extended to the
+    one new numerical primitive.)
+CE-6. **A campaign evaluation is not a PIT value and not a `BacktestResult`.** A
+    selection-bias-corrected significance over realized OOS Sharpe ratios is a meta-statistic
+    of ex-post series and is itself ex-post; `ResearchCampaignEvaluation` is not a `Pit*` type,
+    exposes no as-of accessor, is a distinct record type, and simulates no fills, cash,
+    positions, or costs. `boundary_kind = "pit"` documents only that the *underlying trials*
+    were PIT walks. (The WF-3 / PO-2 / PO-5 discipline, one layer up.)
+
 ---
 
 ## 13. Adversarial cases

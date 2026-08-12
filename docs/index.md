@@ -312,6 +312,39 @@ will expand as functionality is implemented.
   computed walk. All arithmetic runs under the pinned `Decimal` context; no float, iteration,
   wall-clock, or RNG enters any value or id. The
   [locked architecture](phase22-walk-forward-evaluation-locked.md) is the normative spec.
+- [Out-of-Sample Research-Campaign Evaluation](phase23-research-campaign-evaluation-locked.md) —
+  Phase 23: a research-campaign-evaluation layer strictly *above* Phase 22 — the **first genuine
+  consumer** of the Phase 22 terminal leaf and the project's first **selection-bias /
+  meta-analysis** layer. A declarative, content-addressed `ResearchCampaignSpecification` (a name,
+  an **ordered** tuple of `2..N_MAX = 64` sealed `WalkForwardEvaluation` ids — the *trials* of one
+  research campaign, order semantic and never sorted — and a per-period benchmark Sharpe `SR*`
+  defaulting to `"0"`, all folded into identity) drives `ResearchCampaignEngine.evaluate`, which
+  resolves and re-verifies each trial from the shared sidecar (id match, roll-up `status =
+  REALIZED`, folding each `result_hash` for transitive pinning, CE-1) and enforces
+  commensurability — one shared `schedule_id` **and** one `factor_portfolio_engine_version_id`,
+  else fail closed (CE-3; a corpus-pin difference is surfaced as `pin_mismatch`, never reconciled).
+  Per trial it re-derives from the sealed `oos_returns` (with the inherited `risk_free_per_period`,
+  never the sealed annualized Sharpe) the per-period excess-return **Sharpe**, **skew**, and
+  **non-excess kurtosis** and the **Probabilistic Sharpe Ratio** `PSR(SR*)`; across trials it takes
+  the search size `N` as the count of **all** submitted trials (CE-2), the **population** variance
+  `V` of the valid trials' Sharpe ratios, the **expected-maximum Sharpe under the null** `SR₀ =
+  √V·[(1−γ)·Z⁻¹(1−1/N)+γ·Z⁻¹(1−1/(N·e))]`, and the headline **Deflated Sharpe Ratio** `DSR =
+  PSR(SR₀)` of the selected (max-Sharpe, ties→lowest index) trial. It introduces exactly **one** new
+  numerical primitive — a deterministic exact-`Decimal` standard-normal `Φ` (an all-positive-term
+  `erf` series) / `Z⁻¹` (a fixed-iteration bisection), phase-local, **not** an `_linalg` change
+  (CE-5) — and composes a self-contained exact-`Decimal` moment computation. Every undefinable
+  statistic (a trial with fewer than two OOS periods, zero OOS variance, or a degenerate PSR
+  estimator; a campaign with fewer than `MIN_VALID_TRIALS = 2` valid trials) is a first-class
+  `UNDEFINED` cell with its reason, excluded from selection and `V` — never a fabricated `0` or
+  divide-by-zero (CE-4); the record still seals. The output is **ex-post — not a PIT value and not a
+  `BacktestResult`** — `boundary_kind="pit"` documents only that the underlying trials were PIT
+  walks (CE-6). The sealed `ResearchCampaignEvaluation` is a `ResearchRecord` persisted write-once to
+  the existing sidecar (no new store), byte-identically round-tripping; `campaign_id` folds the
+  engine + method + normal-primitive + decimal-context version, the declared request (name, spec
+  version, the **ordered** trial ids, the benchmark Sharpe), the **ordered** trial `result_hash`es,
+  and the `result_hash` over the computed answer. All arithmetic runs under the pinned `Decimal`
+  context; no float, wall-clock, or RNG enters any value or id. The
+  [locked architecture](phase23-research-campaign-evaluation-locked.md) is the normative spec.
 - [Engineering Principles](../ARCHITECTURE.md#engineering-principles) — the
   non-negotiable principles guiding the project.
 - [Contributing](../CONTRIBUTING.md) — how to set up a development environment
@@ -324,7 +357,9 @@ The point-in-time data, metrics, universe, panel, market-data, backtesting,
 comparative-research, research-reporting, performance-analytics, signal-diagnostics,
 multi-factor performance-attribution, cross-sectional factor-return-regression
 (Fama–MacBeth premia), characteristic-sorted long/short factor-portfolio-construction,
-factor-risk-model (factor covariance & correlation estimation), and factor-risk-aware
-portfolio-optimization (fully-invested global minimum-variance)
-layers are implemented (Phases 1–22). Source ingestion
+factor-risk-model (factor covariance & correlation estimation), factor-risk-aware
+portfolio-optimization (fully-invested global minimum-variance), walk-forward out-of-sample
+evaluation (train-before-test), and out-of-sample research-campaign evaluation with
+selection-bias correction (Probabilistic & Deflated Sharpe Ratios)
+layers are implemented (Phases 1–23). Source ingestion
 connectors remain planned; the engine operates over content-addressed corpora it is given.
