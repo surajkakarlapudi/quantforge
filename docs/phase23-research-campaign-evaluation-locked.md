@@ -170,22 +170,27 @@ ws = Workspace.open(root)
 
 spec = ResearchCampaignSpecification(
     name="value-momentum-quality-search",
-    trial_ids=(wf_id_1, wf_id_2, ..., wf_id_40),   # sealed WalkForwardEvaluation ids (2..N_MAX)
-    benchmark_sharpe="0",                          # SR* baseline for PSR (per-period); default "0"
+    trial_ids=(
+        wf_id_1,
+        wf_id_2,
+        ...,
+        wf_id_40,
+    ),  # sealed WalkForwardEvaluation ids (2..N_MAX)
+    benchmark_sharpe="0",  # SR* baseline for PSR (per-period); default "0"
 )
 
-campaign = ws.campaign_engine.evaluate(spec)       # sealed, write-once
+campaign = ws.campaign_engine.evaluate(spec)  # sealed, write-once
 
-campaign.trials                   # tuple[TrialStat]: label, status, n, sharpe, skew, kurtosis, psr
-campaign.summary.valid_trials     # count of trials with a defined Sharpe
-campaign.summary.selected_trial   # "trial_k" of the max-Sharpe trial (None if undefined)
+campaign.trials  # tuple[TrialStat]: label, status, n, sharpe, skew, kurtosis, psr
+campaign.summary.valid_trials  # count of trials with a defined Sharpe
+campaign.summary.selected_trial  # "trial_k" of the max-Sharpe trial (None if undefined)
 campaign.summary.selected_sharpe  # StatValue
-campaign.summary.sharpe_dispersion    # V over VALID trials (StatValue)
+campaign.summary.sharpe_dispersion  # V over VALID trials (StatValue)
 campaign.summary.expected_max_sharpe  # SR₀ selection-bias threshold (StatValue)
-campaign.summary.deflated_sharpe      # DSR = PSR(SR₀) of the selected trial (StatValue) ← headline
-campaign.trial_ids                # referenced ids, request order
-campaign.pin_mismatch             # inherited corpus-pin flag
-campaign.research_result_id       # == campaign.campaign_id
+campaign.summary.deflated_sharpe  # DSR = PSR(SR₀) of the selected trial (StatValue) ← headline
+campaign.trial_ids  # referenced ids, request order
+campaign.pin_mismatch  # inherited corpus-pin flag
+campaign.research_result_id  # == campaign.campaign_id
 
 again = ws.research_result_store.read_as(
     campaign.research_result_id, ResearchCampaignEvaluation.from_dict

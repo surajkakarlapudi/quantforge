@@ -492,7 +492,9 @@ spec = FactorPortfolioSpecification(
     risk_free_per_period="0",  # annualization convention (folded into identity)
     periods_per_year="252",
 )
-portfolio = ws.factor_portfolio_engine.construct(spec)  # sealed, write-once FactorPortfolio
+portfolio = ws.factor_portfolio_engine.construct(
+    spec
+)  # sealed, write-once FactorPortfolio
 
 portfolio.per_period  # ordered PerPeriodReturn — one per rebalance date (schedule order)
 portfolio.summary  # FactorReturnSummary — cumulative / mean / vol / Sharpe / t-stat / hit rate

@@ -185,18 +185,23 @@ ws = Workspace.open(root)
 
 spec = StrategyComparisonSpecification(
     name="value-vs-momentum-vs-quality",
-    walk_forward_ids=(wf_id_1, wf_id_2, ..., wf_id_k),   # 2..N_MAX sealed WalkForwardEvaluation ids
+    walk_forward_ids=(
+        wf_id_1,
+        wf_id_2,
+        ...,
+        wf_id_k,
+    ),  # 2..N_MAX sealed WalkForwardEvaluation ids
 )
 
-comparison = ws.comparison_engine.compare(spec)          # sealed, write-once
+comparison = ws.comparison_engine.compare(spec)  # sealed, write-once
 
-comparison.cell(0, 1)             # ComparisonCell for the ordered pair (upper-triangle stored)
-comparison.cell(1, 0)            # its exact (j,i) transpose (sign-flipped mean/t/sharpe)
-comparison.trials                 # tuple[TrialSummary]: label, sharpe, n_valid_periods, axis_periods
-comparison.coverage               # n_strategies, n_pairs, n_defined_pairs, n_undefined_pairs
-comparison.walk_forward_ids       # referenced ids, request order
-comparison.pin_mismatch           # inherited corpus-pin flag
-comparison.research_result_id     # == comparison.strategy_comparison_id
+comparison.cell(0, 1)  # ComparisonCell for the ordered pair (upper-triangle stored)
+comparison.cell(1, 0)  # its exact (j,i) transpose (sign-flipped mean/t/sharpe)
+comparison.trials  # tuple[TrialSummary]: label, sharpe, n_valid_periods, axis_periods
+comparison.coverage  # n_strategies, n_pairs, n_defined_pairs, n_undefined_pairs
+comparison.walk_forward_ids  # referenced ids, request order
+comparison.pin_mismatch  # inherited corpus-pin flag
+comparison.research_result_id  # == comparison.strategy_comparison_id
 
 again = ws.research_result_store.read_as(
     comparison.research_result_id, StrategyComparison.from_dict

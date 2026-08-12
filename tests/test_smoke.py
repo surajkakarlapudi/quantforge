@@ -66,3 +66,10 @@ def test_comparison_public_api_is_exported() -> None:
     # Workspace, not re-exported here.
     assert quantforge.StrategyComparisonSpecification is not None
     assert quantforge.StrategyComparison is not None
+
+
+def test_multiplicity_public_api_is_exported() -> None:
+    # The Phase 25 request/result types are top-level; the engine is reached via the
+    # Workspace, not re-exported here.
+    assert quantforge.MultipleComparisonSpecification is not None
+    assert quantforge.MultipleComparisonCorrection is not None

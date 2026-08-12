@@ -457,26 +457,26 @@ ws = Workspace.open(root)
 
 spec = WalkForwardEvaluationSpecification(
     name="gmv-value-momentum-wf",
-    optimization_id=optimization_id,     # a sealed PortfolioOptimization (the recipe)
-    schedule=rebalance_schedule,         # RebalanceSchedule of OOS decision instants
-    training_policy=TrainingPolicy(      # ★ approval-gated shape (§19)
-        window="expanding",             # or "rolling"
+    optimization_id=optimization_id,  # a sealed PortfolioOptimization (the recipe)
+    schedule=rebalance_schedule,  # RebalanceSchedule of OOS decision instants
+    training_policy=TrainingPolicy(  # ★ approval-gated shape (§19)
+        window="expanding",  # or "rolling"
         min_train_periods=24,
-        rolling_length=None,            # required iff window == "rolling"
+        rolling_length=None,  # required iff window == "rolling"
     ),
     # objective / constraint are INHERITED from the referenced PortfolioOptimization (WF-5)
 )
 
-evaluation = ws.walk_forward_engine.evaluate(spec)   # sealed, write-once
+evaluation = ws.walk_forward_engine.evaluate(spec)  # sealed, write-once
 
-evaluation.status                    # WindowStatus roll-up (has ≥ min valid windows?)
-evaluation.windows                   # per-window: train/test bounds, weights, predicted var, status
-evaluation.oos_returns               # chained OOS realized factor-combination return series
-evaluation.summary                   # realized cumulative / mean / vol / Sharpe / t-stat / hit
-evaluation.realized_variance         # realized OOS variance (StatValue)
-evaluation.predicted_vs_realized     # per-window predicted vs realized variance
-evaluation.pin_mismatch              # inherited corpus-pin flag
-evaluation.research_result_id        # == evaluation.walk_forward_id
+evaluation.status  # WindowStatus roll-up (has ≥ min valid windows?)
+evaluation.windows  # per-window: train/test bounds, weights, predicted var, status
+evaluation.oos_returns  # chained OOS realized factor-combination return series
+evaluation.summary  # realized cumulative / mean / vol / Sharpe / t-stat / hit
+evaluation.realized_variance  # realized OOS variance (StatValue)
+evaluation.predicted_vs_realized  # per-window predicted vs realized variance
+evaluation.pin_mismatch  # inherited corpus-pin flag
+evaluation.research_result_id  # == evaluation.walk_forward_id
 
 again = ws.research_result_store.read_as(
     evaluation.research_result_id, WalkForwardEvaluation.from_dict

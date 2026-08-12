@@ -1321,6 +1321,63 @@ SC-8. **Antisymmetry.** Only the `i<j` upper-triangle cells are stored; the `(j,
     `p_value` / `stderr_diff` / `overlap_periods` preserved and labels swapped; `i == j` has
     no cell (the matrix has no diagonal).
 
+**Multiplicity-correction invariants** (Phase 25; additive — these do not weaken 1–30)
+MC-1. **Reference verification and transitive pinning.** A multiple-comparison correction
+    resolves the single `source_strategy_comparison_id` it names (a sealed
+    `StrategyComparison`) from the shared research sidecar via
+    `store.read_as(id, StrategyComparison.from_dict)`, re-verifies that the resolved
+    record's `research_result_id` equals the requested id, and folds the source
+    comparison's `result_hash` into `multiple_comparison_id`. Because the source
+    comparison's own id transitively pins every walk-forward beneath it (SC-1), the
+    correction is transitively sensitive to any change in the comparison or any strategy
+    below it. A missing, non-decoding, or id-mismatched reference fails closed with
+    `MultiplicityConsistencyError`; the source is never copied, only pinned. (The SC-1 /
+    CE-1 discipline, one layer up.)
+MC-2. **The corrected object is a sealed, explicit family.** The correction treats exactly
+    the KNOWN pairwise `p` values of the one source comparison as a single hypothesis
+    family, in the source's upper-triangle order, and seals its coverage — the source's
+    total pair count `n_pairs_total`, the corrected family size `m = family_size`, and the
+    excluded count `n_excluded` — so the effective family size the adjustment used is a
+    first-class, auditable fact and never inferred. `m + n_excluded = n_pairs_total`
+    always. (No cross-comparison family in v0.22.0: exactly one source, mirroring P21's
+    single-input pattern.)
+MC-3. **UNDEFINED `p` cells are excluded, never imputed.** A pairwise cell the source
+    comparison sealed with an UNDEFINED `p` value (`INSUFFICIENT_OVERLAP` or
+    `ZERO_DIFFERENCE_VARIANCE`, SC-4) is removed from the corrected family and recorded as
+    a first-class `ExcludedCell` carrying the source's own
+    `ComparisonUndefinedReason` — never coerced to a number, never imputed, never silently
+    dropped. An empty family (`m = 0`) seals empty per-method cell lists, never a
+    divide-by-zero and never a fabricated rejection. (The SC-4 / inv-15 fail-closed
+    posture, adapted to a family.)
+MC-4. **Ties collapse to one adjusted value; monotone; capped at 1.** The family is sorted
+    under a total order (`p` ascending, ties broken by the family `(i, j)` index), and each
+    method's step-up / step-down monotonicity is enforced by an exact-`Decimal` running min
+    (Benjamini-Hochberg / Benjamini-Yekutieli, backward) or running max (Holm, forward), so
+    equal input `p` values always receive **identical** adjusted values and no adjusted
+    value ever exceeds `1` (capped by exact `Decimal` `min`, never a float clamp). The
+    machine-independent tie key makes the adjusted-value assignment unambiguous.
+MC-5. **Single deterministic methodology; one uniform rejection rule.** One exact-`Decimal`
+    correction method per family — a single ascending sort plus the closed-form
+    Bonferroni / Holm / Benjamini-Hochberg / Benjamini-Yekutieli step recursions (the
+    Benjamini-Yekutieli harmonic constant `c(m) = Σ_{k=1}^{m} 1/k` an exact finite `Decimal`
+    sum) — all under one pinned decimal context (prec 34, `ROUND_HALF_EVEN`) folded into the
+    engine identity. Rejection is defined **uniformly** as `p_adj ≤ alpha` for every method,
+    so the sealed adjusted value and its rejection flag can never disagree. No RNG, no float,
+    no iteration-to-convergence, no `_linalg` change, no new numerical primitive. (The SC-5 /
+    WF-5 discipline, over already-sealed `p` strings.)
+MC-6. **Honest method labels sealed; and a correction is not a PIT value.** Each method
+    seals its honest `error_rate` (family-wise for Bonferroni / Holm, false-discovery for
+    Benjamini-Hochberg / Benjamini-Yekutieli) and `dependence` label; Bonferroni, Holm, and
+    Benjamini-Yekutieli are valid under **arbitrary** dependence, and Benjamini-Hochberg's
+    **independence / PRDS** assumption is sealed alongside its results so it can never be
+    mistaken for a dependence-robust guarantee (the disclosed §8 dependence TENSION,
+    resolved by defaulting to Holm + Benjamini-Yekutieli). A multiplicity correction over
+    already-ex-post pairwise `p` values is itself ex-post: `MultipleComparisonCorrection` is
+    **not** a `Pit*` type, exposes no as-of accessor, is a distinct record type, and opens no
+    new corpus / availability surface. `boundary_kind = "pit"` — carried unchanged from the
+    source comparison — documents only that the *underlying strategies* were PIT walks. (The
+    SC-6 / CE-6 discipline, one layer up.)
+
 ---
 
 ## 13. Adversarial cases

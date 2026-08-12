@@ -111,6 +111,10 @@ from quantforge.metrics import (
     RevisedMetricValue,
     UndefinedReason,
 )
+from quantforge.multiplicity import (
+    MultipleComparisonCorrection,
+    MultipleComparisonSpecification,
+)
 from quantforge.optimization import (
     PortfolioOptimization,
     PortfolioOptimizationSpecification,
@@ -164,6 +168,8 @@ __all__ = [
     "FormulaRegistry",
     "MetricPeriod",
     "MetricStatus",
+    "MultipleComparisonCorrection",
+    "MultipleComparisonSpecification",
     "PerformanceAnalytics",
     "PitFactor",
     "PitMetricValue",

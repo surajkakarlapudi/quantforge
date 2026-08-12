@@ -376,6 +376,43 @@ will expand as functionality is implemented.
   `result_hash` over the computed answer. Introduces no new numerical primitive, no `_linalg`
   change, no RNG/iteration, and no runtime dependency. The
   [locked architecture](phase24-strategy-comparison-locked.md) is the normative spec.
+- [Multiple-Comparison Correction](phase25-multiple-comparison-correction-locked.md) —
+  Phase 25: the platform's first consumer of a **meta-analysis** artifact (turning the
+  Phase 24 terminal-leaf `StrategyComparison` into an input) and its first **family-wise /
+  false-discovery-rate** control — the future consumer SC-7 explicitly deferred to. A
+  declarative, content-addressed `MultipleComparisonSpecification` (a name, exactly **one**
+  sealed `source_strategy_comparison_id`, a declared `alpha ∈ (0, 1)` canonicalized at
+  construction, and an ordered, duplicate-free tuple of `CorrectionMethod`s — default Holm +
+  Benjamini–Yekutieli, both valid under arbitrary dependence) drives
+  `MultipleComparisonEngine.correct`, which resolves the one comparison from the shared
+  sidecar via `store.read_as(id, StrategyComparison.from_dict)`, re-verifies its
+  `research_result_id` equals the request, and folds its `result_hash` for transitive pinning
+  (fail closed on any missing / non-`StrategyComparison` / id-mismatched reference, MC-1). It
+  collects the family `F` = the source's KNOWN pairwise `p` values in upper-triangle order —
+  each UNDEFINED pairwise cell (`INSUFFICIENT_OVERLAP`, `ZERO_DIFFERENCE_VARIANCE`) a
+  first-class `ExcludedCell` carrying its reason, never imputed (MC-3) — and seals the
+  coverage (`n_pairs_total`, family size `m`, `n_excluded`, MC-2). For each method, under the
+  pinned `Decimal` context, it computes each family member's adjusted `p` value + rejection
+  flag via one ascending sort (ties → family `(i, j)` index) plus the closed-form step
+  transforms — Bonferroni `min(1, m·p)`, Holm step-down under a running max, Benjamini–Hochberg
+  step-up under a running min, Benjamini–Yekutieli the same scaled by the harmonic constant
+  `c(m) = Σ_{k=1}^{m} 1/k` — tied `p` values collapsing to one adjusted value, every value
+  capped at `1`, and rejection defined **uniformly** as `p_adj ≤ alpha` (MC-4/MC-5). Each
+  method seals its honest `error_rate` / `dependence` label; Benjamini–Hochberg's
+  independence / PRDS assumption is sealed alongside its results so it can never be mistaken
+  for a dependence-robust guarantee (MC-6). An empty family (`m = 0`) seals empty per-method
+  cell lists, never a divide-by-zero. The output is **ex-post — not a PIT value** (MC-6):
+  `MultipleComparisonCorrection` is not a `Pit*` type and exposes no as-of accessor;
+  `boundary_kind = "pit"` is carried unchanged from the source comparison. The sealed
+  `MultipleComparisonCorrection` is a `ResearchRecord` persisted write-once to the existing
+  sidecar (no new store), byte-identically round-tripping; `multiple_comparison_id` folds the
+  engine + method + decimal-context version, the declared request (name, spec version,
+  `alpha`, the ordered method list), the source comparison's id **and** `result_hash`, and the
+  `result_hash` over the computed answer. Introduces no new numerical primitive (it reuses no
+  standard-normal primitive), no `_linalg` change, no RNG / float / iterative solver, and no
+  runtime dependency. The
+  [locked architecture](phase25-multiple-comparison-correction-locked.md) is the normative
+  spec.
 - [Engineering Principles](../ARCHITECTURE.md#engineering-principles) — the
   non-negotiable principles guiding the project.
 - [Contributing](../CONTRIBUTING.md) — how to set up a development environment
@@ -391,7 +428,9 @@ multi-factor performance-attribution, cross-sectional factor-return-regression
 factor-risk-model (factor covariance & correlation estimation), factor-risk-aware
 portfolio-optimization (fully-invested global minimum-variance), walk-forward out-of-sample
 evaluation (train-before-test), out-of-sample research-campaign evaluation with
-selection-bias correction (Probabilistic & Deflated Sharpe Ratios), and pairwise
-out-of-sample strategy comparison (paired-difference t-tests over aligned OOS return series)
-layers are implemented (Phases 1–24). Source ingestion
+selection-bias correction (Probabilistic & Deflated Sharpe Ratios), pairwise
+out-of-sample strategy comparison (paired-difference t-tests over aligned OOS return series),
+and multiple-comparison correction over a strategy comparison's pairwise `p`-value family
+(Holm / Benjamini–Yekutieli family-wise & false-discovery control)
+layers are implemented (Phases 1–25). Source ingestion
 connectors remain planned; the engine operates over content-addressed corpora it is given.

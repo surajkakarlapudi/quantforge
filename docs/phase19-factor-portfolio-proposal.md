@@ -340,26 +340,27 @@ Mirrors the Phase 16/18 layout exactly:
 @dataclass(frozen=True, slots=True)
 class FactorPortfolioSpecification:
     name: str
-    signal: str                       # Phase 7 metric_key (non-empty)
-    period: MetricPeriod              # explicit fiscal period the signal is read for
-    universe: UniverseSpecification   # Phase 9 declarative request
-    schedule: RebalanceSchedule       # Phase 12 as_of instants (rebalance dates T)
-    forward_horizon: str              # r"^[0-9]+d$"  (trading-day horizon; Phase 16 form)
-    quantiles: int                    # Q >= 2 (long = top bucket, short = bottom bucket)
-    dataset_version_id: str           # fundamentals corpus pin
-    market_dataset_version_id: str    # market corpus pin
-    weighting: str = "equal"          # leg weighting; v1 closed vocabulary {"equal"}
-    risk_free_per_period: str = "0"   # provenance + annualized-Sharpe; folded into identity
-    periods_per_year: str = "1"       # annualization convention; folded into identity
+    signal: str  # Phase 7 metric_key (non-empty)
+    period: MetricPeriod  # explicit fiscal period the signal is read for
+    universe: UniverseSpecification  # Phase 9 declarative request
+    schedule: RebalanceSchedule  # Phase 12 as_of instants (rebalance dates T)
+    forward_horizon: str  # r"^[0-9]+d$"  (trading-day horizon; Phase 16 form)
+    quantiles: int  # Q >= 2 (long = top bucket, short = bottom bucket)
+    dataset_version_id: str  # fundamentals corpus pin
+    market_dataset_version_id: str  # market corpus pin
+    weighting: str = "equal"  # leg weighting; v1 closed vocabulary {"equal"}
+    risk_free_per_period: str = (
+        "0"  # provenance + annualized-Sharpe; folded into identity
+    )
+    periods_per_year: str = "1"  # annualization convention; folded into identity
     spec_version: str = FACTORPORTFOLIO_SPEC_VERSION  # "factorportfolio/1"
     # derived (init=False): horizon_days: int
+
 
 # engine.py — reached via Workspace.factor_portfolio_engine
 class FactorPortfolioEngine:
     def __init__(self, workspace: Workspace) -> None: ...
-    def construct(
-        self, spec: FactorPortfolioSpecification
-    ) -> FactorPortfolio: ...
+    def construct(self, spec: FactorPortfolioSpecification) -> FactorPortfolio: ...
 ```
 
 `construct` is the single entry point (the `evaluate`/`estimate`/`compute`
@@ -403,7 +404,7 @@ discipline).
 @dataclass(frozen=True, slots=True)
 class FactorPortfolio:  # satisfies ResearchRecord
     factor_portfolio_engine_version_id: str
-    factor_portfolio_spec: dict          # embedded spec.to_dict()
+    factor_portfolio_spec: dict  # embedded spec.to_dict()
     name: str
     spec_version: str
     signal: str
@@ -413,12 +414,14 @@ class FactorPortfolio:  # satisfies ResearchRecord
     horizon_days: int
     quantiles: int
     weighting: str
-    boundary_kind: str                    # "pit"  (documents the SIGNAL side only; P19-2)
+    boundary_kind: str  # "pit"  (documents the SIGNAL side only; P19-2)
     risk_free_per_period: str
     periods_per_year: str
     dataset_version_id: str
     market_dataset_version_id: str
-    per_period: tuple[PerPeriodReturn, ...]   # one per VALID rebalance date, schedule order
+    per_period: tuple[
+        PerPeriodReturn, ...
+    ]  # one per VALID rebalance date, schedule order
     summary: FactorReturnSummary
     coverage: CoverageSummary
     formula_version: str

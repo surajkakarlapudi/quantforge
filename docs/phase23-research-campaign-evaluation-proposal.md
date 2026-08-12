@@ -527,20 +527,25 @@ ws = Workspace.open(root)
 
 spec = ResearchCampaignSpecification(
     name="value-momentum-quality-search",
-    trial_ids=(wf_id_1, wf_id_2, ..., wf_id_40),   # sealed WalkForwardEvaluation ids (2..N_MAX)
-    benchmark_sharpe="0",                          # SR* baseline for PSR (per-period); default "0"
+    trial_ids=(
+        wf_id_1,
+        wf_id_2,
+        ...,
+        wf_id_40,
+    ),  # sealed WalkForwardEvaluation ids (2..N_MAX)
+    benchmark_sharpe="0",  # SR* baseline for PSR (per-period); default "0"
 )
 
-campaign = ws.campaign_engine.evaluate(spec)       # sealed, write-once
+campaign = ws.campaign_engine.evaluate(spec)  # sealed, write-once
 
-campaign.n_trials                 # the honest search size N (all submitted trials)
-campaign.trial_stats              # per trial: label, sharpe, n_periods, skew, kurtosis, psr (StatValue cells)
-campaign.selected_label           # label of the max-Sharpe trial (or UNDEFINED cell)
-campaign.trials_sharpe_variance   # V[{SR_i}] over VALID trials (StatValue)
-campaign.expected_max_sharpe      # SR₀ selection-bias threshold (StatValue)
-campaign.deflated_sharpe          # DSR = PSR(SR₀) of the selected trial (StatValue)  ← headline
-campaign.pin_mismatch             # inherited corpus-pin flag
-campaign.research_result_id       # == campaign.campaign_id
+campaign.n_trials  # the honest search size N (all submitted trials)
+campaign.trial_stats  # per trial: label, sharpe, n_periods, skew, kurtosis, psr (StatValue cells)
+campaign.selected_label  # label of the max-Sharpe trial (or UNDEFINED cell)
+campaign.trials_sharpe_variance  # V[{SR_i}] over VALID trials (StatValue)
+campaign.expected_max_sharpe  # SR₀ selection-bias threshold (StatValue)
+campaign.deflated_sharpe  # DSR = PSR(SR₀) of the selected trial (StatValue)  ← headline
+campaign.pin_mismatch  # inherited corpus-pin flag
+campaign.research_result_id  # == campaign.campaign_id
 
 again = ws.research_result_store.read_as(
     campaign.research_result_id, ResearchCampaignEvaluation.from_dict

@@ -97,6 +97,7 @@ class Workspace:
         self._walk_forward_engine: object | None = None
         self._campaign_engine: object | None = None
         self._comparison_engine: object | None = None
+        self._multiplicity_engine: object | None = None
 
     @property
     def artifact_store(self) -> ArtifactStore:
@@ -505,6 +506,31 @@ class Workspace:
 
             self._comparison_engine = StrategyComparisonEngine(self)
         return self._comparison_engine
+
+    @property
+    def multiplicity_engine(self) -> object:
+        """The Phase 25 multiple-comparison-correction engine (lazy).
+
+        :class:`~quantforge.multiplicity.engine.MultipleComparisonEngine` is imported on
+        first use to avoid a module-load import cycle (the engine imports
+        :class:`Workspace`). Cached for reuse. The first member of a new multiplicity
+        capability class - a pure consumer strictly above Phase 24 that resolves exactly
+        one sealed :class:`~quantforge.comparison.result.StrategyComparison` from this
+        workspace's shared research sidecar, treats its KNOWN pairwise ``p`` values as a
+        single hypothesis family (recording each UNDEFINED pair as a first-class
+        exclusion, never imputed), and for each requested
+        :class:`~quantforge.multiplicity.model.CorrectionMethod` seals the family-wise /
+        false-discovery adjusted ``p`` value plus a rejection flag at a declared
+        ``alpha``, sealing a content-addressed
+        :class:`~quantforge.multiplicity.result.MultipleComparisonCorrection` back to
+        the same sidecar - it creates no new store and duplicates no resolution logic,
+        exactly as the other derived engines do.
+        """
+        if self._multiplicity_engine is None:
+            from quantforge.multiplicity.engine import MultipleComparisonEngine
+
+            self._multiplicity_engine = MultipleComparisonEngine(self)
+        return self._multiplicity_engine
 
     # -- construction --------------------------------------------------------
 
