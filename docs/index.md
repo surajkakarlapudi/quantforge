@@ -449,6 +449,44 @@ will expand as functionality is implemented.
   the only transcendental; it reuses no standard-normal primitive), no `_linalg` / `_stats`
   change, no RNG / float / iterative solver, and no runtime dependency. The
   [locked architecture](phase26-risk-forecast-calibration-locked.md) is the normative spec.
+- [Walk-Forward Turnover & Stability](phase27-turnover-stability-locked.md) —
+  Phase 27: the first consumer of the per-window GMV `weights` payload the Phase 22
+  architecture reserved (no prior consumer read it), and the platform's first
+  **implementability** lens (is the decision the strategy actually makes stable and tradeable
+  over time?). A declarative, content-addressed `WalkForwardStabilitySpecification` (a name and
+  exactly **one** sealed `source_walk_forward_id`; no per-request numerical parameter) drives
+  `WalkForwardStabilityEngine.analyze`, which resolves the one walk from the shared sidecar via
+  `store.read_as(id, WalkForwardEvaluation.from_dict)`, re-verifies its `research_result_id`
+  equals the request, and folds its `result_hash` for transitive pinning (fail closed on any
+  missing / non-`WalkForwardEvaluation` / id-mismatched reference, WS-1). It classifies each
+  window in source order — a REALIZED window contributes its KNOWN GMV weight vector parsed once
+  to `Decimal` (a malformed vector — length ≠ `n_factors`, or any non-KNOWN cell — is a corrupt
+  source and fails closed, WS-4), an UNDEFINED window is a first-class `ExcludedWindow`
+  (`WINDOW_UNDEFINED`) that also breaks the weight path, never imputed (WS-3) — and seals the
+  coverage (`n_windows`, `n_realized`, `n_excluded`, `n_transitions`, WS-2). Over the family,
+  under the pinned `Decimal` context, it seals per REALIZED window `gross_leverage = Σ|w|`,
+  `concentration_hhi = Σw²`, `effective_breadth = 1/HHI`, `max_abs_weight = max|w|`, and the
+  one-way `turnover_from_prev = ½Σ|Δw|` against the immediately-preceding REALIZED window
+  (UNDEFINED `NO_PRIOR_REALIZED_WINDOW` across a gap), and across the walk the turnover mean /
+  population dispersion / max / min and the concentration mean gross leverage / max gross
+  leverage / mean HHI / mean effective breadth (WS-5). `stability_status` is `STABLE` iff the
+  realized-adjacent transitions meet `MIN_STABILITY_TRANSITIONS = 2`, else `UNDEFINED`
+  (`INSUFFICIENT_TRANSITIONS`) with the per-window cells and aggregates still sealed; a walk
+  with no transitions seals every turnover aggregate UNDEFINED (`NO_TRANSITIONS`), a walk with
+  no REALIZED windows every concentration aggregate UNDEFINED (`NO_REALIZED_WINDOWS`), a
+  defensive `HHI = 0` an UNDEFINED `ZERO_CONCENTRATION` breadth — never a divide-by-zero, never
+  a fabricated trade (WS-3). Sealed weights are consumed **verbatim**, never re-solved (WS-4).
+  The output is **ex-post — not a PIT value and not a `BacktestResult`** (WS-6):
+  `WalkForwardStability` is not a `Pit*` type and exposes no as-of accessor; `boundary_kind =
+  "pit"` is carried unchanged from the source walk. The sealed `WalkForwardStability` is a
+  `ResearchRecord` persisted write-once to the existing sidecar (no new store), byte-identically
+  round-tripping; `walk_forward_stability_id` folds the engine + method + decimal-context
+  version, the declared request (name, spec version), the source walk's id **and**
+  `result_hash`, the `MIN_STABILITY_TRANSITIONS` floor, and the `result_hash` over the computed
+  answer. Introduces no new numerical primitive (`Decimal.sqrt` the only transcendental; it
+  reuses no standard-normal primitive), no `_linalg` / `_stats` change, no RNG / float /
+  iterative solver, and no runtime dependency. The
+  [locked architecture](phase27-turnover-stability-locked.md) is the normative spec.
 - [Engineering Principles](../ARCHITECTURE.md#engineering-principles) — the
   non-negotiable principles guiding the project.
 - [Contributing](../CONTRIBUTING.md) — how to set up a development environment
@@ -467,8 +505,11 @@ evaluation (train-before-test), out-of-sample research-campaign evaluation with
 selection-bias correction (Probabilistic & Deflated Sharpe Ratios), pairwise
 out-of-sample strategy comparison (paired-difference t-tests over aligned OOS return series),
 multiple-comparison correction over a strategy comparison's pairwise `p`-value family
-(Holm / Benjamini–Yekutieli family-wise & false-discovery control), and walk-forward
+(Holm / Benjamini–Yekutieli family-wise & false-discovery control), walk-forward
 risk-forecast calibration over one evaluation's calibratable-window family (forecast-vs-outcome
-variance / volatility ratios and a pooled bias ratio — out-of-sample risk-model validation)
-layers are implemented (Phases 1–26). Source ingestion
+variance / volatility ratios and a pooled bias ratio — out-of-sample risk-model validation),
+and walk-forward portfolio turnover & stability over one evaluation's REALIZED-window family
+(per-window gross leverage / concentration / effective breadth / max-abs weight + one-way
+turnover and their aggregate profile — the first implementability lens)
+layers are implemented (Phases 1–27). Source ingestion
 connectors remain planned; the engine operates over content-addressed corpora it is given.

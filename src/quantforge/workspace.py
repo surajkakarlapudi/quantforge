@@ -99,6 +99,7 @@ class Workspace:
         self._comparison_engine: object | None = None
         self._multiplicity_engine: object | None = None
         self._risk_calibration_engine: object | None = None
+        self._stability_engine: object | None = None
 
     @property
     def artifact_store(self) -> ArtifactStore:
@@ -559,6 +560,29 @@ class Workspace:
 
             self._risk_calibration_engine = RiskForecastCalibrationEngine(self)
         return self._risk_calibration_engine
+
+    @property
+    def stability_engine(self) -> object:
+        """The Phase 27 walk-forward turnover & stability engine (lazy).
+
+        :class:`~quantforge.stability.engine.WalkForwardStabilityEngine` is imported on
+        first use to avoid a module-load import cycle (the engine imports
+        :class:`Workspace`). Cached for reuse. The first consumer of Phase 22's
+        reserved-but-unconsumed per-window ``weights`` payload - a pure consumer
+        strictly above Phase 22 that resolves exactly one sealed
+        :class:`~quantforge.walkforward.result.WalkForwardEvaluation` from this
+        workspace's shared research sidecar, reads each REALIZED window's GMV weight
+        vector, and seals the per-window weight-vector stability metrics and one-way
+        turnover plus the aggregate turnover / concentration profile into a
+        content-addressed :class:`~quantforge.stability.result.WalkForwardStability`
+        back to the same sidecar - it creates no new store and duplicates no resolution
+        logic, exactly as the other derived engines do.
+        """
+        if self._stability_engine is None:
+            from quantforge.stability.engine import WalkForwardStabilityEngine
+
+            self._stability_engine = WalkForwardStabilityEngine(self)
+        return self._stability_engine
 
     # -- construction --------------------------------------------------------
 

@@ -1436,6 +1436,57 @@ RC-6. **A calibration is not a PIT value and not a `BacktestResult`.** A calibra
     were PIT walks, not that the calibration output is forward-usable. (The WF-3 / SC-6 /
     MC-6 discipline, one layer up.)
 
+**Walk-forward-stability invariants** (Phase 27; additive — these do not weaken 1–30)
+WS-1. **Reference verification and transitive pinning.** A walk-forward stability analysis
+    resolves the single `source_walk_forward_id` from the shared sidecar via
+    `store.read_as(id, WalkForwardEvaluation.from_dict)`, re-verifies it
+    (`research_result_id == id`, and that it decodes as a `WalkForwardEvaluation`), and folds
+    its `result_hash` into `walk_forward_stability_id`; through the source walk's own id this
+    pins the optimization / risk-model / factor chain beneath it (WF-1). Any missing,
+    non-decoding, or id-mismatched reference fails closed with `StabilityConsistencyError`;
+    the source is never copied, only pinned. (The WF-1 / CE-1 / MC-1 / RC-1 discipline, one
+    layer up.)
+WS-2. **The analyzed object is an explicit, sealed family of windows.** Every source window
+    is classified into exactly one of {a per-window stability cell (REALIZED), an
+    `ExcludedWindow` (UNDEFINED)}, in source order; the coverage (`n_windows`, `n_realized`,
+    `n_excluded` with `n_realized + n_excluded = n_windows`, and the separately-counted
+    `n_transitions`) is sealed so the effective sample each aggregate used is auditable and
+    never inferred. One source only.
+WS-3. **UNDEFINED windows are excluded and gaps are never imputed.** A window the source
+    sealed UNDEFINED is removed from the concentration family and recorded as a first-class
+    `ExcludedWindow` (`WINDOW_UNDEFINED`) — never coerced to a metric, never imputed — and it
+    breaks the weight path so the next REALIZED window's `turnover_from_prev` is UNDEFINED
+    (`NO_PRIOR_REALIZED_WINDOW`), never a turnover fabricated across the gap. A walk with no
+    realized-adjacent transitions seals every turnover aggregate UNDEFINED (`NO_TRANSITIONS`);
+    a family below `MIN_STABILITY_TRANSITIONS` seals `stability_status` UNDEFINED
+    (`INSUFFICIENT_TRANSITIONS`); a defensive `HHI = 0` seals `effective_breadth` /
+    `mean_effective_breadth` UNDEFINED (`ZERO_CONCENTRATION`); a walk with no REALIZED windows
+    seals every concentration aggregate UNDEFINED (`NO_REALIZED_WINDOWS`). Never a
+    divide-by-zero. (The WF-4 / SC-4 / MC-3 / RC-3 posture, adapted to windows.)
+WS-4. **Sealed weights are consumed verbatim, never recomputed.** Each REALIZED window's
+    already-sealed GMV weight vector is read as decimal strings and parsed once; the engine
+    never re-solves a GMV, re-derives a covariance, or recomputes a weight; a REALIZED window
+    whose weight vector is malformed (length ≠ `n_factors`, or any non-KNOWN cell) is a
+    corrupt source and raises `StabilityConsistencyError`, never coerced. (The RC-4 / MC-5
+    posture of operating over already-sealed strings, one layer up.)
+WS-5. **Single deterministic methodology.** One exact-`Decimal` method per family — the
+    per-window gross leverage / concentration / effective breadth / max-abs weight / one-way
+    turnover, the turnover mean / population dispersion / max / min, and the concentration
+    mean gross leverage / max gross leverage / mean HHI / mean effective breadth — all under
+    one pinned decimal context (prec 34, `ROUND_HALF_EVEN`) folded into the engine identity,
+    with `Decimal.sqrt` the only transcendental. `stability_status` is STABLE iff the family
+    meets `MIN_STABILITY_TRANSITIONS` (folded into the id), else UNDEFINED; the per-window
+    cells and aggregates still seal. No RNG, no float, no data-dependent iteration, no
+    `_linalg`/`_stats` change, no new primitive. (The WF-5 / MC-5 / RC-5 discipline, reusing
+    exact `Decimal` arithmetic.)
+WS-6. **A stability analysis is not a PIT value and not a `BacktestResult`.** A stability
+    analysis over an already-ex-post walk-forward is itself ex-post: `WalkForwardStability` is
+    **not** a `Pit*` type, exposes no as-of accessor, is a distinct record type, simulates no
+    fills, and opens no new corpus / availability surface. `boundary_kind = "pit"` — carried
+    unchanged from the source walk — documents only that the *underlying factor portfolios*
+    were PIT walks, not that the stability output is forward-usable. (The WF-3 / SC-6 /
+    MC-6 / RC-6 discipline, one layer up.)
+
 ---
 
 ## 13. Adversarial cases

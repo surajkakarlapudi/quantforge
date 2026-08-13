@@ -129,6 +129,10 @@ from quantforge.report import (
     ReportSpecification,
     ResearchReport,
 )
+from quantforge.stability import (
+    WalkForwardStability,
+    WalkForwardStabilitySpecification,
+)
 from quantforge.universe import (
     CompanyMetricFilter,
     ExplicitCompanyFilter,
@@ -213,6 +217,8 @@ __all__ = [
     "UniverseSummary",
     "WalkForwardEvaluation",
     "WalkForwardEvaluationSpecification",
+    "WalkForwardStability",
+    "WalkForwardStabilitySpecification",
     "Workspace",
     "__version__",
 ]
