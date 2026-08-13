@@ -1487,6 +1487,61 @@ WS-6. **A stability analysis is not a PIT value and not a `BacktestResult`.** A 
     were PIT walks, not that the stability output is forward-usable. (The WF-3 / SC-6 /
     MC-6 / RC-6 discipline, one layer up.)
 
+**Minimum-track-record-length invariants** (Phase 28; additive — these do not weaken 1–30)
+MT-1. **Reference verification and transitive pinning.** A minimum-track-record-length
+    analysis resolves the single `source_campaign_id` from the shared sidecar via
+    `store.read_as(id, ResearchCampaignEvaluation.from_dict)`, re-verifies it
+    (`research_result_id == id`, and that it decodes as a `ResearchCampaignEvaluation`), and
+    folds its `result_hash` into `minimum_track_record_length_id`; through the source
+    campaign's own id this pins the walk-forward / optimization / risk-model / factor chain
+    beneath it (RC-1). Any missing, non-decoding, or id-mismatched reference fails closed with
+    `MinTrlConsistencyError`; the source is never copied, only pinned. (The RC-1 / CE-1 /
+    MC-1 / WS-1 discipline, one layer up.)
+MT-2. **The analyzed object is an explicit, sealed family of trials.** Every source trial is
+    classified into exactly one of {an evaluable per-trial MinTRL cell, an `ExcludedTrial`
+    (UNDEFINED)}, in source order; the coverage (`n_trials`, `n_evaluable`, `n_excluded` with
+    `n_evaluable + n_excluded = n_trials`) is sealed so the effective sample each aggregate
+    used is auditable and never inferred. One source only.
+MT-3. **Exclusions and UNDEFINED cells are first-class and never a divide-by-zero.** A trial
+    the source sealed UNDEFINED is a first-class `ExcludedTrial` (`TRIAL_UNDEFINED`); a
+    defensive VALID-but-missing-moment source trial is `MOMENTS_UNDEFINED` — neither is
+    coerced to a metric or imputed. An evaluable trial whose Sharpe does not exceed the
+    benchmark (`SHARPE_NOT_ABOVE_BENCHMARK`) or whose Sharpe-estimator variance is non-positive
+    (`DEGENERATE_SHARPE_ESTIMATOR`) is a first-class UNDEFINED cell whose `excess_length`
+    inherits the same reason, never a division by a zero or negative denominator. A determined
+    family below `MIN_DETERMINED_TRIALS` seals `mintrl_status` UNDEFINED
+    (`INSUFFICIENT_DETERMINED_TRIALS`) with the per-trial cells still sealed; an empty
+    determined family seals every aggregate UNDEFINED (`NO_DETERMINED_TRIALS`). Never a
+    divide-by-zero. (The RC-3 / MC-3 / WS-3 posture, adapted to trials.)
+MT-4. **Carried moments are consumed verbatim, never recomputed.** Each evaluable trial's
+    already-sealed `sharpe` / `skew` / `kurtosis` / `n` cells are read as decimal strings and
+    parsed once; the engine never re-derives a moment from returns, never re-estimates a
+    Sharpe, and carries the three moments verbatim into the sealed cell. A trial whose
+    consumed moment cells are malformed (a non-KNOWN cell where the classification required
+    KNOWN) is a corrupt source and raises `MinTrlConsistencyError`, never coerced. (The RC-4 /
+    WS-4 posture of operating over already-sealed strings, one layer up.)
+MT-5. **Single deterministic methodology.** One exact-`Decimal` method per cell — the
+    Bailey–López de Prado `MinTRL = 1 + V·(Z_alpha/(SR − SR*))²` with
+    `V = 1 − γ₃·SR + ((γ₄−1)/4)·SR²` (the identical Sharpe-estimator variance the Phase-23 PSR
+    uses, of which MinTRL is the exact algebraic inverse), `excess_length = n − MinTRL`, and
+    across the determined family the mean / population dispersion / max / min MinTRL and the
+    `sufficient_frequency` — all under one pinned decimal context (prec 34,
+    `ROUND_HALF_EVEN`) folded into the engine identity, with `Z_alpha = Φ⁻¹(alpha)` computed
+    once via the deterministic exact-`Decimal` `Z⁻¹` bisection reused verbatim from
+    `quantforge/_stats/normal.py` (shared with Phase 23) and `Decimal.sqrt` the only other
+    transcendental. `mintrl_status` is EVALUATED iff the determined family meets
+    `MIN_DETERMINED_TRIALS` (folded into the id), else UNDEFINED; the per-trial cells and
+    aggregates still seal. No RNG, no float, no data-dependent iteration, no `_linalg`/`_stats`
+    change, no new primitive. (The RC-5 / MC-5 / WS-5 discipline, reusing exact `Decimal`
+    arithmetic.)
+MT-6. **A minimum-track-record-length analysis is not a PIT value and not a `BacktestResult`.**
+    A MinTRL analysis over an already-ex-post campaign is itself ex-post:
+    `MinimumTrackRecordLength` is **not** a `Pit*` type, exposes no as-of accessor, is a
+    distinct record type, simulates no fills, and opens no new corpus / availability surface.
+    `boundary_kind = "pit"` — carried unchanged from the source campaign — documents only that
+    the *underlying trials* were PIT walks, not that the MinTRL output is forward-usable. (The
+    RC-6 / MC-6 / WS-6 discipline, one layer up.)
+
 ---
 
 ## 13. Adversarial cases

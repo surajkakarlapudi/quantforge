@@ -100,6 +100,7 @@ class Workspace:
         self._multiplicity_engine: object | None = None
         self._risk_calibration_engine: object | None = None
         self._stability_engine: object | None = None
+        self._mintrl_engine: object | None = None
 
     @property
     def artifact_store(self) -> ArtifactStore:
@@ -583,6 +584,29 @@ class Workspace:
 
             self._stability_engine = WalkForwardStabilityEngine(self)
         return self._stability_engine
+
+    @property
+    def mintrl_engine(self) -> object:
+        """The Phase 28 minimum-track-record-length engine (lazy).
+
+        :class:`~quantforge.mintrl.engine.MinimumTrackRecordLengthEngine` is imported on
+        first use to avoid a module-load import cycle (the engine imports
+        :class:`Workspace`). Cached for reuse. The first consumer of Phase 23's sealed
+        per-trial OOS Sharpe / skew / kurtosis - a pure consumer strictly above Phase 23
+        that resolves exactly one sealed
+        :class:`~quantforge.campaign.result.ResearchCampaignEvaluation` from this
+        workspace's shared research sidecar, reads each VALID trial's moments, and seals
+        the per-trial Bailey-López de Prado minimum track-record length and the
+        aggregate MinTRL profile into a content-addressed
+        :class:`~quantforge.mintrl.result.MinimumTrackRecordLength` back to the same
+        sidecar - it creates no new store and duplicates no resolution logic, exactly as
+        the other derived engines do.
+        """
+        if self._mintrl_engine is None:
+            from quantforge.mintrl.engine import MinimumTrackRecordLengthEngine
+
+            self._mintrl_engine = MinimumTrackRecordLengthEngine(self)
+        return self._mintrl_engine
 
     # -- construction --------------------------------------------------------
 

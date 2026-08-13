@@ -487,6 +487,50 @@ will expand as functionality is implemented.
   reuses no standard-normal primitive), no `_linalg` / `_stats` change, no RNG / float /
   iterative solver, and no runtime dependency. The
   [locked architecture](phase27-turnover-stability-locked.md) is the normative spec.
+- [Minimum Track-Record Length](phase28-minimum-track-record-length-locked.md) —
+  Phase 28: the first consumer of the `ResearchCampaignEvaluation` sealed per-trial moment
+  block (Phase 23 sealed each trial's `sharpe` / `skew` / `kurtosis` / `n`; Phase 28 reads
+  exactly those), and the platform's first **statistical-power / track-record-adequacy** lens
+  (how long a track record must a strategy accumulate before its Sharpe is significant?). A
+  declarative, content-addressed `MinimumTrackRecordLengthSpecification` (a name, exactly
+  **one** sealed `source_campaign_id`, a confidence `alpha ∈ (0, 1)` — default `0.95` — and a
+  benchmark Sharpe `SR*` — default `0`) drives `MinimumTrackRecordLengthEngine.evaluate`, which
+  resolves the one campaign from the shared sidecar via
+  `store.read_as(id, ResearchCampaignEvaluation.from_dict)`, re-verifies its
+  `research_result_id` equals the request, and folds its `result_hash` for transitive pinning
+  (fail closed on any missing / non-`ResearchCampaignEvaluation` / id-mismatched reference,
+  MT-1). It classifies each trial in source order — a VALID trial whose `sharpe` / `skew` /
+  `kurtosis` cells are all KNOWN joins the evaluable family (its three moments parsed once to
+  `Decimal`, carried verbatim, never recomputed, MT-4), a source-UNDEFINED trial is a
+  first-class `ExcludedTrial` (`TRIAL_UNDEFINED`), the defensive VALID-but-missing-moment case
+  is `MOMENTS_UNDEFINED` (MT-3) — and seals the coverage (`n_trials`, `n_evaluable`,
+  `n_excluded`, MT-2). Over the family, under the pinned `Decimal` context, it computes
+  `Z_alpha = Φ⁻¹(alpha)` once via the reused deterministic exact-`Decimal` `Z⁻¹` bisection
+  (`quantforge/_stats/normal.py`, shared with Phase 23 — no new primitive) and seals per trial
+  the Bailey–López de Prado `MinTRL = 1 + V·(Z_alpha/(SR − SR*))²` with
+  `V = 1 − γ₃·SR + ((γ₄−1)/4)·SR²` — the identical Sharpe-estimator variance the Phase-23 PSR
+  uses, of which MinTRL is the exact algebraic inverse — plus `excess_length = n − MinTRL` and,
+  across the determined family, the mean / population dispersion / max / min MinTRL and the
+  `sufficient_frequency` (the fraction of determined trials whose observed length already meets
+  its MinTRL, MT-5). An evaluable trial whose Sharpe does not exceed the benchmark
+  (`SHARPE_NOT_ABOVE_BENCHMARK`) or whose estimator variance is non-positive
+  (`DEGENERATE_SHARPE_ESTIMATOR`) is a first-class `UNDEFINED` cell whose `excess_length`
+  inherits the same reason, never a divide-by-zero (MT-3). `mintrl_status` is `EVALUATED` iff
+  the determined family meets `MIN_DETERMINED_TRIALS = 2`, else `UNDEFINED`
+  (`INSUFFICIENT_DETERMINED_TRIALS`) with the per-trial cells still sealed; an empty family
+  seals every aggregate UNDEFINED (`NO_DETERMINED_TRIALS`), never a divide-by-zero. The output
+  is **ex-post — not a PIT value and not a `BacktestResult`** (MT-6): `MinimumTrackRecordLength`
+  is not a `Pit*` type and exposes no as-of accessor; `boundary_kind = "pit"` is carried
+  unchanged from the source campaign. The sealed `MinimumTrackRecordLength` is a
+  `ResearchRecord` persisted write-once to the existing sidecar (no new store), byte-identically
+  round-tripping; `minimum_track_record_length_id` folds the engine + method + normal-primitive
+  + decimal-context version, the declared request (name, spec version, the canonical
+  `confidence` and `benchmark_sharpe`), the source campaign's id **and** `result_hash`, the
+  `MIN_DETERMINED_TRIALS` floor, and the `result_hash` over the computed answer. Introduces no
+  new numerical primitive (`Decimal.sqrt` the only transcendental; it reuses the shared `Z⁻¹`
+  bisection verbatim), no `_linalg` / `_stats` change, no RNG / float / iterative solver, and no
+  runtime dependency. The
+  [locked architecture](phase28-minimum-track-record-length-locked.md) is the normative spec.
 - [Engineering Principles](../ARCHITECTURE.md#engineering-principles) — the
   non-negotiable principles guiding the project.
 - [Contributing](../CONTRIBUTING.md) — how to set up a development environment
@@ -508,8 +552,11 @@ multiple-comparison correction over a strategy comparison's pairwise `p`-value f
 (Holm / Benjamini–Yekutieli family-wise & false-discovery control), walk-forward
 risk-forecast calibration over one evaluation's calibratable-window family (forecast-vs-outcome
 variance / volatility ratios and a pooled bias ratio — out-of-sample risk-model validation),
-and walk-forward portfolio turnover & stability over one evaluation's REALIZED-window family
+walk-forward portfolio turnover & stability over one evaluation's REALIZED-window family
 (per-window gross leverage / concentration / effective breadth / max-abs weight + one-way
-turnover and their aggregate profile — the first implementability lens)
-layers are implemented (Phases 1–27). Source ingestion
+turnover and their aggregate profile — the first implementability lens), and minimum
+track-record length (MinTRL) over one research campaign's evaluable trials (per-trial
+Bailey–López de Prado significance-horizon `MinTRL = 1 + V·(Z_alpha/(SR − SR*))²` and the
+aggregate MinTRL profile — the first statistical-power / track-record-adequacy lens)
+layers are implemented (Phases 1–28). Source ingestion
 connectors remain planned; the engine operates over content-addressed corpora it is given.

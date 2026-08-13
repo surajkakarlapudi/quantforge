@@ -115,6 +115,10 @@ from quantforge.metrics import (
     RevisedMetricValue,
     UndefinedReason,
 )
+from quantforge.mintrl import (
+    MinimumTrackRecordLength,
+    MinimumTrackRecordLengthSpecification,
+)
 from quantforge.multiplicity import (
     MultipleComparisonCorrection,
     MultipleComparisonSpecification,
@@ -176,6 +180,8 @@ __all__ = [
     "FormulaRegistry",
     "MetricPeriod",
     "MetricStatus",
+    "MinimumTrackRecordLength",
+    "MinimumTrackRecordLengthSpecification",
     "MultipleComparisonCorrection",
     "MultipleComparisonSpecification",
     "PerformanceAnalytics",
