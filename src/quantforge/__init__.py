@@ -61,6 +61,10 @@ from quantforge.backtest import (
     StrategySpecification,
     TargetWeights,
 )
+from quantforge.calibration import (
+    RiskForecastCalibration,
+    RiskForecastCalibrationSpecification,
+)
 from quantforge.campaign import (
     ResearchCampaignEvaluation,
     ResearchCampaignSpecification,
@@ -190,6 +194,8 @@ __all__ = [
     "RevisedPanel",
     "RevisedPrice",
     "RevisedValue",
+    "RiskForecastCalibration",
+    "RiskForecastCalibrationSpecification",
     "SectorFilter",
     "SignalDiagnostics",
     "SignalDiagnosticsSpecification",

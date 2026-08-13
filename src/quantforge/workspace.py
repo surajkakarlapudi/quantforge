@@ -98,6 +98,7 @@ class Workspace:
         self._campaign_engine: object | None = None
         self._comparison_engine: object | None = None
         self._multiplicity_engine: object | None = None
+        self._risk_calibration_engine: object | None = None
 
     @property
     def artifact_store(self) -> ArtifactStore:
@@ -531,6 +532,33 @@ class Workspace:
 
             self._multiplicity_engine = MultipleComparisonEngine(self)
         return self._multiplicity_engine
+
+    @property
+    def risk_calibration_engine(self) -> object:
+        """The Phase 26 walk-forward risk-forecast-calibration engine (lazy).
+
+        :class:`~quantforge.calibration.engine.RiskForecastCalibrationEngine` is
+        imported on first use to avoid a module-load import cycle (the engine
+        imports :class:`Workspace`). Cached for reuse. The first member of a new
+        risk-model out-of-sample-validation capability class - a pure consumer
+        strictly above Phase 22 that resolves exactly one sealed
+        :class:`~quantforge.walkforward.result.WalkForwardEvaluation` from this
+        workspace's shared research sidecar, reads its reserved-but-unconsumed
+        per-window ``predicted_variance`` (in-sample ``wᵀΣw``) and
+        ``realized_variance`` (out-of-sample variance), classifies each window into
+        the calibratable family (recording every non-calibratable window as a
+        first-class exclusion, never imputed), and seals the per-window
+        forecast-vs-outcome ratios plus the aggregate bias / dispersion statistics
+        into a content-addressed
+        :class:`~quantforge.calibration.result.RiskForecastCalibration` back to the
+        same sidecar - it creates no new store and duplicates no resolution logic,
+        exactly as the other derived engines do.
+        """
+        if self._risk_calibration_engine is None:
+            from quantforge.calibration.engine import RiskForecastCalibrationEngine
+
+            self._risk_calibration_engine = RiskForecastCalibrationEngine(self)
+        return self._risk_calibration_engine
 
     # -- construction --------------------------------------------------------
 

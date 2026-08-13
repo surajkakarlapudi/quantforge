@@ -413,6 +413,42 @@ will expand as functionality is implemented.
   runtime dependency. The
   [locked architecture](phase25-multiple-comparison-correction-locked.md) is the normative
   spec.
+- [Risk-Forecast Calibration](phase26-risk-forecast-calibration-locked.md) —
+  Phase 26: the first consumer of the per-window `predicted_variance` / `realized_variance`
+  payload the Phase 22 architecture reserved, and the platform's first **out-of-sample
+  risk-model validation** layer (does the Phase-20 covariance the whole GMV chain rests on
+  actually forecast realized OOS risk?). A declarative, content-addressed
+  `RiskForecastCalibrationSpecification` (a name and exactly **one** sealed
+  `source_walk_forward_id`; no per-request numerical parameter) drives
+  `RiskForecastCalibrationEngine.calibrate`, which resolves the one walk from the shared
+  sidecar via `store.read_as(id, WalkForwardEvaluation.from_dict)`, re-verifies its
+  `research_result_id` equals the request, and folds its `result_hash` for transitive pinning
+  (fail closed on any missing / non-`WalkForwardEvaluation` / id-mismatched reference, RC-1).
+  It classifies each window in source order into the *calibratable* family — REALIZED, with a
+  KNOWN strictly-positive `predicted_variance` and a KNOWN `realized_variance` — every
+  non-calibratable window a first-class `ExcludedWindow` carrying its reason
+  (`WINDOW_UNDEFINED`, `SINGLE_VALID_PERIOD`, and the defensive `ZERO_PREDICTED_VARIANCE` /
+  `PREDICTED_VARIANCE_UNDEFINED`), never imputed (RC-3), and seals the coverage (`n_windows`,
+  `n_calibratable`, `n_excluded`, RC-2). Over the family, under the pinned `Decimal` context,
+  it seals per window `variance_ratio = realized / predicted` and `volatility_ratio = √realized
+  / √predicted`, and across the `k`-window family the mean `variance_ratio`, the pooled
+  `aggregate_bias = Σrealized / Σpredicted` (a Barra-style bias ratio: `>1` under-forecasts
+  risk), the population dispersion, the under-forecast frequency, and the min / max
+  (RC-4/RC-5). `calibration_status` is `CALIBRATED` iff `n_calibratable ≥
+  MIN_CALIBRATABLE_WINDOWS = 2`, else `UNDEFINED` (`INSUFFICIENT_CALIBRATABLE_WINDOWS`) with the
+  per-window ratios still sealed; an empty family seals every aggregate UNDEFINED
+  (`NO_CALIBRATABLE_WINDOWS`), never a divide-by-zero. Sealed forecasts and outcomes are
+  consumed **verbatim**, never recomputed (RC-4). The output is **ex-post — not a PIT value and
+  not a `BacktestResult`** (RC-6): `RiskForecastCalibration` is not a `Pit*` type and exposes no
+  as-of accessor; `boundary_kind = "pit"` is carried unchanged from the source walk. The sealed
+  `RiskForecastCalibration` is a `ResearchRecord` persisted write-once to the existing sidecar
+  (no new store), byte-identically round-tripping; `risk_forecast_calibration_id` folds the
+  engine + method + decimal-context version, the declared request (name, spec version), the
+  source walk's id **and** `result_hash`, the `MIN_CALIBRATABLE_WINDOWS` floor, and the
+  `result_hash` over the computed answer. Introduces no new numerical primitive (`Decimal.sqrt`
+  the only transcendental; it reuses no standard-normal primitive), no `_linalg` / `_stats`
+  change, no RNG / float / iterative solver, and no runtime dependency. The
+  [locked architecture](phase26-risk-forecast-calibration-locked.md) is the normative spec.
 - [Engineering Principles](../ARCHITECTURE.md#engineering-principles) — the
   non-negotiable principles guiding the project.
 - [Contributing](../CONTRIBUTING.md) — how to set up a development environment
@@ -430,7 +466,9 @@ portfolio-optimization (fully-invested global minimum-variance), walk-forward ou
 evaluation (train-before-test), out-of-sample research-campaign evaluation with
 selection-bias correction (Probabilistic & Deflated Sharpe Ratios), pairwise
 out-of-sample strategy comparison (paired-difference t-tests over aligned OOS return series),
-and multiple-comparison correction over a strategy comparison's pairwise `p`-value family
-(Holm / Benjamini–Yekutieli family-wise & false-discovery control)
-layers are implemented (Phases 1–25). Source ingestion
+multiple-comparison correction over a strategy comparison's pairwise `p`-value family
+(Holm / Benjamini–Yekutieli family-wise & false-discovery control), and walk-forward
+risk-forecast calibration over one evaluation's calibratable-window family (forecast-vs-outcome
+variance / volatility ratios and a pooled bias ratio — out-of-sample risk-model validation)
+layers are implemented (Phases 1–26). Source ingestion
 connectors remain planned; the engine operates over content-addressed corpora it is given.

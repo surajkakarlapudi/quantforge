@@ -1378,6 +1378,64 @@ MC-6. **Honest method labels sealed; and a correction is not a PIT value.** Each
     source comparison — documents only that the *underlying strategies* were PIT walks. (The
     SC-6 / CE-6 discipline, one layer up.)
 
+**Risk-forecast-calibration invariants** (Phase 26; additive — these do not weaken 1–30)
+RC-1. **Reference verification and transitive pinning.** A risk-forecast calibration
+    resolves the single `source_walk_forward_id` it names (a sealed
+    `WalkForwardEvaluation`) from the shared research sidecar via
+    `store.read_as(id, WalkForwardEvaluation.from_dict)`, re-verifies that the resolved
+    record's `research_result_id` equals the requested id, and folds the source walk's
+    `result_hash` into `risk_forecast_calibration_id`. Because the walk's own id
+    transitively pins the optimization / risk-model / factor chain beneath it (WF-1), the
+    calibration is transitively sensitive to any change in the walk or anything below it. A
+    missing, non-decoding, or id-mismatched reference fails closed with
+    `CalibrationConsistencyError`; the source is never copied, only pinned. (The WF-1 / CE-1
+    / MC-1 discipline, one layer up.)
+RC-2. **The calibrated object is an explicit, sealed family of windows.** The calibration
+    treats exactly the *calibratable* windows of the one source walk — those the source
+    sealed `REALIZED` with a KNOWN, strictly-positive `predicted_variance` and a KNOWN
+    `realized_variance` — as its family, in the source's window order, and seals its
+    coverage: the source's `n_windows`, the calibratable `n_calibratable`, and the excluded
+    `n_excluded`, with `n_calibratable + n_excluded = n_windows` always. The effective
+    sample the aggregates used is a first-class, auditable fact, never inferred. (No
+    cross-walk family in v0.23.0: exactly one source, mirroring MC-2 / P21's single-input
+    pattern.)
+RC-3. **Non-calibratable windows are excluded, never imputed.** A source window that is not
+    calibratable — the whole window `UNDEFINED` (`WINDOW_UNDEFINED`), a `REALIZED` window
+    whose `realized_variance` is UNDEFINED because its test span had a single period
+    (`SINGLE_VALID_PERIOD`), or the defensive, structurally-unreachable guards for a
+    non-positive (`ZERO_PREDICTED_VARIANCE`) or UNDEFINED (`PREDICTED_VARIANCE_UNDEFINED`)
+    `predicted_variance` — is removed from the family and recorded as a first-class
+    `ExcludedWindow` carrying its `CalibrationExcludedReason`, never coerced to a ratio,
+    never imputed, never silently dropped. An empty family (`k = 0`) seals every aggregate
+    as a first-class UNDEFINED (`NO_CALIBRATABLE_WINDOWS`) and a `calibration_status` of
+    UNDEFINED, never a divide-by-zero and never a fabricated ratio. (The WF-4 / SC-4 / MC-3
+    fail-closed posture, adapted to windows.)
+RC-4. **Sealed forecasts and outcomes are consumed verbatim, never recomputed.** The
+    calibration reads each window's already-sealed `predicted_variance` (in-sample `wᵀΣw`)
+    and `realized_variance` (out-of-sample population variance) as decimal strings and never
+    re-solves a window, re-derives a covariance, or recomputes a variance from `oos_returns`;
+    the canonical form `str(+Decimal(source))` is idempotent for an already-canonical source
+    string, so a carried-through value is byte-for-byte the source value. (The MC-5 posture
+    of operating over already-sealed strings, one layer up.)
+RC-5. **Single deterministic methodology.** One exact-`Decimal` calibration method per family
+    — per window `variance_ratio = realized / predicted`, `volatility_ratio =
+    √realized / √predicted`; over the family the mean variance ratio, the pooled
+    `aggregate_bias = Σrealized / Σpredicted`, the population `variance_ratio_dispersion`, the
+    `underforecast_frequency`, and the min / max ratio — all under one pinned decimal context
+    (prec 34, `ROUND_HALF_EVEN`) folded into the engine identity, with `Decimal.sqrt` the only
+    transcendental (the exact method Phases 19/20/22 already use). `calibration_status` is
+    `CALIBRATED` iff the family meets the platform floor `MIN_CALIBRATABLE_WINDOWS` (folded
+    into the id), else UNDEFINED (`INSUFFICIENT_CALIBRATABLE_WINDOWS`); the per-window ratios
+    still seal. No RNG, no float, no data-dependent iteration, no `_linalg`/`_stats` change,
+    no new primitive. (The WF-5 / MC-5 discipline, reusing exact `Decimal` arithmetic.)
+RC-6. **A calibration is not a PIT value and not a `BacktestResult`.** A calibration over an
+    already-ex-post walk-forward is itself ex-post: `RiskForecastCalibration` is **not** a
+    `Pit*` type, exposes no as-of accessor, is a distinct record type, simulates no fills,
+    and opens no new corpus / availability surface. `boundary_kind = "pit"` — carried
+    unchanged from the source walk — documents only that the *underlying factor portfolios*
+    were PIT walks, not that the calibration output is forward-usable. (The WF-3 / SC-6 /
+    MC-6 discipline, one layer up.)
+
 ---
 
 ## 13. Adversarial cases
