@@ -101,6 +101,7 @@ class Workspace:
         self._risk_calibration_engine: object | None = None
         self._stability_engine: object | None = None
         self._mintrl_engine: object | None = None
+        self._calibration_significance_engine: object | None = None
 
     @property
     def artifact_store(self) -> ArtifactStore:
@@ -607,6 +608,30 @@ class Workspace:
 
             self._mintrl_engine = MinimumTrackRecordLengthEngine(self)
         return self._mintrl_engine
+
+    @property
+    def calibration_significance_engine(self) -> object:
+        """The Phase 29 calibration-significance engine (lazy).
+
+        :class:`~quantforge.calsig.engine.CalibrationSignificanceEngine` is imported on
+        first use to avoid a module-load import cycle (the engine imports
+        :class:`Workspace`). Cached for reuse. The first consumer of Phase 26's sealed
+        aggregate calibration statistics - a pure consumer strictly above Phase 26 that
+        resolves exactly one sealed
+        :class:`~quantforge.calibration.result.RiskForecastCalibration` from this
+        workspace's shared research sidecar, reads its sealed mean variance ratio,
+        population dispersion and calibratable-window count verbatim, and seals the
+        one-sample large-sample two-sided significance test of the mean variance ratio
+        against the null mean ``1`` into a content-addressed
+        :class:`~quantforge.calsig.result.CalibrationSignificance` back to the same
+        sidecar - it creates no new store and duplicates no resolution logic, exactly as
+        the other derived engines do.
+        """
+        if self._calibration_significance_engine is None:
+            from quantforge.calsig.engine import CalibrationSignificanceEngine
+
+            self._calibration_significance_engine = CalibrationSignificanceEngine(self)
+        return self._calibration_significance_engine
 
     # -- construction --------------------------------------------------------
 

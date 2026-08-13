@@ -531,6 +531,43 @@ will expand as functionality is implemented.
   bisection verbatim), no `_linalg` / `_stats` change, no RNG / float / iterative solver, and no
   runtime dependency. The
   [locked architecture](phase28-minimum-track-record-length-locked.md) is the normative spec.
+- [Risk-Forecast Calibration Significance](phase29-calibration-significance-locked.md) —
+  Phase 29: the first consumer of the sealed `RiskForecastCalibration` summary and the
+  calibration analogue of the Phase-24 paired-difference strategy comparison, applied as a
+  **one-sample** significance test about the null mean `1`. It answers the one question the
+  calibration record never tests: is the risk model's mean variance ratio statistically
+  distinguishable from perfect calibration? A declarative, content-addressed
+  `CalibrationSignificanceSpecification` (a name and exactly **one** sealed
+  `source_calibration_id`; no per-request numerical parameter) drives
+  `CalibrationSignificanceEngine.evaluate`, which resolves the one calibration from the shared
+  sidecar via `store.read_as(id, RiskForecastCalibration.from_dict)`, re-verifies its
+  `research_result_id` equals the request, and folds its `result_hash` for transitive pinning
+  (fail closed on any missing / non-`RiskForecastCalibration` / id-mismatched reference, CS-1).
+  It gates on the source: only a `CALIBRATED` source whose aggregate `mean_variance_ratio` /
+  `variance_ratio_dispersion` cells are KNOWN is tested, else every statistic is a first-class
+  UNDEFINED `SOURCE_NOT_CALIBRATED` (CS-2). Consuming the sealed mean `m`, population dispersion
+  `s`, and window count `K = n_calibratable` verbatim — never recomputed (CS-4) — under the
+  pinned `Decimal` context it seals `standard_error = s/√K`, `t = (m − 1)/standard_error`, and
+  the two-sided `p = 2·(1 − Φ(|t|))` clamped to `[0, 1]` via the reused exact-`Decimal`
+  `standard_normal_cdf` (`quantforge/_stats/normal.py`, shared with Phase 24 — no new primitive;
+  the same population-moment convention `√(variance/n)` as Phase 24, CS-5), plus the descriptive
+  `bias_direction` (`UNDER_FORECAST` when `m > 1`, `OVER_FORECAST` when `m < 1`, `UNBIASED` at
+  `m == 1`). A zero-dispersion source seals `standard_error` a KNOWN `0` but `t` / `p` UNDEFINED
+  (`ZERO_RATIO_DISPERSION`) with the mean and bias direction still KNOWN — never a divide-by-zero
+  (CS-3); the record always seals (only a request / reference defect raises). There is no
+  per-request numerical parameter — the null mean is the fixed platform constant
+  `NULL_MEAN_RATIO = "1"`, folded into identity; the finite-sample Student-`t` is deferred (★),
+  matching Phase 24. The output is **ex-post — not a PIT value and not a `BacktestResult`**
+  (CS-6): `CalibrationSignificance` is not a `Pit*` type and exposes no as-of accessor;
+  `boundary_kind = "pit"` is carried unchanged from the source calibration. The sealed
+  `CalibrationSignificance` is a `ResearchRecord` persisted write-once to the existing sidecar
+  (no new store), byte-identically round-tripping; `calibration_significance_id` folds the
+  engine + method + normal-primitive + decimal-context version, the declared request (name, spec
+  version, source calibration id), the source calibration's `result_hash`, the `null_mean_ratio`,
+  and the `result_hash` over the computed answer. Introduces no new numerical primitive
+  (`Decimal.sqrt` the only extra transcendental; it reuses the shared `Φ` verbatim), no
+  `_linalg` / `_stats` change, no RNG / float / iterative solver, and no runtime dependency. The
+  [locked architecture](phase29-calibration-significance-locked.md) is the normative spec.
 - [Engineering Principles](../ARCHITECTURE.md#engineering-principles) — the
   non-negotiable principles guiding the project.
 - [Contributing](../CONTRIBUTING.md) — how to set up a development environment
@@ -557,6 +594,9 @@ walk-forward portfolio turnover & stability over one evaluation's REALIZED-windo
 turnover and their aggregate profile — the first implementability lens), and minimum
 track-record length (MinTRL) over one research campaign's evaluable trials (per-trial
 Bailey–López de Prado significance-horizon `MinTRL = 1 + V·(Z_alpha/(SR − SR*))²` and the
-aggregate MinTRL profile — the first statistical-power / track-record-adequacy lens)
-layers are implemented (Phases 1–28). Source ingestion
+aggregate MinTRL profile — the first statistical-power / track-record-adequacy lens), and
+risk-forecast calibration significance over one calibration's aggregate family (a one-sample
+two-sided large-sample test of whether the mean variance ratio differs from perfect calibration
+`1` — the calibration analogue of the paired-difference strategy comparison)
+layers are implemented (Phases 1–29). Source ingestion
 connectors remain planned; the engine operates over content-addressed corpora it is given.

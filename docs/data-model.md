@@ -1542,6 +1542,50 @@ MT-6. **A minimum-track-record-length analysis is not a PIT value and not a `Bac
     the *underlying trials* were PIT walks, not that the MinTRL output is forward-usable. (The
     RC-6 / MC-6 / WS-6 discipline, one layer up.)
 
+CS-1. **Reference verification and transitive pinning.** A calibration-significance analysis
+    resolves the single `source_calibration_id` from the shared sidecar via
+    `store.read_as(id, RiskForecastCalibration.from_dict)`, re-verifies it
+    (`research_result_id == id`, and that it decodes as a `RiskForecastCalibration`), and folds
+    its `result_hash` into `calibration_significance_id`; through the source calibration's own
+    id this pins the walk-forward / optimization / risk-model / factor chain beneath it (RC-1).
+    Any missing, non-decoding, or id-mismatched reference fails closed with
+    `CalSigConsistencyError`; the source is never copied, only pinned. (The RC-1 / MT-1
+    discipline, one layer up.)
+CS-2. **Source-status gating: only a `CALIBRATED` source is tested.** A source whose
+    `calibration_status` is not `CALIBRATED` (below the Phase-26 floor, or no calibratable
+    windows), or whose sealed `mean_variance_ratio` / `variance_ratio_dispersion` cell is not
+    KNOWN, seals a first-class UNDEFINED record (`SOURCE_NOT_CALIBRATED`) with every statistic
+    UNDEFINED, `n_calibratable = 0`, and `bias_direction = None` — never imputed, never coerced.
+    The record still seals (a data condition is never an exception).
+CS-3. **UNDEFINED-preserving, no divide-by-zero.** When the sealed `variance_ratio_dispersion`
+    is `0` (all per-window ratios identical) the `standard_error` is a KNOWN `0`, but
+    `t_statistic` / `p_value` are first-class UNDEFINED (`ZERO_RATIO_DISPERSION`) — never a
+    division by a zero denominator; `mean_variance_ratio` and `bias_direction` stay KNOWN. (The
+    RC-3 / MT-3 posture, adapted to a one-sample test.)
+CS-4. **Sealed statistics are consumed verbatim, never recomputed.** The source's already-sealed
+    `mean_variance_ratio` / `variance_ratio_dispersion` cells and `coverage.n_calibratable` are
+    read (the two decimal strings parsed once into `Decimal`); the engine never recomputes them
+    from the per-window `variance_ratio` cells, never re-derives a moment, and never reads
+    returns. The sealed answer is authoritative. (The RC-4 / MT-4 posture, one layer up.)
+CS-5. **Single deterministic large-sample two-sided normal test.** One exact-`Decimal` method —
+    `standard_error = s/√K`, `t_statistic = (m − 1)/standard_error`, `p_value = 2·(1 − Φ(|t|))`
+    clamped to `[0, 1]` (the same population-moment standard-error convention as Phase 24,
+    `√(variance/n)` with `s = √variance`) — all under one pinned decimal context (prec 34,
+    `ROUND_HALF_EVEN`) folded into the engine identity, with `Φ` the deterministic
+    exact-`Decimal` `standard_normal_cdf` reused verbatim from `quantforge/_stats/normal.py`
+    (shared with Phase 24) and `Decimal.sqrt` the only other transcendental. The null mean `1`
+    (`NULL_MEAN_RATIO`) is folded into the id. The finite-sample Student-`t` distribution is
+    deferred (★), the identical deferral Phase 24 discloses. No RNG, no float, no data-dependent
+    iteration, no `_linalg`/`_stats` change, no new primitive. (The SC-5 discipline, reusing
+    exact `Decimal` arithmetic.)
+CS-6. **A calibration-significance analysis is not a PIT value and not a `BacktestResult`.** A
+    significance test over an already-ex-post calibration is itself ex-post:
+    `CalibrationSignificance` is **not** a `Pit*` type, exposes no as-of accessor, is a distinct
+    record type, simulates no fills, and opens no new corpus / availability surface.
+    `boundary_kind = "pit"` — carried unchanged from the source calibration — documents only that
+    the *underlying factor portfolios* were PIT walks, not that the significance output is
+    forward-usable. (The RC-6 / MT-6 discipline, one layer up.)
+
 ---
 
 ## 13. Adversarial cases

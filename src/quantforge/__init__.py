@@ -65,6 +65,10 @@ from quantforge.calibration import (
     RiskForecastCalibration,
     RiskForecastCalibrationSpecification,
 )
+from quantforge.calsig import (
+    CalibrationSignificance,
+    CalibrationSignificanceSpecification,
+)
 from quantforge.campaign import (
     ResearchCampaignEvaluation,
     ResearchCampaignSpecification,
@@ -160,6 +164,8 @@ __all__ = [
     "BacktestComparison",
     "BacktestResult",
     "BacktestSpecification",
+    "CalibrationSignificance",
+    "CalibrationSignificanceSpecification",
     "Company",
     "CompanyIdentity",
     "CompanyMetricFilter",
