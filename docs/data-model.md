@@ -1586,6 +1586,52 @@ CS-6. **A calibration-significance analysis is not a PIT value and not a `Backte
     the *underlying factor portfolios* were PIT walks, not that the significance output is
     forward-usable. (The RC-6 / MT-6 discipline, one layer up.)
 
+CM-1. **Reference verification and transitive pinning.** A campaign-multiplicity correction
+    resolves the single `source_campaign_id` from the shared sidecar via
+    `store.read_as(id, ResearchCampaignEvaluation.from_dict)`, re-verifies it
+    (`research_result_id == id`, and that it decodes as a `ResearchCampaignEvaluation`), and folds
+    its `result_hash` into `campaign_multiplicity_id`; through the source campaign's own id this
+    pins the walk-forwards / optimization / risk-model / factor chain beneath it (CE-1). Any
+    missing, non-decoding, or id-mismatched reference fails closed with
+    `CampaignMultiplicityConsistencyError`; the source is never copied, only pinned. (The MC-1 /
+    CS-1 discipline, the campaign analogue of MC-1.)
+CM-2. **Explicit family and coverage.** The record states `n_trials_total`, the family `size`,
+    and `n_excluded` (`size + n_excluded == n_trials_total`); every family member and every
+    exclusion is enumerated in sealed request order — the corrected set is auditable, never an
+    opaque count. (The MC-2 discipline, one artifact over.)
+CM-3. **Exclusions are first-class, never imputed.** A trial the source campaign sealed with an
+    UNDEFINED `psr` becomes a first-class `ExcludedTrialCell` carrying its own
+    `CampaignUndefinedReason` (`INSUFFICIENT_OOS_PERIODS`, `ZERO_OOS_VARIANCE`,
+    `DEGENERATE_SHARPE_ESTIMATOR`) — never coerced to a number, dropped silently, or given a
+    fabricated `p`. An empty family (every `psr` UNDEFINED, or a source with `< 2` valid trials)
+    seals empty per-method cell lists, never a divide-by-zero. (The MC-3 discipline, keyed to the
+    campaign's UNDEFINED vocabulary.)
+CM-4. **PSR consumed verbatim; `p = 1 − PSR` the only added arithmetic.** Each family member's
+    `psr` is read verbatim (the sealed canonical decimal string parsed once into `Decimal`); the
+    engine never recomputes a PSR, re-derives a moment, or reads returns. The one-sided p-value
+    `p_i = 1 − PSR_i` (H0: the trial's true Sharpe ≤ the campaign benchmark `SR*`) is the only
+    arithmetic the layer adds — an exact `Decimal` subtraction under the pinned context, in
+    `[0, 1]` by construction because `PSR` is a `Φ` value in `[0, 1]`, with no clamp / repair.
+    (The MC-3 / CS-4 verbatim-consumption posture, plus the honest transform.)
+CM-5. **Single reused correction core, honest labels.** The adjusted `p` values and rejection
+    flags come from `quantforge.multiplicity.compute.correct_family` **reused verbatim** under
+    the pinned decimal context (the Phase 25 closed-form Bonferroni / Holm / Benjamini–Hochberg /
+    Benjamini–Yekutieli transforms — one ascending sort, `c(m) = Σ 1/k` harmonic constant, tied
+    `p` values collapsing to one adjusted value, every value capped at `1`), with rejection
+    defined **uniformly** as `p_adj ≤ alpha`. Each method's `error_rate` / `dependence` label is
+    the single source of truth in `multiplicity.model`, so Benjamini–Hochberg's independence /
+    PRDS assumption can never be mislabeled dependence-robust. The reused correction core's
+    method version (`MULTIPLICITY_METHOD_VERSION`) is folded into the engine identity, so a change
+    to the shared algorithm changes this record's id — an honest transitive pin of reused code.
+    No new numerical primitive, no `_linalg` / `_stats` change. (The MC-4 / MC-5 / MC-6 discipline,
+    reusing the Phase 25 core rather than re-deriving it.)
+CM-6. **A campaign-multiplicity correction is not a PIT value.** A multiplicity correction over
+    already-ex-post per-trial PSRs is itself ex-post: `CampaignMultiplicityCorrection` is **not**
+    a `Pit*` type, exposes no as-of accessor, is a distinct record type, simulates no fills, and
+    opens no new corpus / availability surface. `boundary_kind = "pit"` — carried unchanged from
+    the source campaign — documents only that the *underlying trials* were PIT walks, not that the
+    correction output is forward-usable. (The MC-6 / CS-6 discipline, one artifact over.)
+
 ---
 
 ## 13. Adversarial cases

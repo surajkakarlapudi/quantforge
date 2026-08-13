@@ -102,6 +102,7 @@ class Workspace:
         self._stability_engine: object | None = None
         self._mintrl_engine: object | None = None
         self._calibration_significance_engine: object | None = None
+        self._campaign_multiplicity_engine: object | None = None
 
     @property
     def artifact_store(self) -> ArtifactStore:
@@ -632,6 +633,34 @@ class Workspace:
 
             self._calibration_significance_engine = CalibrationSignificanceEngine(self)
         return self._calibration_significance_engine
+
+    @property
+    def campaign_multiplicity_engine(self) -> object:
+        """The Phase 30 campaign-multiplicity-correction engine (lazy).
+
+        :class:`~quantforge.campaignmult.engine.CampaignMultiplicityEngine` is imported
+        on first use to avoid a module-load import cycle (the engine imports
+        :class:`Workspace`). Cached for reuse. The first consumer of Phase 23's sealed
+        per-trial Probabilistic Sharpe Ratio - a pure consumer strictly above Phase 23
+        that resolves exactly one sealed
+        :class:`~quantforge.campaign.result.ResearchCampaignEvaluation` from this
+        workspace's shared research sidecar, treats its KNOWN per-trial ``psr`` values
+        as a single hypothesis family (deriving each trial's one-sided p-value
+        ``p = 1 - PSR`` and recording each UNDEFINED-``psr`` trial as a first-class
+        exclusion, never imputed), and for each requested
+        :class:`~quantforge.campaignmult.model.CorrectionMethod` seals the family-wise /
+        false-discovery adjusted ``p`` value plus a rejection flag at a declared
+        ``alpha`` (reusing :func:`quantforge.multiplicity.compute.correct_family`
+        verbatim), sealing a content-addressed
+        :class:`~quantforge.campaignmult.result.CampaignMultiplicityCorrection` back to
+        the same sidecar - it creates no new store and duplicates no resolution logic,
+        exactly as the other derived engines do.
+        """
+        if self._campaign_multiplicity_engine is None:
+            from quantforge.campaignmult.engine import CampaignMultiplicityEngine
+
+            self._campaign_multiplicity_engine = CampaignMultiplicityEngine(self)
+        return self._campaign_multiplicity_engine
 
     # -- construction --------------------------------------------------------
 

@@ -568,6 +568,43 @@ will expand as functionality is implemented.
   (`Decimal.sqrt` the only extra transcendental; it reuses the shared `Φ` verbatim), no
   `_linalg` / `_stats` change, no RNG / float / iterative solver, and no runtime dependency. The
   [locked architecture](phase29-calibration-significance-locked.md) is the normative spec.
+- [Campaign-Level Multiplicity](phase30-campaign-multiplicity-locked.md) —
+  Phase 30: the campaign analogue of the Phase 25 `StrategyComparison` correction and the
+  first consumer of the `ResearchCampaignEvaluation` sealed per-trial `psr` block (Phase 28
+  read the trial `sharpe` / `skew` / `kurtosis` moments; Phase 30 reads exactly the `psr`).
+  It answers what the raw per-trial PSR table cannot honestly answer by eye: which trials
+  individually beat the benchmark once the whole family of PSR tests is accounted for? A
+  declarative, content-addressed `CampaignMultiplicitySpecification` (a name, exactly **one**
+  sealed `source_campaign_id`, a declared `alpha ∈ (0, 1)`, and an ordered, duplicate-free
+  tuple of `CorrectionMethod`s — default `(HOLM, BENJAMINI_YEKUTIELI)`, the reused Phase 25
+  vocabulary) drives `CampaignMultiplicityEngine.correct`, which resolves the one campaign
+  from the shared sidecar via `store.read_as(id, ResearchCampaignEvaluation.from_dict)`,
+  re-verifies its `research_result_id` equals the request, and folds its `result_hash` for
+  transitive pinning (fail closed on any missing / non-`ResearchCampaignEvaluation` /
+  id-mismatched reference, CM-1). It collects the family = the source's per-trial one-sided
+  p-values `p_i = 1 − PSR_i` over trials whose `psr` is KNOWN, in sealed request order (each
+  UNDEFINED-`psr` trial a first-class `ExcludedTrialCell` with its `CampaignUndefinedReason`,
+  never imputed, CM-3), and seals the coverage (`n_trials_total`, family `size`, `n_excluded`,
+  CM-2). The `p = 1 − PSR` transform is the only added arithmetic — exact `Decimal`, in
+  `[0, 1]` by construction because `PSR` is a `Φ` value in `[0, 1]`, no clamp / repair (CM-4).
+  For each requested method, under the pinned `Decimal` context, it computes each family
+  member's adjusted `p` + rejection flag (`p_adj ≤ alpha`) via
+  `quantforge.multiplicity.compute.correct_family` **reused verbatim** (Bonferroni / Holm /
+  Benjamini–Hochberg / Benjamini–Yekutieli — no new primitive, no `_stats` / `_linalg`
+  change, CM-5), each method sealing its honest `error_rate` / `dependence` label from the
+  single source of truth in `multiplicity.model`. An empty family seals empty per-method
+  cells, never a divide-by-zero. The output is **ex-post — not a PIT value** (CM-6):
+  `CampaignMultiplicityCorrection` is not a `Pit*` type and exposes no as-of accessor;
+  `boundary_kind = "pit"` is carried unchanged from the source campaign. The sealed
+  `CampaignMultiplicityCorrection` is a `ResearchRecord` persisted write-once to the existing
+  sidecar (no new store), byte-identically round-tripping; `campaign_multiplicity_id` folds
+  the engine + own method + **reused-correction-core** + decimal-context version (the reused
+  `MULTIPLICITY_METHOD_VERSION` is folded, so a change to the shared correction core changes
+  this record's identity), the declared request (name, spec version, `alpha`, the **ordered**
+  method list), the source campaign's `research_result_id` **and** its `result_hash`, and the
+  `result_hash` over the computed answer. Introduces no new numerical primitive, no `_linalg`
+  / `_stats` change, no RNG / float / iterative solver, and no runtime dependency. The
+  [locked architecture](phase30-campaign-multiplicity-locked.md) is the normative spec.
 - [Engineering Principles](../ARCHITECTURE.md#engineering-principles) — the
   non-negotiable principles guiding the project.
 - [Contributing](../CONTRIBUTING.md) — how to set up a development environment
@@ -597,6 +634,10 @@ Bailey–López de Prado significance-horizon `MinTRL = 1 + V·(Z_alpha/(SR − 
 aggregate MinTRL profile — the first statistical-power / track-record-adequacy lens), and
 risk-forecast calibration significance over one calibration's aggregate family (a one-sample
 two-sided large-sample test of whether the mean variance ratio differs from perfect calibration
-`1` — the calibration analogue of the paired-difference strategy comparison)
-layers are implemented (Phases 1–29). Source ingestion
+`1` — the calibration analogue of the paired-difference strategy comparison), and
+campaign-level multiplicity correction over one research campaign's per-trial PSR family
+(the per-trial one-sided p-values `p_i = 1 − PSR_i` corrected for Holm / Benjamini–Yekutieli
+family-wise & false-discovery control — the campaign analogue of the strategy-comparison
+correction)
+layers are implemented (Phases 1–30). Source ingestion
 connectors remain planned; the engine operates over content-addressed corpora it is given.

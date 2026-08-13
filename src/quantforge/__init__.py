@@ -73,6 +73,10 @@ from quantforge.campaign import (
     ResearchCampaignEvaluation,
     ResearchCampaignSpecification,
 )
+from quantforge.campaignmult import (
+    CampaignMultiplicityCorrection,
+    CampaignMultiplicitySpecification,
+)
 from quantforge.company import Company
 from quantforge.comparison import (
     StrategyComparison,
@@ -166,6 +170,8 @@ __all__ = [
     "BacktestSpecification",
     "CalibrationSignificance",
     "CalibrationSignificanceSpecification",
+    "CampaignMultiplicityCorrection",
+    "CampaignMultiplicitySpecification",
     "Company",
     "CompanyIdentity",
     "CompanyMetricFilter",
