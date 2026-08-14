@@ -647,6 +647,52 @@ will expand as functionality is implemented.
   Introduces no new numerical primitive, no `_linalg` / `_stats` change, no RNG / float /
   iterative solver, and no runtime dependency. The
   [locked architecture](phase31-net-of-cost-performance-locked.md) is the normative spec.
+- [Net-of-Cost Significance](phase32-net-of-cost-significance-locked.md) —
+  Phase 32: the platform's first significance test applied to an economic (after-cost)
+  quantity and the first consumer of the terminal `NetOfCostPerformance` leaf Phase 31
+  sealed — the net-of-cost analogue of the Phase 29 calibration significance test, applied as
+  a **one-sample, one-sided (upper-tailed)** test about the null mean `0`. It answers the one
+  question the net-of-cost record states the magnitude of but never tests: is the after-cost
+  edge statistically distinguishable from zero given the realized sample length? A
+  declarative, content-addressed `NetOfCostSignificanceSpecification` (a name and exactly
+  **one** sealed `source_net_of_cost_id`, both folded into identity; no per-request numerical
+  parameter) drives `NetOfCostSignificanceEngine.evaluate`, which resolves the one net-of-cost
+  record from the shared sidecar via `store.read_as(id, NetOfCostPerformance.from_dict)` and
+  re-verifies that the resolved record's `research_result_id` equals the requested id and that
+  it decodes as a `NetOfCostPerformance` (fail closed on any missing / non-`NetOfCostPerformance`
+  / id-mismatched reference); the source's `result_hash` is **folded into the significance
+  record's identity**, reaching the stability record → walk → optimization → risk model →
+  factors → corpora beneath it (NS-1). It gates on the source: only a `MEASURED` source whose
+  aggregate `net_mean` / `net_volatility` cells are KNOWN is tested; a non-`MEASURED` or
+  non-KNOWN-mean source seals a first-class UNDEFINED record with every statistic
+  `SOURCE_NOT_MEASURED`, `n_periods = 0`, and `edge_direction = None`, never imputed (NS-2).
+  Consuming the sealed after-cost mean `m`, population volatility `σ`, and OOS-period count
+  `n = n_periods` **verbatim** — never recomputed from the per-window cells or the net return
+  series (NS-4) — under the pinned `Decimal` context it seals `standard_error = σ/√n`,
+  `t = (m − 0)/standard_error`, and the one-sided upper-tailed `p = 1 − Φ(t)` clamped to
+  `[0, 1]` via the **reused** exact-`Decimal` `standard_normal_cdf` (`quantforge/_stats/normal.py`,
+  shared with Phase 24 / 29 — no new primitive, no `_stats` / `_linalg` change; the same
+  population-moment convention `√(variance/n)` as Phase 24 / 29, so `t = (m/σ)·√n` is the
+  classic Sharpe `t`-statistic, NS-5), plus the descriptive `edge_direction` (`PROFITABLE`
+  when `m > 0`, `UNPROFITABLE` when `m < 0`, `FLAT` at `m == 0`). A zero-volatility source
+  (structurally unreachable for a MEASURED source, guarded defensively) seals `standard_error`
+  a KNOWN `0` but `t` / `p` UNDEFINED (`ZERO_NET_VOLATILITY`) with the mean and edge direction
+  still KNOWN — never a divide-by-zero (NS-3); the record **always seals** (a data condition is
+  never an exception, only a request / reference defect raises). There is **no per-request
+  numerical parameter** — the null mean is the fixed platform constant `NULL_MEAN_RETURN = "0"`,
+  folded into identity (as Phase 29 folds `NULL_MEAN_RATIO = "1"`); the two-sided value is
+  derivable from the sealed `t` and is not separately sealed; the finite-sample Student-`t`
+  distribution and a declared benchmark net mean are deferred (★), matching Phase 24 / 29. The
+  output is **ex-post — not a PIT value and not a `BacktestResult`** (NS-6):
+  `NetOfCostSignificance` is not a `Pit*` type and exposes no as-of accessor; `boundary_kind =
+  "pit"` is carried unchanged from the source. The sealed `NetOfCostSignificance` is a
+  `ResearchRecord` persisted write-once to the existing sidecar (no new store), byte-identically
+  round-tripping; `net_of_cost_significance_id` folds the engine + method + normal-primitive +
+  decimal-context version, the declared request (name, spec version, source net-of-cost id),
+  the source's `result_hash` (transitive pin), the `null_mean_return`, and the `result_hash`
+  over the computed answer. Introduces no new numerical primitive, no `_linalg` / `_stats`
+  change, no RNG / float / iterative solver, and no runtime dependency. The
+  [locked architecture](phase32-net-of-cost-significance-locked.md) is the normative spec.
 - [Engineering Principles](../ARCHITECTURE.md#engineering-principles) — the
   non-negotiable principles guiding the project.
 - [Contributing](../CONTRIBUTING.md) — how to set up a development environment

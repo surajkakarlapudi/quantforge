@@ -104,6 +104,7 @@ class Workspace:
         self._calibration_significance_engine: object | None = None
         self._campaign_multiplicity_engine: object | None = None
         self._net_of_cost_engine: object | None = None
+        self._net_of_cost_significance_engine: object | None = None
 
     @property
     def artifact_store(self) -> ArtifactStore:
@@ -689,6 +690,30 @@ class Workspace:
 
             self._net_of_cost_engine = NetOfCostEngine(self)
         return self._net_of_cost_engine
+
+    @property
+    def net_of_cost_significance_engine(self) -> object:
+        """The Phase 32 net-of-cost-significance engine (lazy).
+
+        :class:`~quantforge.netcostsig.engine.NetOfCostSignificanceEngine` is imported
+        on first use to avoid a module-load import cycle (the engine imports
+        :class:`Workspace`). Cached for reuse. The first consumer of Phase 31's sealed
+        after-cost performance - and the first significance test applied to an economic
+        (after-cost) quantity: a pure consumer strictly above Phase 31 that resolves
+        exactly one sealed :class:`~quantforge.netcost.result.NetOfCostPerformance` from
+        this workspace's shared research sidecar, reads its sealed after-cost mean
+        return, population net volatility and net-series period count verbatim, and
+        seals the one-sample large-sample upper-tailed significance test of the
+        after-cost mean return against the null mean ``0`` into a content-addressed
+        :class:`~quantforge.netcostsig.result.NetOfCostSignificance` back to the same
+        sidecar - it creates no new store and duplicates no resolution logic, exactly as
+        the other derived engines do.
+        """
+        if self._net_of_cost_significance_engine is None:
+            from quantforge.netcostsig.engine import NetOfCostSignificanceEngine
+
+            self._net_of_cost_significance_engine = NetOfCostSignificanceEngine(self)
+        return self._net_of_cost_significance_engine
 
     # -- construction --------------------------------------------------------
 

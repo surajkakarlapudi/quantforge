@@ -135,6 +135,10 @@ from quantforge.netcost import (
     NetOfCostPerformance,
     NetOfCostSpecification,
 )
+from quantforge.netcostsig import (
+    NetOfCostSignificance,
+    NetOfCostSignificanceSpecification,
+)
 from quantforge.optimization import (
     PortfolioOptimization,
     PortfolioOptimizationSpecification,
@@ -201,6 +205,8 @@ __all__ = [
     "MultipleComparisonCorrection",
     "MultipleComparisonSpecification",
     "NetOfCostPerformance",
+    "NetOfCostSignificance",
+    "NetOfCostSignificanceSpecification",
     "NetOfCostSpecification",
     "PerformanceAnalytics",
     "PitFactor",

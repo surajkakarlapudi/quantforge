@@ -1688,6 +1688,49 @@ NC-6. **A net-of-cost performance is not a PIT value and not a `BacktestResult`.
     walks, not that the net-of-cost output is forward-usable. (The CM-6 / CS-6 discipline, one
     artifact over.)
 
+NS-1. **Reference verification and transitive pinning.** A net-of-cost significance resolves the
+    single `source_net_of_cost_id` from the shared sidecar via
+    `store.read_as(id, NetOfCostPerformance.from_dict)`, re-verifies (`research_result_id == id`,
+    and that it decodes as a `NetOfCostPerformance`), and folds its `result_hash` into
+    `net_of_cost_significance_id`; through the source's own id this pins the stability record →
+    walk-forward → optimization → risk model → factors → corpora beneath it (NC-1). Any missing,
+    non-decoding, or id-mismatched reference fails closed with `NetCostSigConsistencyError`; the
+    source is never copied, only pinned. (The NC-1 / CS-1 discipline, one artifact over.)
+NS-2. **Source-status gating: only a `MEASURED` source is tested.** A source whose `net_status` is
+    not `MEASURED`, or whose sealed `net_mean` / `net_volatility` cell is not KNOWN, seals a
+    first-class UNDEFINED record (`SOURCE_NOT_MEASURED`) with every statistic UNDEFINED,
+    `n_periods = 0`, and `edge_direction = None` — never imputed, never coerced to a metric. The
+    record still seals (a data condition is never an exception).
+NS-3. **UNDEFINED-preserving, no divide-by-zero.** When the sealed `net_volatility` is `0` the
+    `standard_error` is a KNOWN `0`, but `t_statistic` / `p_value` are first-class UNDEFINED
+    (`ZERO_NET_VOLATILITY`) — never a division by a zero denominator; `net_mean` and
+    `edge_direction` stay KNOWN. Structurally unreachable for a `MEASURED` source (a KNOWN
+    `net_sharpe` implies `σ > 0`) but guarded defensively. (The NC-3 / CS-3 posture, adapted to a
+    one-sample net test.)
+NS-4. **Sealed statistics are consumed verbatim, never recomputed.** The source's already-sealed
+    `net_mean` / `net_volatility` cells and `coverage.n_periods` are read (the two decimal strings
+    parsed once into `Decimal`); the engine never recomputes them from the per-window cost/turnover
+    cells, never re-derives a moment, and never reads the net return series (Phase 31 does not seal
+    it period-by-period). The sealed answer is authoritative. (The NC-4 / CS-4 posture of operating
+    over already-sealed strings, one artifact over.)
+NS-5. **Single deterministic large-sample one-sided normal test.** One exact-`Decimal` method:
+    `standard_error = σ/√n`, `t_statistic = (m − 0)/standard_error`, `p_value = 1 − Φ(t)` clamped
+    to `[0, 1]` — the same population-moment standard-error convention as Phase 24 (`√(variance/n)`
+    with `σ = √variance`) and Phase 29 (`s/√K`) — all under one pinned decimal context (prec 34,
+    `ROUND_HALF_EVEN`) folded into the engine identity, with `Φ` the deterministic exact-`Decimal`
+    `standard_normal_cdf` reused verbatim from `quantforge/_stats/normal.py` (shared with Phase 24
+    / 29) and `Decimal.sqrt` the only other transcendental. The test is **one-sided upper**
+    (directional profitability); the null mean `0` (`NULL_MEAN_RETURN`) is folded into the id. The
+    finite-sample Student-`t` distribution is deferred (★), the identical deferral Phase 24 / 29
+    disclose. No RNG, no float, no data-dependent iteration, no `_linalg` / `_stats` change, no new
+    primitive. (The CS-5 discipline, reusing exact `Decimal` arithmetic.)
+NS-6. **A net-of-cost significance is not a PIT value and not a `BacktestResult`.** A significance
+    test over an already-ex-post net-of-cost figure is itself ex-post: `NetOfCostSignificance` is
+    **not** a `Pit*` type, exposes no as-of accessor, is a distinct record type, simulates no
+    fills, and opens no new corpus / availability surface. `boundary_kind = "pit"` — carried
+    unchanged from the source — documents only that the *underlying returns* were PIT walks, not
+    that the significance output is forward-usable. (The NC-6 / CS-6 discipline, one artifact over.)
+
 ---
 
 ## 13. Adversarial cases
