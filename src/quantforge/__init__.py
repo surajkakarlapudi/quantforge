@@ -131,6 +131,10 @@ from quantforge.multiplicity import (
     MultipleComparisonCorrection,
     MultipleComparisonSpecification,
 )
+from quantforge.netcost import (
+    NetOfCostPerformance,
+    NetOfCostSpecification,
+)
 from quantforge.optimization import (
     PortfolioOptimization,
     PortfolioOptimizationSpecification,
@@ -196,6 +200,8 @@ __all__ = [
     "MinimumTrackRecordLengthSpecification",
     "MultipleComparisonCorrection",
     "MultipleComparisonSpecification",
+    "NetOfCostPerformance",
+    "NetOfCostSpecification",
     "PerformanceAnalytics",
     "PitFactor",
     "PitMetricValue",

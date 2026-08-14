@@ -103,6 +103,7 @@ class Workspace:
         self._mintrl_engine: object | None = None
         self._calibration_significance_engine: object | None = None
         self._campaign_multiplicity_engine: object | None = None
+        self._net_of_cost_engine: object | None = None
 
     @property
     def artifact_store(self) -> ArtifactStore:
@@ -661,6 +662,33 @@ class Workspace:
 
             self._campaign_multiplicity_engine = CampaignMultiplicityEngine(self)
         return self._campaign_multiplicity_engine
+
+    @property
+    def net_of_cost_engine(self) -> object:
+        """The Phase 31 net-of-cost walk-forward-performance engine (lazy).
+
+        :class:`~quantforge.netcost.engine.NetOfCostEngine` is imported on first use to
+        avoid a module-load import cycle (the engine imports :class:`Workspace`). Cached
+        for reuse. The first consumer of Phase 27's sealed per-window one-way turnover -
+        a pure consumer strictly above Phase 27 that resolves exactly one sealed
+        :class:`~quantforge.stability.result.WalkForwardStability` from this workspace's
+        shared research sidecar and, transitively, the one
+        :class:`~quantforge.walkforward.result.WalkForwardEvaluation` it pins (verifying
+        the pinned ``result_hash``), aligns the per-window turnover to the per-period
+        gross out-of-sample returns, charges a *declared* linear transaction cost
+        ``cost_rate · turnover`` at each realized window's first out-of-sample period,
+        summarizes the net series with the reused Phase 19 series summary (consuming the
+        gross summary verbatim so the zero-cost identity holds), and reports the
+        parameter-free break-even ``Σ gross / Σ turnover`` - sealing a content-addressed
+        :class:`~quantforge.netcost.result.NetOfCostPerformance` back to the same
+        sidecar. It creates no new store and duplicates no resolution logic, exactly as
+        the other derived engines do.
+        """
+        if self._net_of_cost_engine is None:
+            from quantforge.netcost.engine import NetOfCostEngine
+
+            self._net_of_cost_engine = NetOfCostEngine(self)
+        return self._net_of_cost_engine
 
     # -- construction --------------------------------------------------------
 

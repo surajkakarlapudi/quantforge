@@ -605,6 +605,48 @@ will expand as functionality is implemented.
   `result_hash` over the computed answer. Introduces no new numerical primitive, no `_linalg`
   / `_stats` change, no RNG / float / iterative solver, and no runtime dependency. The
   [locked architecture](phase30-campaign-multiplicity-locked.md) is the normative spec.
+- [Net-of-Cost Walk-Forward Performance](phase31-net-of-cost-performance-locked.md) —
+  Phase 31: the platform's first net-of-cost / execution-aware layer and the first consumer
+  of the per-REALIZED-window one-way `turnover_from_prev` Phase 27 sealed. It answers what an
+  attractive *gross* OOS Sharpe never does: does the strategy still earn its edge after
+  paying a declared cost to trade, and at what cost rate does that edge vanish? A declarative,
+  content-addressed `NetOfCostSpecification` (a name, exactly **one** sealed
+  `source_stability_id`, and a declared linear one-way `cost_rate` — a non-negative finite
+  decimal string canonicalized at construction, folded into identity, never inferred or
+  defaulted, NC-3) drives `NetOfCostEngine.evaluate`, which resolves the one stability record
+  from the shared sidecar via `store.read_as(id, WalkForwardStability.from_dict)` **and** the
+  one `WalkForwardEvaluation` it pins, re-verifying each record's `research_result_id`, type,
+  and `result_hash` (fail closed on any missing / wrong-type / id- or hash-mismatched
+  reference at either level, NC-1). **The alignment is the load-bearing decision** (NC-2):
+  gross performance is a *per-period* chained OOS series while turnover is a *per-window*
+  quantity — not zippable. The engine verifies the realized-window indices, the excluded
+  windows, and the concatenated per-window sub-series all equal the walk's, then charges
+  `cost = cost_rate · turnover_w` at each realized window's **first** OOS period only. A
+  realized window with no adjacent realized predecessor (`NO_PRIOR_REALIZED_WINDOW`, carried
+  from Phase 27) bears **zero** cost — no fabricated entry cost (a disclosed deviation from
+  the proposal's `entry_cost_convention`, NC-3) — and its gross returns pass through. The
+  gross moments are read **verbatim** from the walk's sealed summary and the net series is
+  summarized with the **reused** Phase 19 `series_summary` (the identical convention Phase 22
+  used for gross, so net and gross Sharpe are comparable and the `cost_rate = 0` net moments
+  equal the gross moments byte-for-byte — the zero-cost identity; no new primitive, NC-4). It
+  seals per-window gross / turnover / cost / net cells, the aggregate net moments, the cost
+  drag (`gross − net`, UNDEFINED-propagating), and the parameter-free break-even
+  `Σ gross / Σ turnover` — UNDEFINED `DEGENERATE_NO_TURNOVER` when the strategy never trades,
+  and an UNDEFINED `net_sharpe` (`ZERO_RETURN_VARIANCE`, reused from Phase 19 — a disclosed
+  deviation from the proposal's `DEGENERATE_SHARPE_ESTIMATOR` label) when a cost path makes
+  the net series constant, never a divide-by-zero (NC-5). The output is **ex-post /
+  counterfactual — not a PIT value** (NC-6): `NetOfCostPerformance` is not a `Pit*` type and
+  exposes no as-of accessor; `boundary_kind = "pit"` is carried unchanged from the source. The
+  sealed `NetOfCostPerformance` is a `ResearchRecord` persisted write-once to the existing
+  sidecar (no new store), byte-identically round-tripping; `net_of_cost_id` folds the engine +
+  own method + **reused-summary** + decimal-context version (the reused
+  `FACTORPORTFOLIO_FORMULA_VERSION` is folded, an honest transitive pin), the declared request
+  (name, spec version), the source stability record's `research_result_id` **and** its
+  `result_hash` (transitive pin, reaching the gross walk beneath it), the declared `cost_rate`
+  (folds the id, not the result hash), and the `result_hash` over the computed answer.
+  Introduces no new numerical primitive, no `_linalg` / `_stats` change, no RNG / float /
+  iterative solver, and no runtime dependency. The
+  [locked architecture](phase31-net-of-cost-performance-locked.md) is the normative spec.
 - [Engineering Principles](../ARCHITECTURE.md#engineering-principles) — the
   non-negotiable principles guiding the project.
 - [Contributing](../CONTRIBUTING.md) — how to set up a development environment

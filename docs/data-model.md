@@ -1632,6 +1632,62 @@ CM-6. **A campaign-multiplicity correction is not a PIT value.** A multiplicity 
     the source campaign — documents only that the *underlying trials* were PIT walks, not that the
     correction output is forward-usable. (The MC-6 / CS-6 discipline, one artifact over.)
 
+NC-1. **Reference verification and transitive pinning (two levels).** A net-of-cost performance
+    resolves the single `source_stability_id` from the shared sidecar via
+    `store.read_as(id, WalkForwardStability.from_dict)` **and** the single `WalkForwardEvaluation`
+    that stability record pins, re-verifying at *each* level that the resolved record's
+    `research_result_id` equals the requested / pinned id, that it decodes as the expected type,
+    and that its `result_hash` equals the pinned hash; it folds the source stability record's
+    `research_result_id` **and** `result_hash` into `net_of_cost_id`, so through the stability
+    record's own id it pins the walk-forward / optimization / risk-model / factor chain beneath it
+    (WS-1). Any missing, non-decoding, wrong-type, or id-/hash-mismatched reference at either level
+    fails closed with `NetOfCostConsistencyError`; neither source is copied, only pinned. (The
+    CM-1 / CS-1 discipline, extended to verify the transitively-pinned walk too.)
+NC-2. **Per-period cost placement; gross and turnover are not zippable.** Gross performance is a
+    *per-period* chained OOS return series (the walk's `oos_returns`); turnover is a *per-window*
+    one-way quantity (the stability record's `turnover_from_prev`). The engine verifies the
+    stability record's REALIZED window indices equal the walk's REALIZED indices, its excluded
+    windows equal the walk's UNDEFINED windows, and the concatenation of the per-window OOS
+    sub-series equals the walk's chained gross series (any axis mismatch fails closed), then
+    charges the one-time rebalancing cost `cost_rate · turnover_w` at each realized window's
+    **first** OOS period only: `net[first period of window w] = gross[…] − cost_rate · turnover_w`.
+    No alignment is assumed — it is checked.
+NC-3. **Declared cost, no fabrication.** `cost_rate` is a **declared** linear one-way rate — a
+    non-negative finite decimal string canonicalized at construction and folded into
+    `net_of_cost_id` — never inferred from data, retrieved from a corpus, or defaulted; a negative
+    rate is refused. A realized window with no adjacent realized predecessor
+    (`NO_PRIOR_REALIZED_WINDOW`, carried verbatim from Phase 27's `turnover_from_prev` UNDEFINED)
+    bears **zero** cost — **no** fabricated entry cost (a disclosed deviation from the proposal's
+    `entry_cost_convention = gross_leverage` default) — and its gross returns pass through to the
+    net series unchanged.
+NC-4. **Gross consumed verbatim; net summarized with the reused Phase 19 primitive.** The gross
+    moments are read **verbatim** from the walk's sealed summary (never re-derived); only the net
+    series is summarized, using the **reused** `quantforge.factorportfolio.stats.series_summary` —
+    the identical population-volatility / annualized-Sharpe convention Phase 22 used for the gross
+    summary, folded into identity as `NETCOST_SUMMARY_VERSION = FACTORPORTFOLIO_FORMULA_VERSION`
+    (an honest transitive pin) — so the net Sharpe is directly comparable to the gross Sharpe and,
+    at `cost_rate = 0`, the net moments equal the gross moments byte-for-byte (the zero-cost
+    identity). No new statistical primitive, no `_linalg` / `_stats` change. (The CM-4 / CS-4
+    verbatim-consumption posture, reusing the Phase 19 summary rather than re-deriving it.)
+NC-5. **Fail-closed degeneracy; the break-even is parameter-free.** The break-even cost rate
+    `c* = Σ gross / Σ turnover` is the declared-cost-independent rate at which the gross edge is
+    exactly erased; it is **always** sealed (no request flag), UNDEFINED `DEGENERATE_NO_TURNOVER`
+    when total one-way turnover is exactly zero (a never-trading strategy — never a divide-by-zero).
+    A cost path that makes the net series constant seals an UNDEFINED `net_sharpe`
+    (`ZERO_RETURN_VARIANCE`, reused verbatim from the Phase 19 summary — a disclosed deviation from
+    the proposal's `DEGENERATE_SHARPE_ESTIMATOR` label) with the net mean and (zero) net volatility
+    still KNOWN; the cost drag against a missing moment is itself UNDEFINED, never imputed.
+    Excluded source windows are carried through first-class (`WINDOW_UNDEFINED`), never dropped.
+    All arithmetic runs under the pinned `Decimal` context (prec 34, `ROUND_HALF_EVEN`) with
+    `Decimal.sqrt` inside the reused summary the only transcendental.
+NC-6. **A net-of-cost performance is not a PIT value and not a `BacktestResult`.** A counterfactual
+    that re-charges an already-ex-post walk for trading is itself ex-post: `NetOfCostPerformance`
+    is **not** a `Pit*` type, exposes no as-of accessor, is a distinct record type, simulates no
+    fills, and opens no new corpus / availability / store surface. `boundary_kind = "pit"` —
+    carried unchanged from the source — documents only that the *underlying returns* were PIT
+    walks, not that the net-of-cost output is forward-usable. (The CM-6 / CS-6 discipline, one
+    artifact over.)
+
 ---
 
 ## 13. Adversarial cases
