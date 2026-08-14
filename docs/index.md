@@ -693,6 +693,46 @@ will expand as functionality is implemented.
   over the computed answer. Introduces no new numerical primitive, no `_linalg` / `_stats`
   change, no RNG / float / iterative solver, and no runtime dependency. The
   [locked architecture](phase32-net-of-cost-significance-locked.md) is the normative spec.
+- [Strategy Admissibility](phase33-strategy-admissibility-locked.md) —
+  Phase 33: the platform's **first multi-source consumer** — it resolves and joins **three**
+  sealed verdicts rather than one — and the capstone over the ex-post validator battery. It
+  answers the one question no single validator answers: taken together — a stable book, a
+  well-calibrated risk model, and a statistically significant after-cost edge — is this
+  strategy admissible? A declarative, content-addressed `AdmissibilitySpecification` (a name;
+  exactly **one** sealed `source_stability_id` (Phase 27), one
+  `source_calibration_significance_id` (Phase 29), and one `source_net_of_cost_significance_id`
+  (Phase 32), all descending from one `WalkForwardEvaluation` root; plus a declared level
+  `alpha`, a decimal string strictly inside `(0, 1)` canonicalized via
+  `str(Decimal(alpha).normalize())` — every field folded into identity, AD-5) drives
+  `AdmissibilityEngine.evaluate`, which resolves each of the three records from the shared
+  sidecar via `store.read_as(id, <T>.from_dict)`, re-verifies each record's `research_result_id`
+  equals the requested id and decodes as its expected type, and folds each `result_hash` into
+  `admissibility_id` — reaching the calibration / stability / net-of-cost chains and the shared
+  walk root beneath them; any missing / wrong-type / id-mismatched reference at **any** of the
+  three sources fails closed with `AdmissibilityConsistencyError` (AD-1). It reads each layer's
+  sealed answer **verbatim** — the stability book's `stability_status`, the calibration test's
+  two-sided `p_value`, the net-of-cost test's one-sided `p_value` + `edge_direction` — and
+  re-derives **no** statistic (AD-4); because the standard-normal Φ CDF was applied and sealed
+  by the significance layers, Phase 33 introduces **no new numerical primitive** and only
+  compares exact `Decimal` p-values against `alpha`. Under the pinned `Decimal` context it
+  decides three criteria in the fixed order STABILITY, CALIBRATION, NET_OF_COST_EDGE (AD-3):
+  STABILITY PASSes iff STABLE (else UNDEFINED — never FAILs); CALIBRATION PASSes iff the
+  two-sided `p > alpha`, FAILs iff `p ≤ alpha`, UNDEFINED if not TESTED / not KNOWN;
+  NET_OF_COST_EDGE PASSes iff the one-sided `p ≤ alpha` **and** the edge is PROFITABLE, FAILs
+  if decidable-but-not, UNDEFINED if not TESTED / not KNOWN. The fail-closed roll-up (AD-2):
+  UNDEFINED if **any** criterion is UNDEFINED (UNDEFINED dominates a FAIL); ADMISSIBLE iff all
+  three PASS; else INADMISSIBLE — the record **always seals** (a data condition is never an
+  exception). The output is **ex-post — not a PIT value and not a `BacktestResult`** (AD-6):
+  `StrategyAdmissibility` is not a `Pit*` type and exposes no as-of accessor; `boundary_kind =
+  "pit"` documents only that the underlying factor portfolios were PIT walks. The sealed
+  `StrategyAdmissibility` is a `ResearchRecord` persisted write-once to the existing sidecar (no
+  new store), storing only pointers to the three sources and byte-identically round-tripping;
+  `admissibility_id` folds the engine + method + decimal-context version, the declared request
+  (name, spec version), each of the three source verdicts' `research_result_id` **and**
+  `result_hash` (transitive pin), the declared `alpha`, and the `result_hash` over the computed
+  answer. Introduces no new numerical primitive, no `_linalg` / `_stats` change, no RNG / float
+  / iterative solver, and no runtime dependency. The
+  [locked architecture](phase33-strategy-admissibility-locked.md) is the normative spec.
 - [Engineering Principles](../ARCHITECTURE.md#engineering-principles) — the
   non-negotiable principles guiding the project.
 - [Contributing](../CONTRIBUTING.md) — how to set up a development environment

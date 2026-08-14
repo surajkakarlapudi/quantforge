@@ -105,6 +105,7 @@ class Workspace:
         self._campaign_multiplicity_engine: object | None = None
         self._net_of_cost_engine: object | None = None
         self._net_of_cost_significance_engine: object | None = None
+        self._admissibility_engine: object | None = None
 
     @property
     def artifact_store(self) -> ArtifactStore:
@@ -714,6 +715,33 @@ class Workspace:
 
             self._net_of_cost_significance_engine = NetOfCostSignificanceEngine(self)
         return self._net_of_cost_significance_engine
+
+    @property
+    def admissibility_engine(self) -> object:
+        """The Phase 33 strategy-admissibility engine (lazy).
+
+        :class:`~quantforge.admissibility.engine.AdmissibilityEngine` is imported on
+        first use to avoid a module-load import cycle (the engine imports
+        :class:`Workspace`). Cached for reuse. The first **multi-source** consumer in
+        the research spine - the capstone over the ex-post validator battery: a pure
+        consumer that resolves the three sealed verdicts of one strategy (a
+        :class:`~quantforge.stability.result.WalkForwardStability`, a
+        :class:`~quantforge.calsig.result.CalibrationSignificance`, and a
+        :class:`~quantforge.netcostsig.result.NetOfCostSignificance`) from this
+        workspace's shared research sidecar, reads the answer each layer already
+        computed verbatim, and seals the single joint admissibility verdict - ADMISSIBLE
+        only when the book was stable, the risk model was not significantly
+        mis-calibrated, and the after-cost edge was significantly profitable at the
+        declared level - into a content-addressed
+        :class:`~quantforge.admissibility.result.StrategyAdmissibility` back to the same
+        sidecar. It creates no new store and duplicates no resolution logic, exactly as
+        the other derived engines do.
+        """
+        if self._admissibility_engine is None:
+            from quantforge.admissibility.engine import AdmissibilityEngine
+
+            self._admissibility_engine = AdmissibilityEngine(self)
+        return self._admissibility_engine
 
     # -- construction --------------------------------------------------------
 

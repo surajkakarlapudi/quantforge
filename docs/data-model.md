@@ -1731,6 +1731,57 @@ NS-6. **A net-of-cost significance is not a PIT value and not a `BacktestResult`
     unchanged from the source — documents only that the *underlying returns* were PIT walks, not
     that the significance output is forward-usable. (The NC-6 / CS-6 discipline, one artifact over.)
 
+AD-1. **Multi-source reference verification and transitive pinning (three sources).** A strategy
+    admissibility is the platform's **first multi-source consumer**: it resolves *three* sealed
+    verdicts from the shared sidecar — the `source_stability_id` via
+    `store.read_as(id, WalkForwardStability.from_dict)`, the
+    `source_calibration_significance_id` via `CalibrationSignificance.from_dict`, and the
+    `source_net_of_cost_significance_id` via `NetOfCostSignificance.from_dict` — re-verifies each
+    (`research_result_id == id`, decodes as its expected type), and folds each source's
+    `result_hash` into `admissibility_id`. Through the three source ids this pins the calibration
+    / stability / net-of-cost chains and, beneath them, the shared walk-forward → optimization →
+    risk model → factors → corpora root (all three verdicts descend from one
+    `WalkForwardEvaluation`). Any missing, non-decoding, or id-mismatched reference at **any** of
+    the three sources fails closed with `AdmissibilityConsistencyError`; no source is ever copied,
+    only pinned. (The NS-1 / NC-1 discipline, generalized to three artifacts.)
+AD-2. **Fail-closed roll-up: UNDEFINED dominates a FAIL.** The joint verdict is UNDEFINED if
+    **any** of the three criteria is UNDEFINED; ADMISSIBLE iff all three PASS; else INADMISSIBLE.
+    A criterion whose source verdict was itself undefined (an UNDEFINED stability, a non-TESTED /
+    non-KNOWN significance) is recorded UNDEFINED with its reason and dominates any FAIL in the
+    roll-up — the layer never coerces a not-decidable input into a pass or a fail. The record
+    **always seals** (a data condition is never an exception, only a request / reference defect
+    raises).
+AD-3. **Per-criterion pass definitions, fixed order.** Three criteria are evaluated in the fixed
+    order STABILITY, CALIBRATION, NET_OF_COST_EDGE. STABILITY PASSes iff the source
+    `stability_status` is STABLE, else UNDEFINED — it never FAILs (an unstable book is
+    not-assessed, not a failure). CALIBRATION PASSes iff the two-sided calibration `p > alpha`
+    (the risk model is **not** significantly mis-calibrated), FAILs iff `p ≤ alpha`, UNDEFINED if
+    the source was not TESTED or its p-value not KNOWN. NET_OF_COST_EDGE PASSes iff the one-sided
+    net-of-cost `p ≤ alpha` **and** `edge_direction` is PROFITABLE, FAILs if decidable-but-not
+    (`p ≤ alpha` with a non-profitable edge, or `p > alpha`), UNDEFINED if the source was not
+    TESTED or its p-value not KNOWN.
+AD-4. **Sealed statuses / p-values / edge are consumed verbatim, never recomputed.** The engine
+    reads each layer's already-sealed answer — the stability book's `stability_status`, the
+    calibration test's two-sided `p_value`, the net-of-cost test's one-sided `p_value` and
+    `edge_direction` — and re-derives **no** statistic from source. Because the standard-normal Φ
+    CDF was already applied and sealed by the significance layers, Phase 33 introduces **no new
+    numerical primitive** and performs only exact-`Decimal` comparisons of the sealed p-values
+    against `alpha`. The sealed answers are authoritative. (The NS-4 / CS-4 posture, over three
+    artifacts.)
+AD-5. **The declared significance level is canonicalized and folded.** `alpha` is a decimal string
+    strictly inside `(0, 1)`, validated and canonicalized at construction via
+    `str(Decimal(alpha).normalize())` (so `"0.050"` and `"0.05"` are one id), and folded into
+    `admissibility_id` — the same level governs the CALIBRATION and NET_OF_COST_EDGE thresholds,
+    and a different `alpha` yields a different record, never a silently different verdict under the
+    same id.
+AD-6. **A strategy admissibility is not a PIT value and not a `BacktestResult`.** A decision over
+    three already-ex-post verdicts is itself ex-post: `StrategyAdmissibility` is **not** a `Pit*`
+    type, exposes no as-of accessor, is a distinct record type, simulates no fills, and opens no
+    new corpus / availability / store surface. `boundary_kind = "pit"` documents only that the
+    *underlying factor portfolios* beneath each consumed verdict's walk-forward were PIT walks, not
+    that the admissibility output is forward-usable. (The NS-6 / CS-6 discipline, one artifact
+    over.)
+
 ---
 
 ## 13. Adversarial cases

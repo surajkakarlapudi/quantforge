@@ -43,6 +43,10 @@ types (also re-exported here) — with membership always keyed by the canonical
 
 from __future__ import annotations
 
+from quantforge.admissibility import (
+    AdmissibilitySpecification,
+    StrategyAdmissibility,
+)
 from quantforge.analytics import (
     AnalyticsSpecification,
     PerformanceAnalytics,
@@ -171,6 +175,7 @@ from quantforge.workspace import Workspace
 
 __all__ = [
     "AccountingPolicy",
+    "AdmissibilitySpecification",
     "AnalyticsSpecification",
     "AttributionSpecification",
     "BacktestComparison",
@@ -233,6 +238,7 @@ __all__ = [
     "SectorFilter",
     "SignalDiagnostics",
     "SignalDiagnosticsSpecification",
+    "StrategyAdmissibility",
     "StrategyComparison",
     "StrategyComparisonSpecification",
     "StrategySpecification",
